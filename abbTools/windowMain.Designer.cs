@@ -30,15 +30,17 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(windowMain));
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
+            "robot 3",
+            "255.255.255.255"}, -1);
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.notifyIconQMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.testToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuBar = new System.Windows.Forms.MenuStrip();
-            this.panelMainMenu = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.panelStatusBar = new System.Windows.Forms.Panel();
-            this.panelApp = new System.Windows.Forms.Panel();
             this.fileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -51,9 +53,20 @@
             this.exitToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.minimizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.panelMainMenu = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
+            this.panelStatusBar = new System.Windows.Forms.Panel();
+            this.panelApp = new System.Windows.Forms.Panel();
+            this.buttonRobotToggle = new System.Windows.Forms.Button();
+            this.panelRobots = new System.Windows.Forms.Panel();
+            this.listViewRobots = new System.Windows.Forms.ListView();
+            this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
+            this.panelApp.SuspendLayout();
+            this.panelRobots.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -104,62 +117,12 @@
             this.helpToolStripMenuItem1});
             this.menuBar.Location = new System.Drawing.Point(0, 0);
             this.menuBar.Name = "menuBar";
-            this.menuBar.Size = new System.Drawing.Size(883, 64);
+            this.menuBar.Size = new System.Drawing.Size(1008, 64);
             this.menuBar.TabIndex = 0;
             this.menuBar.Text = "menuBar";
             this.menuBar.MouseDown += new System.Windows.Forms.MouseEventHandler(this.menuBar_MouseDown);
             this.menuBar.MouseMove += new System.Windows.Forms.MouseEventHandler(this.menuBar_MouseMove);
             this.menuBar.MouseUp += new System.Windows.Forms.MouseEventHandler(this.menuBar_MouseUp);
-            // 
-            // panelMainMenu
-            // 
-            this.panelMainMenu.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelMainMenu.Controls.Add(this.label1);
-            this.panelMainMenu.Controls.Add(this.menuBar);
-            this.panelMainMenu.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panelMainMenu.ForeColor = System.Drawing.Color.Black;
-            this.panelMainMenu.Location = new System.Drawing.Point(0, 0);
-            this.panelMainMenu.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.panelMainMenu.Name = "panelMainMenu";
-            this.panelMainMenu.Padding = new System.Windows.Forms.Padding(0, 0, 0, 2);
-            this.panelMainMenu.Size = new System.Drawing.Size(885, 65);
-            this.panelMainMenu.TabIndex = 2;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.Color.DarkOrange;
-            this.label1.Enabled = false;
-            this.label1.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label1.ForeColor = System.Drawing.Color.Black;
-            this.label1.Location = new System.Drawing.Point(386, 24);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(62, 17);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "abbTools";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // panelStatusBar
-            // 
-            this.panelStatusBar.BackColor = System.Drawing.Color.Gray;
-            this.panelStatusBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelStatusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelStatusBar.Location = new System.Drawing.Point(0, 679);
-            this.panelStatusBar.Name = "panelStatusBar";
-            this.panelStatusBar.Size = new System.Drawing.Size(885, 30);
-            this.panelStatusBar.TabIndex = 3;
-            // 
-            // panelApp
-            // 
-            this.panelApp.BackgroundImage = global::abbTools.Properties.Resources.windowMain_back;
-            this.panelApp.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panelApp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelApp.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelApp.Location = new System.Drawing.Point(0, 65);
-            this.panelApp.Margin = new System.Windows.Forms.Padding(0);
-            this.panelApp.Name = "panelApp";
-            this.panelApp.Size = new System.Drawing.Size(885, 614);
-            this.panelApp.TabIndex = 4;
             // 
             // fileToolStripMenuItem1
             // 
@@ -275,12 +238,137 @@
             this.helpToolStripMenuItem1.Text = "&Help";
             this.helpToolStripMenuItem1.Click += new System.EventHandler(this.helpToolStripMenuItem1_Click);
             // 
+            // panelMainMenu
+            // 
+            this.panelMainMenu.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelMainMenu.Controls.Add(this.label1);
+            this.panelMainMenu.Controls.Add(this.menuBar);
+            this.panelMainMenu.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelMainMenu.ForeColor = System.Drawing.Color.Black;
+            this.panelMainMenu.Location = new System.Drawing.Point(0, 0);
+            this.panelMainMenu.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.panelMainMenu.Name = "panelMainMenu";
+            this.panelMainMenu.Padding = new System.Windows.Forms.Padding(0, 0, 0, 2);
+            this.panelMainMenu.Size = new System.Drawing.Size(1010, 65);
+            this.panelMainMenu.TabIndex = 2;
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.BackColor = System.Drawing.Color.DarkOrange;
+            this.label1.Enabled = false;
+            this.label1.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label1.ForeColor = System.Drawing.Color.Black;
+            this.label1.Location = new System.Drawing.Point(466, 22);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(62, 17);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "abbTools";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panelStatusBar
+            // 
+            this.panelStatusBar.BackColor = System.Drawing.Color.Gray;
+            this.panelStatusBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelStatusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panelStatusBar.Location = new System.Drawing.Point(0, 679);
+            this.panelStatusBar.Name = "panelStatusBar";
+            this.panelStatusBar.Size = new System.Drawing.Size(1010, 30);
+            this.panelStatusBar.TabIndex = 3;
+            // 
+            // panelApp
+            // 
+            this.panelApp.BackgroundImage = global::abbTools.Properties.Resources.windowMain_back;
+            this.panelApp.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panelApp.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelApp.Controls.Add(this.buttonRobotToggle);
+            this.panelApp.Controls.Add(this.panelRobots);
+            this.panelApp.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelApp.Location = new System.Drawing.Point(0, 65);
+            this.panelApp.Margin = new System.Windows.Forms.Padding(0);
+            this.panelApp.Name = "panelApp";
+            this.panelApp.Size = new System.Drawing.Size(1010, 614);
+            this.panelApp.TabIndex = 4;
+            // 
+            // buttonRobotToggle
+            // 
+            this.buttonRobotToggle.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("buttonRobotToggle.BackgroundImage")));
+            this.buttonRobotToggle.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.buttonRobotToggle.Cursor = System.Windows.Forms.Cursors.Default;
+            this.buttonRobotToggle.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonRobotToggle.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.buttonRobotToggle.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.buttonRobotToggle.Location = new System.Drawing.Point(257, 11);
+            this.buttonRobotToggle.Name = "buttonRobotToggle";
+            this.buttonRobotToggle.Size = new System.Drawing.Size(68, 65);
+            this.buttonRobotToggle.TabIndex = 1;
+            this.buttonRobotToggle.UseVisualStyleBackColor = true;
+            this.buttonRobotToggle.Click += new System.EventHandler(this.buttonRobotToggle_Click);
+            // 
+            // panelRobots
+            // 
+            this.panelRobots.BackColor = System.Drawing.Color.White;
+            this.panelRobots.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelRobots.Controls.Add(this.listViewRobots);
+            this.panelRobots.Location = new System.Drawing.Point(-2, -2);
+            this.panelRobots.Margin = new System.Windows.Forms.Padding(0);
+            this.panelRobots.Name = "panelRobots";
+            this.panelRobots.Padding = new System.Windows.Forms.Padding(12);
+            this.panelRobots.Size = new System.Drawing.Size(260, 615);
+            this.panelRobots.TabIndex = 0;
+            // 
+            // listViewRobots
+            // 
+            this.listViewRobots.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.robotGroupColName,
+            this.robotGroupColIP});
+            this.listViewRobots.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewRobots.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            listViewGroup4.Header = "network";
+            listViewGroup4.Name = "robotsGroupNet";
+            listViewGroup5.Header = "virtual";
+            listViewGroup5.Name = "robotsGroupSim";
+            listViewGroup6.Header = "saved";
+            listViewGroup6.Name = "robotsGroupSaved";
+            this.listViewRobots.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup4,
+            listViewGroup5,
+            listViewGroup6});
+            this.listViewRobots.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listViewRobots.HideSelection = false;
+            listViewItem2.Group = listViewGroup6;
+            listViewItem2.StateImageIndex = 0;
+            this.listViewRobots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            listViewItem2});
+            this.listViewRobots.Location = new System.Drawing.Point(12, 12);
+            this.listViewRobots.Margin = new System.Windows.Forms.Padding(0);
+            this.listViewRobots.MultiSelect = false;
+            this.listViewRobots.Name = "listViewRobots";
+            this.listViewRobots.ShowItemToolTips = true;
+            this.listViewRobots.Size = new System.Drawing.Size(234, 589);
+            this.listViewRobots.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewRobots.TabIndex = 0;
+            this.listViewRobots.UseCompatibleStateImageBehavior = false;
+            this.listViewRobots.View = System.Windows.Forms.View.Details;
+            // 
+            // robotGroupColName
+            // 
+            this.robotGroupColName.Text = "name";
+            this.robotGroupColName.Width = 120;
+            // 
+            // robotGroupColIP
+            // 
+            this.robotGroupColIP.Text = "ip address";
+            this.robotGroupColIP.Width = 110;
+            // 
             // windowMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(885, 709);
+            this.ClientSize = new System.Drawing.Size(1010, 709);
             this.Controls.Add(this.panelApp);
             this.Controls.Add(this.panelStatusBar);
             this.Controls.Add(this.panelMainMenu);
@@ -289,13 +377,18 @@
             this.MainMenuStrip = this.menuBar;
             this.Name = "windowMain";
             this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "abbTools";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.windowMain_FormClosed);
+            this.Load += new System.EventHandler(this.windowMain_Load);
             this.Resize += new System.EventHandler(this.mainWindow_Resize);
             this.notifyIconQMenu.ResumeLayout(false);
             this.menuBar.ResumeLayout(false);
             this.menuBar.PerformLayout();
             this.panelMainMenu.ResumeLayout(false);
             this.panelMainMenu.PerformLayout();
+            this.panelApp.ResumeLayout(false);
+            this.panelRobots.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -323,6 +416,11 @@
         private System.Windows.Forms.Panel panelStatusBar;
         private System.Windows.Forms.Panel panelApp;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Panel panelRobots;
+        private System.Windows.Forms.ListView listViewRobots;
+        private System.Windows.Forms.ColumnHeader robotGroupColName;
+        private System.Windows.Forms.ColumnHeader robotGroupColIP;
+        private System.Windows.Forms.Button buttonRobotToggle;
     }
 }
 

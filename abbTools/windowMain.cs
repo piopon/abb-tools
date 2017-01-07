@@ -19,6 +19,9 @@ namespace abbTools
         //global variables
         public bool isDragged = false;
         private int mouseX, mouseY;
+        //abb network scanner
+        private NetworkScanner abbScanner = null;
+        private NetworkWatcher abbWatcher = null;
 
         public windowMain()
         {
@@ -78,11 +81,22 @@ namespace abbTools
 
         private void menuBar_MouseDown(object sender, MouseEventArgs e)
         {           
-            if (e.Button == MouseButtons.Left)
-            {
+            if (e.Button == MouseButtons.Left) {
                 isDragged = true;
                 mouseX = e.X;
                 mouseY = e.Y;
+            }
+        }
+
+        private void menuBar_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDragged)
+            {
+                Point curr = new Point();
+                curr.X = this.Location.X + (e.X - mouseX);
+                curr.Y = this.Location.Y + (e.Y - mouseY);
+                //update form position
+                this.Location = curr;
             }
         }
 
@@ -100,14 +114,80 @@ namespace abbTools
             helpWindow.ShowDialog();
         }
 
-        private void menuBar_MouseMove(object sender, MouseEventArgs e)
+        private void buttonRobotToggle_Click(object sender, EventArgs e)
         {
-            if(isDragged){
-                Point curr = new Point();
-                curr.X = this.Location.X + (e.X - mouseX);
-                curr.Y = this.Location.Y + (e.Y - mouseY);
-                //update form position
-                this.Location = curr;
+
+        }
+
+        private void windowMain_Load(object sender, EventArgs e)
+        {
+            //hide robot panel 
+
+            //scan for abb controllers in network
+            this.abbScanner = new NetworkScanner();
+            this.abbScanner.Scan();
+            ControllerInfoCollection networkControllers = abbScanner.Controllers;
+            ListViewItem currItem = null;
+            foreach (ControllerInfo controllerInfo in networkControllers) {
+                currItem = new ListViewItem(controllerInfo.Name);
+                //check if controller is real or virtual
+                if (controllerInfo.IsVirtual) {
+                    currItem.Group = listViewRobots.Groups["robotsGroupSim"];
+                } else {
+                    currItem.Group = listViewRobots.Groups["robotsGroupNet"];
+                }
+                //add second column value =  IP address 
+                currItem.SubItems.Add(controllerInfo.IPAddress.ToString());
+                //add curent item to list
+                this.listViewRobots.Items.Add(currItem);
+                currItem.Tag = controllerInfo;
+            }
+            //add network watcher to see if something changes in network
+            this.abbWatcher = new NetworkWatcher(abbScanner.Controllers,true);
+            this.abbWatcher.Found += abbWatcherFoundEvent;
+            this.abbWatcher.Lost += abbWatcherLostEvent;
+        }
+
+        private void abbWatcherLostEvent(object sender, NetworkWatcherEventArgs e)
+        {
+            this.Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
+        }
+
+        private void abbWatcherFoundEvent(object sender, NetworkWatcherEventArgs e)
+        {
+            this.Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
+        }
+
+        private void windowMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.abbWatcher.Found -= abbWatcherFoundEvent;
+            this.abbWatcher.Lost -= abbWatcherLostEvent;
+        }
+
+        private void updateRobotList(object sender, NetworkWatcherEventArgs e)
+        {
+            ControllerInfo eventController = e.Controller;
+            //check if controller was found or lost
+            if (e.Reason == ChangeReasons.New) {
+                //found controller - add to list
+                ListViewItem updItem = new ListViewItem(eventController.Name);
+                //check if controller is real or virtual
+                if (eventController.IsVirtual) {
+                    updItem.Group = listViewRobots.Groups["robotsGroupSim"];
+                } else {
+                    updItem.Group = listViewRobots.Groups["robotsGroupNet"];
+                }
+                updItem.SubItems.Add(eventController.IPAddress.ToString());
+                updItem.Tag = eventController;
+                this.listViewRobots.Items.Add(updItem);
+            } else {
+                //lost controller - remove from list
+                foreach (ListViewItem item in this.listViewRobots.Items) {
+                    if ((ControllerInfo)item.Tag == eventController) {
+                        this.listViewRobots.Items.Remove(item);
+                        break;
+                    }
+                }
             }
         }
     }
