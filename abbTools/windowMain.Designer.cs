@@ -30,9 +30,12 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(windowMain));
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            "ABBtrack",
+            "127.0.0.1"}, -1);
             System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
             "robot 3",
             "255.255.255.255"}, -1);
@@ -62,11 +65,16 @@
             this.listViewRobots = new System.Windows.Forms.ListView();
             this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.robotListQMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.addToSavedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.imagesStatus = new System.Windows.Forms.ImageList(this.components);
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
             this.panelApp.SuspendLayout();
             this.panelRobots.SuspendLayout();
+            this.robotListQMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -324,23 +332,29 @@
             this.listViewRobots.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.robotGroupColName,
             this.robotGroupColIP});
+            this.listViewRobots.ContextMenuStrip = this.robotListQMenu;
             this.listViewRobots.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewRobots.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            listViewGroup4.Header = "network";
-            listViewGroup4.Name = "robotsGroupNet";
-            listViewGroup5.Header = "virtual";
-            listViewGroup5.Name = "robotsGroupSim";
-            listViewGroup6.Header = "saved";
-            listViewGroup6.Name = "robotsGroupSaved";
+            listViewGroup1.Header = "network";
+            listViewGroup1.Name = "robotsGroupNet";
+            listViewGroup2.Header = "virtual";
+            listViewGroup2.Name = "robotsGroupSim";
+            listViewGroup3.Header = "saved";
+            listViewGroup3.Name = "robotsGroupSaved";
             this.listViewRobots.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup4,
-            listViewGroup5,
-            listViewGroup6});
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3});
             this.listViewRobots.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewRobots.HideSelection = false;
-            listViewItem2.Group = listViewGroup6;
-            listViewItem2.StateImageIndex = 0;
+            listViewItem1.Checked = true;
+            listViewItem1.Group = listViewGroup3;
+            listViewItem1.StateImageIndex = 1;
+            listViewItem2.Checked = true;
+            listViewItem2.Group = listViewGroup3;
+            listViewItem2.StateImageIndex = 1;
             this.listViewRobots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            listViewItem1,
             listViewItem2});
             this.listViewRobots.Location = new System.Drawing.Point(12, 12);
             this.listViewRobots.Margin = new System.Windows.Forms.Padding(0);
@@ -349,6 +363,7 @@
             this.listViewRobots.ShowItemToolTips = true;
             this.listViewRobots.Size = new System.Drawing.Size(234, 589);
             this.listViewRobots.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewRobots.StateImageList = this.imagesStatus;
             this.listViewRobots.TabIndex = 0;
             this.listViewRobots.UseCompatibleStateImageBehavior = false;
             this.listViewRobots.View = System.Windows.Forms.View.Details;
@@ -362,6 +377,40 @@
             // 
             this.robotGroupColIP.Text = "ip address";
             this.robotGroupColIP.Width = 110;
+            // 
+            // robotListQMenu
+            // 
+            this.robotListQMenu.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.robotListQMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.robotListQMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addToSavedToolStripMenuItem,
+            this.removeToolStripMenuItem});
+            this.robotListQMenu.Name = "contextMenuStrip1";
+            this.robotListQMenu.Size = new System.Drawing.Size(158, 56);
+            this.robotListQMenu.Opening += new System.ComponentModel.CancelEventHandler(this.robotListQMenu_Opening);
+            // 
+            // addToSavedToolStripMenuItem
+            // 
+            this.addToSavedToolStripMenuItem.Name = "addToSavedToolStripMenuItem";
+            this.addToSavedToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.addToSavedToolStripMenuItem.Text = "add to saved";
+            // 
+            // removeToolStripMenuItem
+            // 
+            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.removeToolStripMenuItem.Text = "remove";
+            // 
+            // imagesStatus
+            // 
+            this.imagesStatus.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesStatus.ImageStream")));
+            this.imagesStatus.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesStatus.Images.SetKeyName(0, "status_network.png");
+            this.imagesStatus.Images.SetKeyName(1, "status_virtual.png");
+            this.imagesStatus.Images.SetKeyName(2, "status_networkConn.png");
+            this.imagesStatus.Images.SetKeyName(3, "status_virtualConn.png");
+            this.imagesStatus.Images.SetKeyName(4, "status_networkDisconn.png");
+            this.imagesStatus.Images.SetKeyName(5, "status_virtualDisconn.png");
             // 
             // windowMain
             // 
@@ -389,6 +438,7 @@
             this.panelMainMenu.PerformLayout();
             this.panelApp.ResumeLayout(false);
             this.panelRobots.ResumeLayout(false);
+            this.robotListQMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -421,6 +471,10 @@
         private System.Windows.Forms.ColumnHeader robotGroupColName;
         private System.Windows.Forms.ColumnHeader robotGroupColIP;
         private System.Windows.Forms.Button buttonRobotToggle;
+        private System.Windows.Forms.ContextMenuStrip robotListQMenu;
+        private System.Windows.Forms.ToolStripMenuItem addToSavedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
+        private System.Windows.Forms.ImageList imagesStatus;
     }
 }
 

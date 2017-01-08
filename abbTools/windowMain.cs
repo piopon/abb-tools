@@ -121,6 +121,10 @@ namespace abbTools
 
         private void windowMain_Load(object sender, EventArgs e)
         {
+            int foundSavedController = -1;
+
+            //load saved robots to list view
+            loadMyRobots();
             //hide robot panel 
 
             //scan for abb controllers in network
@@ -129,18 +133,33 @@ namespace abbTools
             ControllerInfoCollection networkControllers = abbScanner.Controllers;
             ListViewItem currItem = null;
             foreach (ControllerInfo controllerInfo in networkControllers) {
-                currItem = new ListViewItem(controllerInfo.Name);
-                //check if controller is real or virtual
-                if (controllerInfo.IsVirtual) {
-                    currItem.Group = listViewRobots.Groups["robotsGroupSim"];
-                } else {
-                    currItem.Group = listViewRobots.Groups["robotsGroupNet"];
+                //check if found controler is in saved group
+                foundSavedController = 0;
+                foreach (ListViewItem item in this.listViewRobots.Items) {
+                    if (item.Text == controllerInfo.Name) break;
+                    foundSavedController++;
                 }
-                //add second column value =  IP address 
-                currItem.SubItems.Add(controllerInfo.IPAddress.ToString());
-                //add curent item to list
-                this.listViewRobots.Items.Add(currItem);
-                currItem.Tag = controllerInfo;
+                if (foundSavedController < listViewRobots.Items.Count) {
+                    //controller exists in saved group - update its icon to green
+                    currItem = listViewRobots.Items[foundSavedController];
+                    currItem.StateImageIndex = 3;
+                } else {
+                    //controller doesnt exist in saved group - add it
+                    currItem = new ListViewItem(controllerInfo.Name);
+                    //check if controller is real or virtual
+                    if (controllerInfo.IsVirtual) {
+                        currItem.Group = listViewRobots.Groups["robotsGroupSim"];
+                        currItem.StateImageIndex = 1;
+                    } else {
+                        currItem.Group = listViewRobots.Groups["robotsGroupNet"];
+                        currItem.StateImageIndex = 0;
+                    }
+                    //add second column value =  IP address 
+                    currItem.SubItems.Add(controllerInfo.IPAddress.ToString());
+                    //add curent item to list
+                    this.listViewRobots.Items.Add(currItem);
+                    currItem.Tag = controllerInfo;
+                }
             }
             //add network watcher to see if something changes in network
             this.abbWatcher = new NetworkWatcher(abbScanner.Controllers,true);
@@ -164,30 +183,75 @@ namespace abbTools
             this.abbWatcher.Lost -= abbWatcherLostEvent;
         }
 
+        private void robotListQMenu_Opening(object sender, CancelEventArgs e)
+        {
+            string itemGroup = listViewRobots.FocusedItem.Group.Header;
+            //check which element is selected
+            if (itemGroup == "saved") {
+                addToSavedToolStripMenuItem.Visible = false;
+                removeToolStripMenuItem.Visible = true;
+            } else if (itemGroup == "network" || itemGroup == "virtual") {
+                addToSavedToolStripMenuItem.Visible = true;
+                removeToolStripMenuItem.Visible = false;
+            }
+        }
+
         private void updateRobotList(object sender, NetworkWatcherEventArgs e)
         {
             ControllerInfo eventController = e.Controller;
+            //check if event controler is in saved group
+            int foundSavedController = 0;
+            foreach (ListViewItem item in this.listViewRobots.Items) {
+                //if current event controller was saved then break loop
+                if (eventController.Name == item.Text && item.Group.Header == "saved") break;
+                foundSavedController++;
+            }
             //check if controller was found or lost
             if (e.Reason == ChangeReasons.New) {
-                //found controller - add to list
-                ListViewItem updItem = new ListViewItem(eventController.Name);
-                //check if controller is real or virtual
-                if (eventController.IsVirtual) {
-                    updItem.Group = listViewRobots.Groups["robotsGroupSim"];
+                //found controller - check if its saved
+                if (foundSavedController < listViewRobots.Items.Count) {
+                    //controller exists in saved group - update its icon to green
+                    ListViewItem updItem = listViewRobots.Items[foundSavedController];
+                    updItem.StateImageIndex = 3;
                 } else {
-                    updItem.Group = listViewRobots.Groups["robotsGroupNet"];
+                    //controller is not saved - add to list                    
+                    ListViewItem updItem = new ListViewItem(eventController.Name);
+                    //check if controller is real or virtual
+                    if (eventController.IsVirtual) {
+                        updItem.Group = listViewRobots.Groups["robotsGroupSim"];
+                        updItem.StateImageIndex = 1;
+                    } else {
+                        updItem.Group = listViewRobots.Groups["robotsGroupNet"];
+                        updItem.StateImageIndex = 0;
+                    }
+                    updItem.SubItems.Add(eventController.IPAddress.ToString());
+                    updItem.Tag = eventController;
+                    this.listViewRobots.Items.Add(updItem);
                 }
-                updItem.SubItems.Add(eventController.IPAddress.ToString());
-                updItem.Tag = eventController;
-                this.listViewRobots.Items.Add(updItem);
             } else {
-                //lost controller - remove from list
-                foreach (ListViewItem item in this.listViewRobots.Items) {
-                    if ((ControllerInfo)item.Tag == eventController) {
-                        this.listViewRobots.Items.Remove(item);
-                        break;
+                //lost controller - check if its saved
+                if (foundSavedController < listViewRobots.Items.Count) {
+                    //controller exists in saved group - update its icon to green
+                    ListViewItem updItem = listViewRobots.Items[foundSavedController];
+                    updItem.StateImageIndex = 5;
+                } else {
+                    //remove from list
+                    foreach (ListViewItem item in this.listViewRobots.Items) {
+                        if ((ControllerInfo)item.Tag == eventController) {
+                            this.listViewRobots.Items.Remove(item);
+                            break;
+                        }
                     }
                 }
+            }
+        }
+
+        private void loadMyRobots()
+        {
+            //robots loaded before scan = all are disconnected
+            foreach (ListViewItem item in this.listViewRobots.Items)
+            {
+                item.StateImageIndex = 5;
             }
         }
     }
