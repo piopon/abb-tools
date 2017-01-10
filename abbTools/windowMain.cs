@@ -12,6 +12,16 @@ using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.Discovery;
 using ABB.Robotics.Controllers.RapidDomain;
 
+enum abbFoundType
+{
+    net = 0,
+    netSaveConn = 1,
+    netSaveDiscon = 2,
+    sim = 3,
+    simSaveConn = 4,
+    simSaveDisconn = 5
+};
+
 namespace abbTools
 {
     public partial class windowMain : Form
@@ -90,8 +100,7 @@ namespace abbTools
 
         private void menuBar_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isDragged)
-            {
+            if (isDragged) {
                 Point curr = new Point();
                 curr.X = this.Location.X + (e.X - mouseX);
                 curr.Y = this.Location.Y + (e.Y - mouseY);
@@ -124,7 +133,7 @@ namespace abbTools
             int foundSavedController = -1;
 
             //load saved robots to list view
-            loadMyRobots();
+            loadMyRobots("");
             //hide robot panel 
 
             //scan for abb controllers in network
@@ -136,23 +145,23 @@ namespace abbTools
                 //check if found controler is in saved group
                 foundSavedController = 0;
                 foreach (ListViewItem item in this.listViewRobots.Items) {
-                    if (item.Text == controllerInfo.Name) break;
+                    if (sameController(item,controllerInfo) && item.Group.Header == "saved") break;
                     foundSavedController++;
                 }
                 if (foundSavedController < listViewRobots.Items.Count) {
                     //controller exists in saved group - update its icon to green
                     currItem = listViewRobots.Items[foundSavedController];
-                    currItem.StateImageIndex = 3;
+                    currItem.StateImageIndex -= 1;
                 } else {
                     //controller doesnt exist in saved group - add it
                     currItem = new ListViewItem(controllerInfo.Name);
                     //check if controller is real or virtual
                     if (controllerInfo.IsVirtual) {
                         currItem.Group = listViewRobots.Groups["robotsGroupSim"];
-                        currItem.StateImageIndex = 1;
+                        currItem.StateImageIndex = (int)abbFoundType.sim; 
                     } else {
                         currItem.Group = listViewRobots.Groups["robotsGroupNet"];
-                        currItem.StateImageIndex = 0;
+                        currItem.StateImageIndex = (int)abbFoundType.net;
                     }
                     //add second column value =  IP address 
                     currItem.SubItems.Add(controllerInfo.IPAddress.ToString());
@@ -185,13 +194,18 @@ namespace abbTools
 
         private void robotListQMenu_Opening(object sender, CancelEventArgs e)
         {
-            string itemGroup = listViewRobots.FocusedItem.Group.Header;
-            //check which element is selected
-            if (itemGroup == "saved") {
+            if (listViewRobots.SelectedItems.Count > 0){
+                string itemGroup = listViewRobots.FocusedItem.Group.Header;
+                //check which element is selected
+                if (itemGroup == "saved") {
+                    addToSavedToolStripMenuItem.Visible = false;
+                    removeToolStripMenuItem.Visible = true;
+                } else if (itemGroup == "network" || itemGroup == "virtual") {
+                    addToSavedToolStripMenuItem.Visible = true;
+                    removeToolStripMenuItem.Visible = false;
+                }
+            } else {
                 addToSavedToolStripMenuItem.Visible = false;
-                removeToolStripMenuItem.Visible = true;
-            } else if (itemGroup == "network" || itemGroup == "virtual") {
-                addToSavedToolStripMenuItem.Visible = true;
                 removeToolStripMenuItem.Visible = false;
             }
         }
@@ -203,7 +217,7 @@ namespace abbTools
             int foundSavedController = 0;
             foreach (ListViewItem item in this.listViewRobots.Items) {
                 //if current event controller was saved then break loop
-                if (eventController.Name == item.Text && item.Group.Header == "saved") break;
+                if (sameController(item,eventController) && item.Group.Header == "saved") break;
                 foundSavedController++;
             }
             //check if controller was found or lost
@@ -212,30 +226,30 @@ namespace abbTools
                 if (foundSavedController < listViewRobots.Items.Count) {
                     //controller exists in saved group - update its icon to green
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
-                    updItem.StateImageIndex = 3;
+                    updItem.StateImageIndex -= 1;
                 } else {
                     //controller is not saved - add to list                    
                     ListViewItem updItem = new ListViewItem(eventController.Name);
                     //check if controller is real or virtual
                     if (eventController.IsVirtual) {
                         updItem.Group = listViewRobots.Groups["robotsGroupSim"];
-                        updItem.StateImageIndex = 1;
+                        updItem.StateImageIndex = (int)abbFoundType.sim;
                     } else {
                         updItem.Group = listViewRobots.Groups["robotsGroupNet"];
-                        updItem.StateImageIndex = 0;
+                        updItem.StateImageIndex = (int)abbFoundType.net;
                     }
                     updItem.SubItems.Add(eventController.IPAddress.ToString());
                     updItem.Tag = eventController;
                     this.listViewRobots.Items.Add(updItem);
                 }
             } else {
-                //lost controller - check if its saved
+                //lost controller - check if it is saved
                 if (foundSavedController < listViewRobots.Items.Count) {
-                    //controller exists in saved group - update its icon to green
+                    //controller lost in saved group - update its icon to red
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
-                    updItem.StateImageIndex = 5;
+                    updItem.StateImageIndex += 1;
                 } else {
-                    //remove from list
+                    //remove from list (wasnt in saved group)
                     foreach (ListViewItem item in this.listViewRobots.Items) {
                         if ((ControllerInfo)item.Tag == eventController) {
                             this.listViewRobots.Items.Remove(item);
@@ -246,13 +260,119 @@ namespace abbTools
             }
         }
 
-        private void loadMyRobots()
+        private void removeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //robots loaded before scan = all are disconnected
-            foreach (ListViewItem item in this.listViewRobots.Items)
-            {
-                item.StateImageIndex = 5;
+            ListViewItem currItem = listViewRobots.SelectedItems[0];
+            //if removed controller exists in network then change it group
+            if (currItem.StateImageIndex == (int)abbFoundType.netSaveConn) {
+                currItem.Group = listViewRobots.Groups[0];
+                currItem.StateImageIndex = (int)abbFoundType.net;
+            } else if (currItem.StateImageIndex == (int)abbFoundType.simSaveConn) {
+                currItem.Group = listViewRobots.Groups[1];
+                currItem.StateImageIndex = (int)abbFoundType.sim;
+            } else {
+                //robot not found - remove it from list
+                listViewRobots.Items.Remove(currItem);
             }
+            //sort updated elements
+            listViewRobots.Sort();
+        }
+
+        private void addToSavedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //get selected item with quick menu
+            ListViewItem toSaveItem = listViewRobots.SelectedItems[0];
+            //update GUI (move to saved group and change icon to connected!)
+            toSaveItem.Group = listViewRobots.Groups[2];
+            toSaveItem.StateImageIndex += 1;
+            //sort updated elements
+            listViewRobots.Sort();
+        }
+
+        private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //show save dialog
+            saveDialog.InitialDirectory = Application.StartupPath;
+            saveDialog.ShowDialog();
+            //save elements to selected file
+            saveMyRobots(saveDialog.FileName);
+        }
+
+        private void saveMyRobots(string filePath)
+        {
+            //check if path is correct
+            if (filePath != "") {
+                //xml settings to create indents in file
+                System.Xml.XmlWriterSettings xmlSettings = new System.Xml.XmlWriterSettings();
+                xmlSettings.Indent = true;
+                //instance of xmlFile
+                System.Xml.XmlWriter xmlFile = System.Xml.XmlWriter.Create(filePath, xmlSettings);
+                xmlFile.WriteStartElement("myRobots");
+                //save all robots from list (only from saved group)
+                for (int i = 0; i < listViewRobots.Items.Count; i++) {
+                    if (listViewRobots.Items[i].Group == listViewRobots.Groups[2]) {
+                        xmlFile.WriteStartElement("robot_" + i.ToString());
+                        xmlFile.WriteAttributeString("name", listViewRobots.Items[i].SubItems[0].Text);
+                        xmlFile.WriteAttributeString("IP", listViewRobots.Items[i].SubItems[1].Text);
+                        xmlFile.WriteAttributeString("type", listViewRobots.Items[i].StateImageIndex.ToString());
+                        xmlFile.WriteEndElement();
+                    }
+                }
+                //close up file
+                xmlFile.WriteEndElement();
+                xmlFile.Close();
+            }
+        }
+
+        private void loadMyRobots(string filePath)
+        {
+            //czysc liste elementow
+            this.listViewRobots.Items.Clear();
+            //check if path is correct
+            if (filePath != "") {
+                //create instance of xml to read
+                System.Xml.XmlReader xmlRead = System.Xml.XmlReader.Create(filePath);
+                while (xmlRead.Read()) {
+                    //read every node from XML document
+                    if ((xmlRead.NodeType == System.Xml.XmlNodeType.Element) && (xmlRead.Name.StartsWith("robot_"))) {
+                        if (xmlRead.HasAttributes) {
+                            ListViewItem listItem = new ListViewItem(xmlRead.GetAttribute("name"));
+                            //check if controller is real or virtual
+                            listItem.Group = listViewRobots.Groups["robotsGroupSaved"];
+                            int typeIcon = Int16.Parse(xmlRead.GetAttribute("type"));
+                            listItem.StateImageIndex = typeIcon >= 3 ? (int)abbFoundType.simSaveDisconn : (int)abbFoundType.simSaveDisconn;
+                            //add second column value =  IP address 
+                            listItem.SubItems.Add(xmlRead.GetAttribute("IP"));
+                            //add curent item to list
+                            this.listViewRobots.Items.Add(listItem);
+                        }
+                    }
+                }
+                //close up file
+                xmlRead.Close();
+            }
+        }
+
+        private bool sameController(ListViewItem listedRobot, ControllerInfo abbRobot)
+        {
+            bool sameName = listedRobot.Text == abbRobot.Name;
+            bool sameType = abbRobot.IsVirtual && listedRobot.StateImageIndex>=(int)abbFoundType.sim;
+            
+            return sameName && sameType;
+        }
+
+        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //show open dialog
+            openDialog.InitialDirectory = Application.StartupPath;
+            openDialog.ShowDialog();
+            //save elements to selected file
+            loadMyRobots(openDialog.FileName);
+        }
+
+        private void exitToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
