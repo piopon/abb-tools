@@ -133,6 +133,7 @@ namespace abbTools
             int foundSavedController = -1;
 
             //load saved robots to list view
+            listViewRobots.Items.Clear();
             loadMyRobots("");
             //hide robot panel 
 
@@ -326,10 +327,26 @@ namespace abbTools
 
         private void loadMyRobots(string filePath)
         {
-            //czysc liste elementow
-            this.listViewRobots.Items.Clear();
             //check if path is correct
             if (filePath != "") {
+                //move/delete robots from saved group
+                foreach (ListViewItem item in this.listViewRobots.Items) {
+                    if (item.Group.Header == "saved") {
+                        int currState = item.StateImageIndex;
+                        if (currState == (int)abbFoundType.netSaveConn) {
+                            //visible robots move to network groups
+                            item.Group = listViewRobots.Groups["robotsGroupNet"];
+                            item.StateImageIndex = (int)abbFoundType.net;
+                        } else if (currState == (int)abbFoundType.simSaveConn) {
+                            //visible robots move to virtual groups
+                            item.Group = listViewRobots.Groups["robotsGroupSim"];
+                            item.StateImageIndex = (int)abbFoundType.sim;
+                        } else {
+                            //delete non-visible robots
+                            this.listViewRobots.Items.Remove(item);
+                        }
+                    }
+                }
                 //create instance of xml to read
                 System.Xml.XmlReader xmlRead = System.Xml.XmlReader.Create(filePath);
                 while (xmlRead.Read()) {
@@ -337,10 +354,19 @@ namespace abbTools
                     if ((xmlRead.NodeType == System.Xml.XmlNodeType.Element) && (xmlRead.Name.StartsWith("robot_"))) {
                         if (xmlRead.HasAttributes) {
                             ListViewItem listItem = new ListViewItem(xmlRead.GetAttribute("name"));
-                            //check if controller is real or virtual
                             listItem.Group = listViewRobots.Groups["robotsGroupSaved"];
-                            int typeIcon = Int16.Parse(xmlRead.GetAttribute("type"));
-                            listItem.StateImageIndex = typeIcon >= 3 ? (int)abbFoundType.simSaveDisconn : (int)abbFoundType.simSaveDisconn;
+                            //check if controller is real or virtual
+                            bool simController = Int16.Parse(xmlRead.GetAttribute("type")) >= (int)abbFoundType.sim;
+                            //check if controller is visible and adjust icon
+                            int listController = findController(listItem.Text, simController);
+                            if (listController != -1) {
+                                //controller visible - delete it from network group and set grenn icon
+                                listViewRobots.Items.RemoveAt(listController);
+                                listItem.StateImageIndex = 1 + Convert.ToInt16(simController) * 3;
+                            } else {
+                                //real controller - set icon
+                                listItem.StateImageIndex = 2 + Convert.ToInt16(simController) * 3;
+                            }                           
                             //add second column value =  IP address 
                             listItem.SubItems.Add(xmlRead.GetAttribute("IP"));
                             //add curent item to list
@@ -359,6 +385,32 @@ namespace abbTools
             bool sameType = abbRobot.IsVirtual && listedRobot.StateImageIndex>=(int)abbFoundType.sim;
             
             return sameName && sameType;
+        }
+
+        private bool sameController(ListViewItem listedRobot, string robotName, bool robotSim)
+        {
+            bool sameName = listedRobot.Text == robotName;
+            bool sameType = robotSim && listedRobot.StateImageIndex >= (int)abbFoundType.sim;
+
+            return sameName && sameType;
+        }
+
+        private int findController(string robotName, bool robotSim)
+        {
+            int result = -1, index = 0;
+
+            foreach (ListViewItem item in this.listViewRobots.Items) {
+                //match controller names
+                if (item.Text == robotName) {
+                    if(robotSim == true && item.StateImageIndex >= (int)abbFoundType.sim) {
+                        //if robot was found then is no need to search further
+                        result = index;
+                        break;
+                    }
+                }
+                index++;
+            }
+            return result;
         }
 
         private void openToolStripMenuItem1_Click(object sender, EventArgs e)
