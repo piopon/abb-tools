@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using ABB.Robotics;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.Discovery;
+using ABB.Robotics.Controllers.IOSystemDomain;
 using ABB.Robotics.Controllers.RapidDomain;
 
 enum abbFoundType
@@ -32,6 +33,8 @@ namespace abbTools
         //abb network scanner
         private NetworkScanner abbScanner = null;
         private NetworkWatcher abbWatcher = null;
+        //object representing connected controller
+        private Controller abbConn = null;
 
         public windowMain()
         {
@@ -123,20 +126,15 @@ namespace abbTools
             helpWindow.ShowDialog();
         }
 
-        private void buttonRobotToggle_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void windowMain_Load(object sender, EventArgs e)
         {
             int foundSavedController = -1;
 
+            //update app run-up time
+            statusTextBox.AppendText(DateTime.Now.ToString()+"]");
             //load saved robots to list view
             listViewRobots.Items.Clear();
             loadMyRobots("");
-            //hide robot panel 
-
             //scan for abb controllers in network
             this.abbScanner = new NetworkScanner();
             this.abbScanner.Scan();
@@ -191,11 +189,34 @@ namespace abbTools
         {
             this.abbWatcher.Found -= abbWatcherFoundEvent;
             this.abbWatcher.Lost -= abbWatcherLostEvent;
+            //disconnect from controller (if connected)
+            if (abbConn != null) {
+                abbConn.Logoff();
+                abbConn.Dispose();
+                abbConn = null;
+            }
         }
 
         private void robotListQMenu_Opening(object sender, CancelEventArgs e)
         {
             if (listViewRobots.SelectedItems.Count > 0){
+                /***** CONNECT/DISCONNECT FROM CONTROLLER *****/
+                if (abbConn == null) {
+                    //no controller connected - disconect menu not visible
+                    connectToolStripMenuItem.Visible = true;
+                    disconnectToolStripMenuItem.Visible = false;
+                } else {
+                    //controller which is connected only has disconnect menu
+                    string itemName = listViewRobots.FocusedItem.Text;
+                    if (itemName == abbConn.SystemName) {
+                        connectToolStripMenuItem.Visible = false;
+                        disconnectToolStripMenuItem.Visible = true;
+                    } else {
+                        connectToolStripMenuItem.Visible = true;
+                        disconnectToolStripMenuItem.Visible = false;
+                    }
+                }
+                /***** ADD/REMOVE FROM SAVED GROUP *****/
                 string itemGroup = listViewRobots.FocusedItem.Group.Header;
                 //check which element is selected
                 if (itemGroup == "saved") {
@@ -228,6 +249,7 @@ namespace abbTools
                     //controller exists in saved group - update its icon to green
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
                     updItem.StateImageIndex -= 1;
+                    updItem.Tag = eventController;
                 } else {
                     //controller is not saved - add to list                    
                     ListViewItem updItem = new ListViewItem(eventController.Name);
@@ -249,6 +271,7 @@ namespace abbTools
                     //controller lost in saved group - update its icon to red
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
                     updItem.StateImageIndex += 1;
+                    updItem.Tag = null;
                 } else {
                     //remove from list (wasnt in saved group)
                     foreach (ListViewItem item in this.listViewRobots.Items) {
@@ -361,6 +384,7 @@ namespace abbTools
                             int listController = findController(listItem.Text, simController);
                             if (listController != -1) {
                                 //controller visible - delete it from network group and set grenn icon
+                                listItem.Tag = listViewRobots.Items[listController].Tag;
                                 listViewRobots.Items.RemoveAt(listController);
                                 listItem.StateImageIndex = 1 + Convert.ToInt16(simController) * 3;
                             } else {
@@ -402,7 +426,9 @@ namespace abbTools
             foreach (ListViewItem item in this.listViewRobots.Items) {
                 //match controller names
                 if (item.Text == robotName) {
-                    if(robotSim == true && item.StateImageIndex >= (int)abbFoundType.sim) {
+                    bool simCondition = robotSim == true && item.StateImageIndex >= (int)abbFoundType.sim;
+                    bool netCondition = robotSim == false && item.StateImageIndex < (int)abbFoundType.sim;
+                    if (simCondition || netCondition) {
                         //if robot was found then is no need to search further
                         result = index;
                         break;
@@ -413,6 +439,56 @@ namespace abbTools
             return result;
         }
 
+        private int connectController(ListViewItem listController)
+        {
+            int result = -1;
+            string cName = listController.Text;
+
+            if (listController != null && listController.Tag != null) {
+                ControllerInfo controller = (ControllerInfo)listController.Tag;
+                if (controller.Availability == Availability.Available) {
+                    //first disconnect from previous controller (if connected)
+                    if (abbConn != null) {
+                        abbConn.Logoff();
+                        abbConn.Dispose();
+                        abbConn = null;
+                    }
+                    //show status conn status and process messages 
+                    statusTextBox.Text = "controller " + cName + ": connecting...";
+                    statusTextBox.Select(11, cName.Length);
+                    statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                    Application.DoEvents();
+                    //create controller and log in
+                    abbConn = ControllerFactory.CreateFrom(controller);
+                    abbConn.Logon(UserInfo.DefaultUser);
+                    if (abbConn.Connected) {
+                        //output
+                        result = 1;
+                        //update status
+                        statusTextBox.Text = "controller " + cName + ": connected!";
+                        statusTextBox.Select(11, cName.Length);
+                        statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                    } 
+                } else {
+                    //output
+                    result = 0;
+                    //update status
+                    statusTextBox.Text = "controller " + cName + ": not available!";
+                    statusTextBox.Select(11, cName.Length);
+                    statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                }
+            } else {
+                //output
+                result = -1;
+                //update status
+                statusTextBox.Text = "controller " + cName  + ": not visible in network!";
+                statusTextBox.Select(11, cName.Length);
+                statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+            }
+
+            return result;
+        }
+
         private void openToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //show open dialog
@@ -420,6 +496,100 @@ namespace abbTools
             openDialog.ShowDialog();
             //save elements to selected file
             loadMyRobots(openDialog.FileName);
+        }
+
+        private int disconnectController(ListViewItem listController)
+        {
+            int result = -1;
+            string cName = listController.Text;
+
+            if (listController != null && listController.Tag != null) {
+                ControllerInfo controller = (ControllerInfo)listController.Tag;
+                if (controller.Availability == Availability.Available) {
+                    //disconnect from selected controller
+                    if (abbConn != null) {
+                        abbConn.Logoff();
+                        abbConn.Dispose();
+                        abbConn = null;
+                    }
+                    //show status conn status and process messages 
+                    statusTextBox.Text = "controller " + cName + ": disconnected!";
+                    statusTextBox.Select(11, cName.Length);
+                    statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                }
+            }
+            return result;
+        }
+
+
+        private void btnRobotListCollapse_Click(object sender, EventArgs e)
+        {
+            //toggle panel collapse
+            appContainer.Panel1Collapsed = !appContainer.Panel1Collapsed;
+            //
+            if (appContainer.Panel1Collapsed) {
+                btnRobotListCollapse.Parent = appContainer.Panel2;
+                btnRobotListCollapse.Dock = DockStyle.Left;
+                btnRobotListCollapse.Text = ">>>";
+                tabActions.Location = new Point(42, 12);
+                tabActions.Width -= 40;
+            } else {
+                btnRobotListCollapse.Parent = appContainer.Panel1;
+                btnRobotListCollapse.Dock = DockStyle.Right;
+                btnRobotListCollapse.Text = "<<<";
+                tabActions.Location = new Point(2, 12);
+                tabActions.Width += 40;
+            }
+        }
+
+        private void listViewRobots_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Delete) {
+                //delete robot only from saved group
+                ListViewItem item = listViewRobots.FocusedItem;
+                if (item != null && item.Group.Header == "saved") {
+                    int currState = item.StateImageIndex;
+                    if (currState == (int)abbFoundType.netSaveConn) {
+                        //visible robots move to network groups
+                        item.Group = listViewRobots.Groups["robotsGroupNet"];
+                        item.StateImageIndex = (int)abbFoundType.net;
+                    } else if (currState == (int)abbFoundType.simSaveConn) {
+                        //visible robots move to virtual groups
+                        item.Group = listViewRobots.Groups["robotsGroupSim"];
+                        item.StateImageIndex = (int)abbFoundType.sim;
+                    } else {
+                        //delete non-visible robots
+                        this.listViewRobots.Items.Remove(item);
+                    }
+                }
+            }
+        }
+
+        private void connectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //connect to selected controller
+            int connStatus = connectController(listViewRobots.FocusedItem);
+            if (connStatus == 1) {
+                //show connected icon
+                SignalCollection signals = abbConn.IOSystem.GetSignals(IOFilterTypes.All);
+            }
+
+        }
+
+        private void listViewRobots_DoubleClick(object sender, EventArgs e)
+        {
+            //connect to selected controller
+            int connStatus = connectController(listViewRobots.FocusedItem);
+            if (connStatus == 1) {
+                //show connected icon
+                SignalCollection signals = abbConn.IOSystem.GetSignals(IOFilterTypes.All);
+            }
+        }
+
+        private void disconnectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //disconnect from selected controller
+            int disconnStatus = disconnectController(listViewRobots.FocusedItem);
         }
 
         private void exitToolStripMenuItem2_Click(object sender, EventArgs e)
