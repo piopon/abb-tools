@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -24,7 +25,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -50,6 +50,10 @@
   <PropertyGroup>
     <ApplicationIcon>appIcon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <StartupObject>abbTools.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ABB.Robotics.Controllers.PC">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\ABB Industrial IT\Robotics IT\SDK\PCSDK 5.61\ABB.Robotics.Controllers.PC.dll</HintPath>
@@ -67,6 +71,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="commonABB.cs" />
+    <Compile Include="loggerABB.cs" />
     <Compile Include="windowAbout.cs">
       <SubType>Form</SubType>
     </Compile>

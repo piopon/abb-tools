@@ -13,16 +13,6 @@ using ABB.Robotics.Controllers.Discovery;
 using ABB.Robotics.Controllers.IOSystemDomain;
 using ABB.Robotics.Controllers.RapidDomain;
 
-enum abbFoundType
-{
-    net = 0,
-    netSaveConn = 1,
-    netSaveDiscon = 2,
-    sim = 3,
-    simSaveConn = 4,
-    simSaveDisconn = 5
-};
-
 namespace abbTools
 {
     public partial class windowMain : Form
@@ -35,6 +25,8 @@ namespace abbTools
         private NetworkWatcher abbWatcher = null;
         //object representing connected controller
         private Controller abbConn = null;
+        //status writer
+        private loggerABB status = null;
 
         public windowMain()
         {
@@ -131,7 +123,8 @@ namespace abbTools
             int foundSavedController = -1;
 
             //update app run-up time
-            statusTextBox.AppendText(DateTime.Now.ToString()+"]");
+            status = new loggerABB(statusTextBox,true);
+            status.appendLog("<u>[ start "+DateTime.Now.ToString()+ " ]</u>");
             //load saved robots to list view
             listViewRobots.Items.Clear();
             loadMyRobots("");
@@ -157,10 +150,11 @@ namespace abbTools
                     //check if controller is real or virtual
                     if (controllerInfo.IsVirtual) {
                         currItem.Group = listViewRobots.Groups["robotsGroupSim"];
-                        currItem.StateImageIndex = (int)abbFoundType.sim; 
+                        
+                        currItem.StateImageIndex = (int)abbStatus.found.sim; 
                     } else {
                         currItem.Group = listViewRobots.Groups["robotsGroupNet"];
-                        currItem.StateImageIndex = (int)abbFoundType.net;
+                        currItem.StateImageIndex = (int)abbStatus.found.net;
                     }
                     //add second column value =  IP address 
                     currItem.SubItems.Add(controllerInfo.IPAddress.ToString());
@@ -256,17 +250,25 @@ namespace abbTools
                     //check if controller is real or virtual
                     if (eventController.IsVirtual) {
                         updItem.Group = listViewRobots.Groups["robotsGroupSim"];
-                        updItem.StateImageIndex = (int)abbFoundType.sim;
+                        updItem.StateImageIndex = (int)abbStatus.found.sim;
                     } else {
                         updItem.Group = listViewRobots.Groups["robotsGroupNet"];
-                        updItem.StateImageIndex = (int)abbFoundType.net;
+                        updItem.StateImageIndex = (int)abbStatus.found.net;
                     }
                     updItem.SubItems.Add(eventController.IPAddress.ToString());
                     updItem.Tag = eventController;
                     this.listViewRobots.Items.Add(updItem);
                 }
             } else {
-                //lost controller - check if it is saved
+                //lost controller - check if it was connected
+                if (eventController.Name == abbConn.SystemName) {
+                    abbConn.Logoff();
+                    abbConn.Dispose();
+                    abbConn = null;
+                    //show disconn status and process messages 
+                    status.writeLog(logType.info, "controller <bu>" + eventController.Name + "</bu>: disconnected!");
+                }
+                //check if saved controller was in saved group
                 if (foundSavedController < listViewRobots.Items.Count) {
                     //controller lost in saved group - update its icon to red
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
@@ -288,12 +290,12 @@ namespace abbTools
         {
             ListViewItem currItem = listViewRobots.SelectedItems[0];
             //if removed controller exists in network then change it group
-            if (currItem.StateImageIndex == (int)abbFoundType.netSaveConn) {
+            if (currItem.StateImageIndex == (int)abbStatus.found.netSaveConn) {
                 currItem.Group = listViewRobots.Groups[0];
-                currItem.StateImageIndex = (int)abbFoundType.net;
-            } else if (currItem.StateImageIndex == (int)abbFoundType.simSaveConn) {
+                currItem.StateImageIndex = (int)abbStatus.found.net;
+            } else if (currItem.StateImageIndex == (int)abbStatus.found.simSaveConn) {
                 currItem.Group = listViewRobots.Groups[1];
-                currItem.StateImageIndex = (int)abbFoundType.sim;
+                currItem.StateImageIndex = (int)abbStatus.found.sim;
             } else {
                 //robot not found - remove it from list
                 listViewRobots.Items.Remove(currItem);
@@ -356,14 +358,14 @@ namespace abbTools
                 foreach (ListViewItem item in this.listViewRobots.Items) {
                     if (item.Group.Header == "saved") {
                         int currState = item.StateImageIndex;
-                        if (currState == (int)abbFoundType.netSaveConn) {
+                        if (currState == (int)abbStatus.found.netSaveConn) {
                             //visible robots move to network groups
                             item.Group = listViewRobots.Groups["robotsGroupNet"];
-                            item.StateImageIndex = (int)abbFoundType.net;
-                        } else if (currState == (int)abbFoundType.simSaveConn) {
+                            item.StateImageIndex = (int)abbStatus.found.net;
+                        } else if (currState == (int)abbStatus.found.simSaveConn) {
                             //visible robots move to virtual groups
                             item.Group = listViewRobots.Groups["robotsGroupSim"];
-                            item.StateImageIndex = (int)abbFoundType.sim;
+                            item.StateImageIndex = (int)abbStatus.found.sim;
                         } else {
                             //delete non-visible robots
                             this.listViewRobots.Items.Remove(item);
@@ -379,7 +381,7 @@ namespace abbTools
                             ListViewItem listItem = new ListViewItem(xmlRead.GetAttribute("name"));
                             listItem.Group = listViewRobots.Groups["robotsGroupSaved"];
                             //check if controller is real or virtual
-                            bool simController = Int16.Parse(xmlRead.GetAttribute("type")) >= (int)abbFoundType.sim;
+                            bool simController = Int16.Parse(xmlRead.GetAttribute("type")) >= (int)abbStatus.found.sim;
                             //check if controller is visible and adjust icon
                             int listController = findController(listItem.Text, simController);
                             if (listController != -1) {
@@ -406,7 +408,7 @@ namespace abbTools
         private bool sameController(ListViewItem listedRobot, ControllerInfo abbRobot)
         {
             bool sameName = listedRobot.Text == abbRobot.Name;
-            bool sameType = abbRobot.IsVirtual && listedRobot.StateImageIndex>=(int)abbFoundType.sim;
+            bool sameType = abbRobot.IsVirtual && listedRobot.StateImageIndex>=(int)abbStatus.found.sim;
             
             return sameName && sameType;
         }
@@ -414,7 +416,7 @@ namespace abbTools
         private bool sameController(ListViewItem listedRobot, string robotName, bool robotSim)
         {
             bool sameName = listedRobot.Text == robotName;
-            bool sameType = robotSim && listedRobot.StateImageIndex >= (int)abbFoundType.sim;
+            bool sameType = robotSim && listedRobot.StateImageIndex >= (int)abbStatus.found.sim;
 
             return sameName && sameType;
         }
@@ -426,8 +428,8 @@ namespace abbTools
             foreach (ListViewItem item in this.listViewRobots.Items) {
                 //match controller names
                 if (item.Text == robotName) {
-                    bool simCondition = robotSim == true && item.StateImageIndex >= (int)abbFoundType.sim;
-                    bool netCondition = robotSim == false && item.StateImageIndex < (int)abbFoundType.sim;
+                    bool simCondition = robotSim == true && item.StateImageIndex >= (int)abbStatus.found.sim;
+                    bool netCondition = robotSim == false && item.StateImageIndex < (int)abbStatus.found.sim;
                     if (simCondition || netCondition) {
                         //if robot was found then is no need to search further
                         result = index;
@@ -454,36 +456,31 @@ namespace abbTools
                         abbConn = null;
                     }
                     //show status conn status and process messages 
-                    statusTextBox.Text = "controller " + cName + ": connecting...";
-                    statusTextBox.Select(11, cName.Length);
-                    statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connecting...");
                     Application.DoEvents();
                     //create controller and log in
                     abbConn = ControllerFactory.CreateFrom(controller);
                     abbConn.Logon(UserInfo.DefaultUser);
                     if (abbConn.Connected) {
                         //output
-                        result = 1;
+                        result = (int)abbStatus.conn.connOK;
                         //update status
-                        statusTextBox.Text = "controller " + cName + ": connected!";
-                        statusTextBox.Select(11, cName.Length);
-                        statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
-                    } 
+                        status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connected!");
+                    } else {
+                        //output
+                        result = (int)abbStatus.conn.disconn;
+                    }
                 } else {
                     //output
-                    result = 0;
+                    result = (int)abbStatus.conn.notAvailable;
                     //update status
-                    statusTextBox.Text = "controller " + cName + ": not available!";
-                    statusTextBox.Select(11, cName.Length);
-                    statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: not available!");
                 }
             } else {
                 //output
-                result = -1;
+                result = (int)abbStatus.conn.notVisible;
                 //update status
-                statusTextBox.Text = "controller " + cName  + ": not visible in network!";
-                statusTextBox.Select(11, cName.Length);
-                statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: not visible in network!");
             }
 
             return result;
@@ -512,10 +509,8 @@ namespace abbTools
                         abbConn.Dispose();
                         abbConn = null;
                     }
-                    //show status conn status and process messages 
-                    statusTextBox.Text = "controller " + cName + ": disconnected!";
-                    statusTextBox.Select(11, cName.Length);
-                    statusTextBox.SelectionFont = new Font(statusTextBox.Font, FontStyle.Bold);
+                    //show disconn status and process messages 
+                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: disconnected!");
                 }
             }
             return result;
@@ -549,14 +544,14 @@ namespace abbTools
                 ListViewItem item = listViewRobots.FocusedItem;
                 if (item != null && item.Group.Header == "saved") {
                     int currState = item.StateImageIndex;
-                    if (currState == (int)abbFoundType.netSaveConn) {
+                    if (currState == (int)abbStatus.found.netSaveConn) {
                         //visible robots move to network groups
                         item.Group = listViewRobots.Groups["robotsGroupNet"];
-                        item.StateImageIndex = (int)abbFoundType.net;
-                    } else if (currState == (int)abbFoundType.simSaveConn) {
+                        item.StateImageIndex = (int)abbStatus.found.net;
+                    } else if (currState == (int)abbStatus.found.simSaveConn) {
                         //visible robots move to virtual groups
                         item.Group = listViewRobots.Groups["robotsGroupSim"];
-                        item.StateImageIndex = (int)abbFoundType.sim;
+                        item.StateImageIndex = (int)abbStatus.found.sim;
                     } else {
                         //delete non-visible robots
                         this.listViewRobots.Items.Remove(item);
@@ -569,7 +564,7 @@ namespace abbTools
         {
             //connect to selected controller
             int connStatus = connectController(listViewRobots.FocusedItem);
-            if (connStatus == 1) {
+            if (connStatus == (int)abbStatus.conn.connOK) {
                 //show connected icon
                 SignalCollection signals = abbConn.IOSystem.GetSignals(IOFilterTypes.All);
             }
@@ -580,7 +575,7 @@ namespace abbTools
         {
             //connect to selected controller
             int connStatus = connectController(listViewRobots.FocusedItem);
-            if (connStatus == 1) {
+            if (connStatus == (int)abbStatus.conn.connOK) {
                 //show connected icon
                 SignalCollection signals = abbConn.IOSystem.GetSignals(IOFilterTypes.All);
             }
