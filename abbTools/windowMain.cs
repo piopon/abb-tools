@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using ABB.Robotics;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.Discovery;
-using ABB.Robotics.Controllers.IOSystemDomain;
+
 using ABB.Robotics.Controllers.RapidDomain;
 
 namespace abbTools
@@ -125,6 +125,7 @@ namespace abbTools
             //update app run-up time
             status = new loggerABB(statusTextBox,true);
             status.appendLog("<u>[ start "+DateTime.Now.ToString()+ " ]</u>");
+            appRemotePC.syncLogger(status);
             //load saved robots to list view
             listViewRobots.Items.Clear();
             loadMyRobots("");
@@ -566,7 +567,9 @@ namespace abbTools
             int connStatus = connectController(listViewRobots.FocusedItem);
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //show connected icon
-                SignalCollection signals = abbConn.IOSystem.GetSignals(IOFilterTypes.All);
+
+                //send controller address to other classes
+                appRemotePC.syncController(abbConn);
             }
 
         }
@@ -577,7 +580,9 @@ namespace abbTools
             int connStatus = connectController(listViewRobots.FocusedItem);
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //show connected icon
-                SignalCollection signals = abbConn.IOSystem.GetSignals(IOFilterTypes.All);
+
+                //send controller address to other classes
+                appRemotePC.syncController(abbConn);
             }
         }
 

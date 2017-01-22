@@ -30,13 +30,13 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(windowMain));
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "ABBtrack",
             "127.0.0.1"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
             "robot 3",
             "255.255.255.255"}, -1);
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
@@ -58,7 +58,7 @@
             this.customizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelMainMenu = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
+            this.labelAppTitle = new System.Windows.Forms.Label();
             this.panelStatusBar = new System.Windows.Forms.Panel();
             this.statusTextBox = new System.Windows.Forms.RichTextBox();
             this.panelApp = new System.Windows.Forms.Panel();
@@ -79,6 +79,7 @@
             this.actionAutoFTPupload = new System.Windows.Forms.TabPage();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.openDialog = new System.Windows.Forms.OpenFileDialog();
+            this.appRemotePC = new abbTools.appRemoteABB();
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
@@ -90,6 +91,7 @@
             this.appContainer.SuspendLayout();
             this.robotListQMenu.SuspendLayout();
             this.tabActions.SuspendLayout();
+            this.actionRemotePC.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -280,7 +282,7 @@
             // panelMainMenu
             // 
             this.panelMainMenu.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelMainMenu.Controls.Add(this.label1);
+            this.panelMainMenu.Controls.Add(this.labelAppTitle);
             this.panelMainMenu.Controls.Add(this.menuBar);
             this.panelMainMenu.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelMainMenu.ForeColor = System.Drawing.Color.Black;
@@ -291,21 +293,21 @@
             this.panelMainMenu.Size = new System.Drawing.Size(1010, 65);
             this.panelMainMenu.TabIndex = 2;
             // 
-            // label1
+            // labelAppTitle
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.labelAppTitle.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.Color.DarkOrange;
-            this.label1.Enabled = false;
-            this.label1.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label1.ForeColor = System.Drawing.Color.Black;
-            this.label1.Location = new System.Drawing.Point(466, 22);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(62, 17);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "abbTools";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelAppTitle.AutoSize = true;
+            this.labelAppTitle.BackColor = System.Drawing.Color.DarkOrange;
+            this.labelAppTitle.Enabled = false;
+            this.labelAppTitle.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelAppTitle.ForeColor = System.Drawing.Color.Black;
+            this.labelAppTitle.Location = new System.Drawing.Point(466, 22);
+            this.labelAppTitle.Name = "labelAppTitle";
+            this.labelAppTitle.Size = new System.Drawing.Size(62, 17);
+            this.labelAppTitle.TabIndex = 1;
+            this.labelAppTitle.Text = "abbTools";
+            this.labelAppTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // panelStatusBar
             // 
@@ -334,7 +336,7 @@
             this.statusTextBox.ReadOnly = true;
             this.statusTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
             this.statusTextBox.ShortcutsEnabled = false;
-            this.statusTextBox.Size = new System.Drawing.Size(458, 24);
+            this.statusTextBox.Size = new System.Drawing.Size(727, 24);
             this.statusTextBox.TabIndex = 1;
             this.statusTextBox.TabStop = false;
             this.statusTextBox.Text = "abbTools: app running  ";
@@ -403,27 +405,27 @@
             this.robotGroupColIP});
             this.listViewRobots.ContextMenuStrip = this.robotListQMenu;
             this.listViewRobots.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            listViewGroup4.Header = "network";
-            listViewGroup4.Name = "robotsGroupNet";
-            listViewGroup5.Header = "virtual";
-            listViewGroup5.Name = "robotsGroupSim";
-            listViewGroup6.Header = "saved";
-            listViewGroup6.Name = "robotsGroupSaved";
+            listViewGroup1.Header = "network";
+            listViewGroup1.Name = "robotsGroupNet";
+            listViewGroup2.Header = "virtual";
+            listViewGroup2.Name = "robotsGroupSim";
+            listViewGroup3.Header = "saved";
+            listViewGroup3.Name = "robotsGroupSaved";
             this.listViewRobots.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup4,
-            listViewGroup5,
-            listViewGroup6});
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3});
             this.listViewRobots.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewRobots.HideSelection = false;
-            listViewItem3.Checked = true;
-            listViewItem3.Group = listViewGroup6;
-            listViewItem3.StateImageIndex = 3;
-            listViewItem4.Checked = true;
-            listViewItem4.Group = listViewGroup6;
-            listViewItem4.StateImageIndex = 3;
+            listViewItem1.Checked = true;
+            listViewItem1.Group = listViewGroup3;
+            listViewItem1.StateImageIndex = 3;
+            listViewItem2.Checked = true;
+            listViewItem2.Group = listViewGroup3;
+            listViewItem2.StateImageIndex = 3;
             this.listViewRobots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem3,
-            listViewItem4});
+            listViewItem1,
+            listViewItem2});
             this.listViewRobots.Location = new System.Drawing.Point(12, 12);
             this.listViewRobots.Margin = new System.Windows.Forms.Padding(0);
             this.listViewRobots.MultiSelect = false;
@@ -509,11 +511,11 @@
             this.tabActions.Controls.Add(this.actionRemotePC);
             this.tabActions.Controls.Add(this.actionAutoFTPupload);
             this.tabActions.ItemSize = new System.Drawing.Size(80, 23);
-            this.tabActions.Location = new System.Drawing.Point(2, 12);
+            this.tabActions.Location = new System.Drawing.Point(1, 12);
             this.tabActions.Margin = new System.Windows.Forms.Padding(100);
             this.tabActions.Name = "tabActions";
             this.tabActions.SelectedIndex = 0;
-            this.tabActions.Size = new System.Drawing.Size(716, 588);
+            this.tabActions.Size = new System.Drawing.Size(718, 588);
             this.tabActions.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabActions.TabIndex = 0;
             // 
@@ -524,17 +526,18 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(708, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(710, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
             // actionRemotePC
             // 
             this.actionRemotePC.BackColor = System.Drawing.Color.White;
+            this.actionRemotePC.Controls.Add(this.appRemotePC);
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
+            this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Padding = new System.Windows.Forms.Padding(3);
-            this.actionRemotePC.Size = new System.Drawing.Size(708, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(710, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
             // 
@@ -544,7 +547,7 @@
             this.actionAutoFTPupload.Location = new System.Drawing.Point(4, 27);
             this.actionAutoFTPupload.Name = "actionAutoFTPupload";
             this.actionAutoFTPupload.Padding = new System.Windows.Forms.Padding(3);
-            this.actionAutoFTPupload.Size = new System.Drawing.Size(708, 557);
+            this.actionAutoFTPupload.Size = new System.Drawing.Size(710, 557);
             this.actionAutoFTPupload.TabIndex = 1;
             this.actionAutoFTPupload.Text = "uploadFTP";
             // 
@@ -558,6 +561,16 @@
             this.openDialog.DefaultExt = "*.xml";
             this.openDialog.FileName = "openDialog";
             this.openDialog.Filter = "XML file|*.xml|All files|*.*";
+            // 
+            // appRemotePC
+            // 
+            this.appRemotePC.BackColor = System.Drawing.Color.Transparent;
+            this.appRemotePC.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.appRemotePC.Location = new System.Drawing.Point(0, 0);
+            this.appRemotePC.Margin = new System.Windows.Forms.Padding(0);
+            this.appRemotePC.Name = "appRemotePC";
+            this.appRemotePC.Size = new System.Drawing.Size(710, 557);
+            this.appRemotePC.TabIndex = 0;
             // 
             // windowMain
             // 
@@ -591,6 +604,7 @@
             this.appContainer.ResumeLayout(false);
             this.robotListQMenu.ResumeLayout(false);
             this.tabActions.ResumeLayout(false);
+            this.actionRemotePC.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -617,7 +631,7 @@
         private System.Windows.Forms.Panel panelMainMenu;
         private System.Windows.Forms.Panel panelStatusBar;
         private System.Windows.Forms.Panel panelApp;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label labelAppTitle;
         private System.Windows.Forms.ListView listViewRobots;
         private System.Windows.Forms.ColumnHeader robotGroupColName;
         private System.Windows.Forms.ColumnHeader robotGroupColIP;
@@ -637,6 +651,7 @@
         private System.Windows.Forms.RichTextBox statusTextBox;
         private System.Windows.Forms.ToolStripMenuItem disconnectToolStripMenuItem;
         private System.Windows.Forms.TabPage actionDashboard;
+        private appRemoteABB appRemotePC;
     }
 }
 

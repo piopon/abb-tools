@@ -71,6 +71,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="appRemoteABB.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="appRemoteABB.Designer.cs">
+      <DependentUpon>appRemoteABB.cs</DependentUpon>
+    </Compile>
     <Compile Include="commonABB.cs" />
     <Compile Include="loggerABB.cs" />
     <Compile Include="windowAbout.cs">
@@ -87,6 +93,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="appRemoteABB.resx">
+      <DependentUpon>appRemoteABB.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="windowAbout.resx">
       <DependentUpon>windowAbout.cs</DependentUpon>
     </EmbeddedResource>
