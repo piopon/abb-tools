@@ -342,6 +342,7 @@ namespace abbTools
                         xmlFile.WriteAttributeString("name", listViewRobots.Items[i].SubItems[0].Text);
                         xmlFile.WriteAttributeString("IP", listViewRobots.Items[i].SubItems[1].Text);
                         xmlFile.WriteAttributeString("type", listViewRobots.Items[i].StateImageIndex.ToString());
+                        appRemotePC.saveAppData(xmlFile);
                         xmlFile.WriteEndElement();
                     }
                 }
@@ -398,6 +399,8 @@ namespace abbTools
                             listItem.SubItems.Add(xmlRead.GetAttribute("IP"));
                             //add curent item to list
                             this.listViewRobots.Items.Add(listItem);
+                            //load apps data
+                            appRemotePC.loadAppData(xmlRead);
                         }
                     }
                 }
@@ -444,7 +447,7 @@ namespace abbTools
 
         private int connectController(ListViewItem listController)
         {
-            int result = -1;
+            int result = (int)abbStatus.conn.notAvailable;
             string cName = listController.Text;
 
             if (listController != null && listController.Tag != null) {
@@ -469,7 +472,7 @@ namespace abbTools
                         status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connected!");
                     } else {
                         //output
-                        result = (int)abbStatus.conn.disconn;
+                        result = (int)abbStatus.conn.disconnOK;
                     }
                 } else {
                     //output
@@ -498,7 +501,7 @@ namespace abbTools
 
         private int disconnectController(ListViewItem listController)
         {
-            int result = -1;
+            int result = (int)abbStatus.conn.notAvailable;
             string cName = listController.Text;
 
             if (listController != null && listController.Tag != null) {
@@ -510,8 +513,13 @@ namespace abbTools
                         abbConn.Dispose();
                         abbConn = null;
                     }
+                    result = (int)abbStatus.conn.disconnOK;
                     //show disconn status and process messages 
                     status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: disconnected!");
+                } else {
+                    result = (int)abbStatus.conn.notAvailable;
+                    //show disconn status and process messages 
+                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: not available!");
                 }
             }
             return result;
@@ -580,8 +588,8 @@ namespace abbTools
             int connStatus = connectController(listViewRobots.FocusedItem);
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //show connected icon
-
-                //send controller address to other classes
+                
+                //send controller address to my programs
                 appRemotePC.syncController(abbConn);
             }
         }
@@ -590,6 +598,10 @@ namespace abbTools
         {
             //disconnect from selected controller
             int disconnStatus = disconnectController(listViewRobots.FocusedItem);
+            if (disconnStatus == (int)abbStatus.conn.disconnOK) {
+                //clear controller address in my programs
+                appRemotePC.desyncController();
+            }
         }
 
         private void exitToolStripMenuItem2_Click(object sender, EventArgs e)

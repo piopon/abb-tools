@@ -14,7 +14,7 @@
     {
         notVisible = -2,
         notAvailable = -1,
-        disconn = 0,
+        disconnOK = 0,
         connOK = 1
     };
 }

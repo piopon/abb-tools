@@ -37,9 +37,12 @@
             this.watchHeaderApp = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.buttonActionsNew = new System.Windows.Forms.Button();
             this.groupRemoteSignals = new System.Windows.Forms.GroupBox();
+            this.panelLoading = new System.Windows.Forms.Panel();
+            this.labelLoadSignals = new System.Windows.Forms.Label();
             this.buttonUpdateSignals = new System.Windows.Forms.Button();
             this.listRobotSignals = new System.Windows.Forms.CheckedListBox();
             this.groupRemoteActions = new System.Windows.Forms.GroupBox();
+            this.buttonEditModifier = new System.Windows.Forms.Button();
             this.radioChangeTo1 = new System.Windows.Forms.RadioButton();
             this.labelActionActor = new System.Windows.Forms.Label();
             this.radioChangeTo0 = new System.Windows.Forms.RadioButton();
@@ -52,14 +55,11 @@
             this.pcAppLocation = new System.Windows.Forms.OpenFileDialog();
             this.buttonActionsRemove = new System.Windows.Forms.Button();
             this.backThread = new System.ComponentModel.BackgroundWorker();
-            this.panelLoading = new System.Windows.Forms.Panel();
-            this.labelLoadSignals = new System.Windows.Forms.Label();
-            this.buttonEditModifier = new System.Windows.Forms.Button();
             this.groupRemoteWatching.SuspendLayout();
             this.groupRemoteSignals.SuspendLayout();
+            this.panelLoading.SuspendLayout();
             this.groupRemoteActions.SuspendLayout();
             this.groupRemoteApp.SuspendLayout();
-            this.panelLoading.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonActionsModify
@@ -109,6 +109,7 @@
             this.listActionsWatch.MultiSelect = false;
             this.listActionsWatch.Name = "listActionsWatch";
             this.listActionsWatch.ShowGroups = false;
+            this.listActionsWatch.ShowItemToolTips = true;
             this.listActionsWatch.Size = new System.Drawing.Size(730, 146);
             this.listActionsWatch.TabIndex = 0;
             this.listActionsWatch.UseCompatibleStateImageBehavior = false;
@@ -164,6 +165,27 @@
             this.groupRemoteSignals.TabStop = false;
             this.groupRemoteSignals.Text = " SIGNALS  ";
             // 
+            // panelLoading
+            // 
+            this.panelLoading.BackColor = System.Drawing.Color.Gold;
+            this.panelLoading.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelLoading.Controls.Add(this.labelLoadSignals);
+            this.panelLoading.Location = new System.Drawing.Point(37, 98);
+            this.panelLoading.Name = "panelLoading";
+            this.panelLoading.Size = new System.Drawing.Size(200, 162);
+            this.panelLoading.TabIndex = 7;
+            // 
+            // labelLoadSignals
+            // 
+            this.labelLoadSignals.BackColor = System.Drawing.Color.Transparent;
+            this.labelLoadSignals.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelLoadSignals.Location = new System.Drawing.Point(0, 0);
+            this.labelLoadSignals.Name = "labelLoadSignals";
+            this.labelLoadSignals.Size = new System.Drawing.Size(198, 160);
+            this.labelLoadSignals.TabIndex = 0;
+            this.labelLoadSignals.Text = "update signals...";
+            this.labelLoadSignals.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // buttonUpdateSignals
             // 
             this.buttonUpdateSignals.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -177,7 +199,7 @@
             // 
             // listRobotSignals
             // 
-            this.listRobotSignals.BackColor = System.Drawing.Color.White;
+            this.listRobotSignals.BackColor = System.Drawing.Color.Silver;
             this.listRobotSignals.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.listRobotSignals.FormattingEnabled = true;
             this.listRobotSignals.Location = new System.Drawing.Point(18, 60);
@@ -201,6 +223,18 @@
             this.groupRemoteActions.TabIndex = 13;
             this.groupRemoteActions.TabStop = false;
             this.groupRemoteActions.Text = " ACTION  ";
+            // 
+            // buttonEditModifier
+            // 
+            this.buttonEditModifier.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.buttonEditModifier.Location = new System.Drawing.Point(226, 83);
+            this.buttonEditModifier.Name = "buttonEditModifier";
+            this.buttonEditModifier.Size = new System.Drawing.Size(74, 23);
+            this.buttonEditModifier.TabIndex = 8;
+            this.buttonEditModifier.Text = "edit...";
+            this.buttonEditModifier.UseVisualStyleBackColor = true;
+            this.buttonEditModifier.Visible = false;
+            this.buttonEditModifier.Click += new System.EventHandler(this.buttonEditModifier_Click);
             // 
             // radioChangeTo1
             // 
@@ -343,38 +377,6 @@
             this.backThread.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backThread_ProgressChanged);
             this.backThread.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backThread_RunWorkerCompleted);
             // 
-            // panelLoading
-            // 
-            this.panelLoading.BackColor = System.Drawing.Color.DarkOrange;
-            this.panelLoading.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelLoading.Controls.Add(this.labelLoadSignals);
-            this.panelLoading.Location = new System.Drawing.Point(37, 98);
-            this.panelLoading.Name = "panelLoading";
-            this.panelLoading.Size = new System.Drawing.Size(200, 162);
-            this.panelLoading.TabIndex = 7;
-            this.panelLoading.Visible = false;
-            // 
-            // labelLoadSignals
-            // 
-            this.labelLoadSignals.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labelLoadSignals.Location = new System.Drawing.Point(0, 0);
-            this.labelLoadSignals.Name = "labelLoadSignals";
-            this.labelLoadSignals.Size = new System.Drawing.Size(198, 160);
-            this.labelLoadSignals.TabIndex = 0;
-            this.labelLoadSignals.Text = "reading signals...";
-            this.labelLoadSignals.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // buttonEditModifier
-            // 
-            this.buttonEditModifier.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.buttonEditModifier.Location = new System.Drawing.Point(226, 83);
-            this.buttonEditModifier.Name = "buttonEditModifier";
-            this.buttonEditModifier.Size = new System.Drawing.Size(74, 23);
-            this.buttonEditModifier.TabIndex = 8;
-            this.buttonEditModifier.Text = "edit...";
-            this.buttonEditModifier.UseVisualStyleBackColor = true;
-            this.buttonEditModifier.Visible = false;
-            // 
             // appRemoteABB
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -392,11 +394,11 @@
             this.Size = new System.Drawing.Size(807, 565);
             this.groupRemoteWatching.ResumeLayout(false);
             this.groupRemoteSignals.ResumeLayout(false);
+            this.panelLoading.ResumeLayout(false);
             this.groupRemoteActions.ResumeLayout(false);
             this.groupRemoteActions.PerformLayout();
             this.groupRemoteApp.ResumeLayout(false);
             this.groupRemoteApp.PerformLayout();
-            this.panelLoading.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

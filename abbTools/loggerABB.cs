@@ -67,28 +67,33 @@ namespace abbTools
                     int[] tagPos = findFormatTags(text);
                     int tagCount = tagPos != null ? tagPos.Count() : 0, tagWidth;
                     //formatted string is supported by RichTextBox (parent)
-                    if (parentClass == "RichTextBox" && tagCount > 0) {
-                        //check tags and remeber them if ok
-                        string[] tags = getCharTags(text, tagPos);
-                        if (tags != null && tags.Count() > 0) {
-                            //cast to rich text box 
-                            RichTextBox owner = (RichTextBox)parent;
-                            //remove tags from text and implement format
-                            for (int i = 0; i < tagCount; i++) {
-                                tagWidth = i < tagCount / 2 ? tags[i].Length+2 : tags[i].Length+3;
-                                text = text.Remove(tagPos[i], tagWidth);
-                                for (int j = i + 1; j < tagCount; j++) tagPos[j] -= tagWidth;
-                            }
-                            //na koniec wypisz ostateczny tekst
-                            owner.Text = text;
-                            //apply format from tags
-                            for (int i = 0; i < tagCount/2; i++) {
-                                owner.Select(tagPos[i], tagPos[i+1] - tagPos[i]);
-                                owner.SelectionFont = new Font(owner.Font, stringToFontStyle(tags[i]));
+                    if (parentClass == "RichTextBox") {
+                        if (tagCount > 0) {
+                            //check tags and remeber them if ok
+                            string[] tags = getCharTags(text, tagPos);
+                            if (tags != null && tags.Count() > 0) {
+                                //cast to rich text box 
+                                RichTextBox owner = (RichTextBox)parent;
+                                //remove tags from text and implement format
+                                for (int i = 0; i < tagCount; i++) {
+                                    tagWidth = i < tagCount / 2 ? tags[i].Length + 2 : tags[i].Length + 3;
+                                    text = text.Remove(tagPos[i], tagWidth);
+                                    for (int j = i + 1; j < tagCount; j++) tagPos[j] -= tagWidth;
+                                }
+                                //na koniec wypisz ostateczny tekst
+                                owner.Text = text;
+                                //apply format from tags
+                                for (int i = 0; i < tagCount / 2; i++) {
+                                    owner.Select(tagPos[i], tagPos[i + 1] - tagPos[i]);
+                                    owner.SelectionFont = new Font(owner.Font, stringToFontStyle(tags[i]));
+                                }
+                            } else {
+                                //formatting is wrong
+                                parent.Text = text + "   [ !!! ERROR: bad tags !!! ] ";
                             }
                         } else {
-                            //formatting is wrong
-                            parent.Text = text + "   [ !!! ERROR: bad tags !!! ] ";
+                            //no tags included in text
+                            parent.Text = text;
                         }
                     } else {
                         //parent is incompatible to format text

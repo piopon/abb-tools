@@ -85,6 +85,12 @@
     <Compile Include="windowAbout.Designer.cs">
       <DependentUpon>windowAbout.cs</DependentUpon>
     </Compile>
+    <Compile Include="windowInput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="windowInput.Designer.cs">
+      <DependentUpon>windowInput.cs</DependentUpon>
+    </Compile>
     <Compile Include="windowMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -98,6 +104,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="windowAbout.resx">
       <DependentUpon>windowAbout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="windowInput.resx">
+      <DependentUpon>windowInput.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="windowMain.resx">
       <DependentUpon>windowMain.cs</DependentUpon>
