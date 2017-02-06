@@ -1,22 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.IO;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel;
 using System.Windows.Forms;
-using ABB.Robotics;
+using System.Xml;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.Discovery;
-
-using ABB.Robotics.Controllers.RapidDomain;
 
 namespace abbTools
 {
     public partial class windowMain : Form
     {
+        //application settings
+        private windowSettings appSettings = null;
         //global variables
         public bool isDragged = false;
         private int mouseX, mouseY;
@@ -31,6 +27,30 @@ namespace abbTools
         public windowMain()
         {
             InitializeComponent();
+            //to catch unhandled exceptions triggered by in the app domain
+            AppDomain abbDomain = AppDomain.CurrentDomain;
+            abbDomain.UnhandledException += abbToolsUnhandledException;
+            //to catch unhandled exceptions on background threads
+            Application.ThreadException += abbToolsThreadException;
+            //load application settings
+            appSettings = new windowSettings();
+            appSettings.loadData();
+            //try to send welcome mail
+            sendMail(abbStatus.mail.openApp);
+        }
+
+        private void abbToolsThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+        {
+            //send e-mail that app is closed
+            sendMail(abbStatus.mail.exception);
+            Close();
+        }
+
+        private void abbToolsUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            //send e-mail that app is closed
+            sendMail(abbStatus.mail.exception);
+            Close();
         }
 
         private void mainWindow_Resize(object sender, EventArgs e)
@@ -50,33 +70,31 @@ namespace abbTools
                 notifyIcon.ContextMenuStrip.Show(Cursor.Position);
             } else {
                 //reopen window
-                this.Show();
-                this.WindowState = FormWindowState.Normal;
+                Show();
+                WindowState = FormWindowState.Normal;
             }
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //save settings
+            appSettings.saveData();
+            //send e-mail that app is closed
+            sendMail(abbStatus.mail.closeApp);
             //terminate app
-            this.Close();
+            Close();
         }
 
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //reopen window
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
-        }
-
-        private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            //terminate app
-            this.Close();
+            Show();
+            WindowState = FormWindowState.Normal;
         }
 
         private void minimizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.WindowState = FormWindowState.Minimized;
+            WindowState = FormWindowState.Minimized;
         }
 
         private void menuBar_MouseUp(object sender, MouseEventArgs e)
@@ -85,7 +103,7 @@ namespace abbTools
         }
 
         private void menuBar_MouseDown(object sender, MouseEventArgs e)
-        {           
+        {
             if (e.Button == MouseButtons.Left) {
                 isDragged = true;
                 mouseX = e.X;
@@ -97,10 +115,10 @@ namespace abbTools
         {
             if (isDragged) {
                 Point curr = new Point();
-                curr.X = this.Location.X + (e.X - mouseX);
-                curr.Y = this.Location.Y + (e.Y - mouseY);
+                curr.X = Location.X + (e.X - mouseX);
+                curr.Y = Location.Y + (e.Y - mouseY);
                 //update form position
-                this.Location = curr;
+                Location = curr;
             }
         }
 
@@ -112,8 +130,8 @@ namespace abbTools
             helpWindow.ShowInTaskbar = false;
             //position in center of main form
             helpWindow.StartPosition = FormStartPosition.Manual;
-            helpWindow.Top = this.Top + (this.Height - helpWindow.Height) / 2;
-            helpWindow.Left = this.Left + (this.Width - helpWindow.Width) / 2; ;
+            helpWindow.Top = Top + (Height - helpWindow.Height) / 2;
+            helpWindow.Left = Left + (Width - helpWindow.Width) / 2; ;
             //show form
             helpWindow.ShowDialog();
         }
@@ -123,22 +141,22 @@ namespace abbTools
             int foundSavedController = -1;
 
             //update app run-up time
-            status = new loggerABB(statusTextBox,true);
-            status.appendLog("<u>[ start "+DateTime.Now.ToString()+ " ]</u>");
+            status = new loggerABB(statusTextBox, true);
+            status.appendLog("<u>[ start " + DateTime.Now.ToString() + " ]</u>");
             appRemotePC.syncLogger(status);
             //load saved robots to list view
             listViewRobots.Items.Clear();
-            loadMyRobots("");
+            loadMyRobots(appSettings.getProjPath());
             //scan for abb controllers in network
-            this.abbScanner = new NetworkScanner();
-            this.abbScanner.Scan();
+            abbScanner = new NetworkScanner();
+            abbScanner.Scan();
             ControllerInfoCollection networkControllers = abbScanner.Controllers;
             ListViewItem currItem = null;
             foreach (ControllerInfo controllerInfo in networkControllers) {
                 //check if found controler is in saved group
                 foundSavedController = 0;
-                foreach (ListViewItem item in this.listViewRobots.Items) {
-                    if (sameController(item,controllerInfo) && item.Group.Header == "saved") break;
+                foreach (ListViewItem item in listViewRobots.Items) {
+                    if (sameController(item, controllerInfo) && item.Group.Header == "saved") break;
                     foundSavedController++;
                 }
                 if (foundSavedController < listViewRobots.Items.Count) {
@@ -151,8 +169,8 @@ namespace abbTools
                     //check if controller is real or virtual
                     if (controllerInfo.IsVirtual) {
                         currItem.Group = listViewRobots.Groups["robotsGroupSim"];
-                        
-                        currItem.StateImageIndex = (int)abbStatus.found.sim; 
+
+                        currItem.StateImageIndex = (int)abbStatus.found.sim;
                     } else {
                         currItem.Group = listViewRobots.Groups["robotsGroupNet"];
                         currItem.StateImageIndex = (int)abbStatus.found.net;
@@ -160,30 +178,30 @@ namespace abbTools
                     //add second column value =  IP address 
                     currItem.SubItems.Add(controllerInfo.IPAddress.ToString());
                     //add curent item to list
-                    this.listViewRobots.Items.Add(currItem);
+                    listViewRobots.Items.Add(currItem);
                     currItem.Tag = controllerInfo;
                 }
             }
             //add network watcher to see if something changes in network
-            this.abbWatcher = new NetworkWatcher(abbScanner.Controllers,true);
-            this.abbWatcher.Found += abbWatcherFoundEvent;
-            this.abbWatcher.Lost += abbWatcherLostEvent;
+            abbWatcher = new NetworkWatcher(abbScanner.Controllers, true);
+            abbWatcher.Found += abbWatcherFoundEvent;
+            abbWatcher.Lost += abbWatcherLostEvent;
         }
 
         private void abbWatcherLostEvent(object sender, NetworkWatcherEventArgs e)
         {
-            this.Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
+            Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
         }
 
         private void abbWatcherFoundEvent(object sender, NetworkWatcherEventArgs e)
         {
-            this.Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
+            Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
         }
 
         private void windowMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            this.abbWatcher.Found -= abbWatcherFoundEvent;
-            this.abbWatcher.Lost -= abbWatcherLostEvent;
+            abbWatcher.Found -= abbWatcherFoundEvent;
+            abbWatcher.Lost -= abbWatcherLostEvent;
             //disconnect from controller (if connected)
             if (abbConn != null) {
                 abbConn.Logoff();
@@ -194,7 +212,7 @@ namespace abbTools
 
         private void robotListQMenu_Opening(object sender, CancelEventArgs e)
         {
-            if (listViewRobots.SelectedItems.Count > 0){
+            if (listViewRobots.SelectedItems.Count > 0) {
                 /***** CONNECT/DISCONNECT FROM CONTROLLER *****/
                 if (abbConn == null) {
                     //no controller connected - disconect menu not visible
@@ -232,9 +250,9 @@ namespace abbTools
             ControllerInfo eventController = e.Controller;
             //check if event controler is in saved group
             int foundSavedController = 0;
-            foreach (ListViewItem item in this.listViewRobots.Items) {
+            foreach (ListViewItem item in listViewRobots.Items) {
                 //if current event controller was saved then break loop
-                if (sameController(item,eventController) && item.Group.Header == "saved") break;
+                if (sameController(item, eventController) && item.Group.Header == "saved") break;
                 foundSavedController++;
             }
             //check if controller was found or lost
@@ -245,6 +263,8 @@ namespace abbTools
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
                     updItem.StateImageIndex -= 1;
                     updItem.Tag = eventController;
+                    //update apps data
+                    appsControllerFound(ControllerFactory.CreateFrom(eventController));
                 } else {
                     //controller is not saved - add to list                    
                     ListViewItem updItem = new ListViewItem(eventController.Name);
@@ -262,24 +282,27 @@ namespace abbTools
                 }
             } else {
                 //lost controller - check if it was connected
-                if (eventController.Name == abbConn.SystemName) {
+                if (abbConn != null && eventController.Name == abbConn.SystemName) {
                     abbConn.Logoff();
                     abbConn.Dispose();
                     abbConn = null;
                     //show disconn status and process messages 
                     status.writeLog(logType.info, "controller <bu>" + eventController.Name + "</bu>: disconnected!");
                 }
-                //check if saved controller was in saved group
+                //check if controller was in saved group
                 if (foundSavedController < listViewRobots.Items.Count) {
                     //controller lost in saved group - update its icon to red
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
                     updItem.StateImageIndex += 1;
                     updItem.Tag = null;
-                } else {
+                    //update apps data
+                    appsControllerLost(ControllerFactory.CreateFrom(eventController));
+                }
+                else {
                     //remove from list (wasnt in saved group)
-                    foreach (ListViewItem item in this.listViewRobots.Items) {
+                    foreach (ListViewItem item in listViewRobots.Items) {
                         if ((ControllerInfo)item.Tag == eventController) {
-                            this.listViewRobots.Items.Remove(item);
+                            listViewRobots.Items.Remove(item);
                             break;
                         }
                     }
@@ -325,95 +348,117 @@ namespace abbTools
             saveMyRobots(saveDialog.FileName);
         }
 
+        private Controller itemToController(ListViewItem item)
+        {
+            Controller result = null;
+            if (item.Tag != null) result = ControllerFactory.CreateFrom((ControllerInfo)item.Tag);
+            return result;
+        }
+
         private void saveMyRobots(string filePath)
         {
             //check if path is correct
             if (filePath != "") {
-                //xml settings to create indents in file
-                System.Xml.XmlWriterSettings xmlSettings = new System.Xml.XmlWriterSettings();
-                xmlSettings.Indent = true;
-                //instance of xmlFile
-                System.Xml.XmlWriter xmlFile = System.Xml.XmlWriter.Create(filePath, xmlSettings);
-                xmlFile.WriteStartElement("myRobots");
-                //save all robots from list (only from saved group)
-                for (int i = 0; i < listViewRobots.Items.Count; i++) {
-                    if (listViewRobots.Items[i].Group == listViewRobots.Groups[2]) {
-                        xmlFile.WriteStartElement("robot_" + i.ToString());
-                        xmlFile.WriteAttributeString("name", listViewRobots.Items[i].SubItems[0].Text);
-                        xmlFile.WriteAttributeString("IP", listViewRobots.Items[i].SubItems[1].Text);
-                        xmlFile.WriteAttributeString("type", listViewRobots.Items[i].StateImageIndex.ToString());
-                        appRemotePC.saveAppData(xmlFile);
-                        xmlFile.WriteEndElement();
+                try {
+                    //xml settings to create indents in file
+                    XmlWriterSettings xmlSettings = new XmlWriterSettings();
+                    xmlSettings.Indent = true;
+                    //instance of xmlFile
+                    XmlWriter xmlFile = XmlWriter.Create(filePath, xmlSettings);
+                    xmlFile.WriteStartElement("myRobots");
+                    //save all robots from list (only from saved group)
+                    for (int i = 0; i < listViewRobots.Items.Count; i++) {
+                        if (listViewRobots.Items[i].Group == listViewRobots.Groups[2]) {
+                            string robotName = listViewRobots.Items[i].SubItems[0].Text;
+                            xmlFile.WriteStartElement("robot_" + i.ToString());
+                            xmlFile.WriteAttributeString("name", robotName);
+                            xmlFile.WriteAttributeString("IP", listViewRobots.Items[i].SubItems[1].Text);
+                            xmlFile.WriteAttributeString("type", listViewRobots.Items[i].StateImageIndex.ToString());
+                            //save user applications data (needs Controller object)
+                            appsSaveData(ref xmlFile, itemToController(listViewRobots.Items[i]), robotName);
+                            //end element
+                            xmlFile.WriteEndElement();
+                        }
                     }
+                    //close up file
+                    xmlFile.WriteEndElement();
+                    xmlFile.Close();
+                    status.writeLog(logType.error, "File saved (only robots from saved group)!");
+                } catch (XmlException) {
+                    status.writeLog(logType.error, "Error while saving to XML...");
                 }
-                //close up file
-                xmlFile.WriteEndElement();
-                xmlFile.Close();
             }
         }
 
         private void loadMyRobots(string filePath)
         {
             //check if path is correct
-            if (filePath != "") {
-                //move/delete robots from saved group
-                foreach (ListViewItem item in this.listViewRobots.Items) {
-                    if (item.Group.Header == "saved") {
-                        int currState = item.StateImageIndex;
-                        if (currState == (int)abbStatus.found.netSaveConn) {
-                            //visible robots move to network groups
-                            item.Group = listViewRobots.Groups["robotsGroupNet"];
-                            item.StateImageIndex = (int)abbStatus.found.net;
-                        } else if (currState == (int)abbStatus.found.simSaveConn) {
-                            //visible robots move to virtual groups
-                            item.Group = listViewRobots.Groups["robotsGroupSim"];
-                            item.StateImageIndex = (int)abbStatus.found.sim;
-                        } else {
-                            //delete non-visible robots
-                            this.listViewRobots.Items.Remove(item);
-                        }
-                    }
-                }
-                //create instance of xml to read
-                System.Xml.XmlReader xmlRead = System.Xml.XmlReader.Create(filePath);
-                while (xmlRead.Read()) {
-                    //read every node from XML document
-                    if ((xmlRead.NodeType == System.Xml.XmlNodeType.Element) && (xmlRead.Name.StartsWith("robot_"))) {
-                        if (xmlRead.HasAttributes) {
-                            ListViewItem listItem = new ListViewItem(xmlRead.GetAttribute("name"));
-                            listItem.Group = listViewRobots.Groups["robotsGroupSaved"];
-                            //check if controller is real or virtual
-                            bool simController = Int16.Parse(xmlRead.GetAttribute("type")) >= (int)abbStatus.found.sim;
-                            //check if controller is visible and adjust icon
-                            int listController = findController(listItem.Text, simController);
-                            if (listController != -1) {
-                                //controller visible - delete it from network group and set grenn icon
-                                listItem.Tag = listViewRobots.Items[listController].Tag;
-                                listViewRobots.Items.RemoveAt(listController);
-                                listItem.StateImageIndex = 1 + Convert.ToInt16(simController) * 3;
+            if (filePath != "" && File.Exists(filePath)) {
+                try {
+                    //move/delete robots from saved group
+                    foreach (ListViewItem item in this.listViewRobots.Items) {
+                        if (item.Group.Header == "saved") {
+                            int currState = item.StateImageIndex;
+                            if (currState == (int)abbStatus.found.netSaveConn) {
+                                //visible robots move to network groups
+                                item.Group = listViewRobots.Groups["robotsGroupNet"];
+                                item.StateImageIndex = (int)abbStatus.found.net;
+                            } else if (currState == (int)abbStatus.found.simSaveConn) {
+                                //visible robots move to virtual groups
+                                item.Group = listViewRobots.Groups["robotsGroupSim"];
+                                item.StateImageIndex = (int)abbStatus.found.sim;
                             } else {
-                                //real controller - set icon
-                                listItem.StateImageIndex = 2 + Convert.ToInt16(simController) * 3;
-                            }                           
-                            //add second column value =  IP address 
-                            listItem.SubItems.Add(xmlRead.GetAttribute("IP"));
-                            //add curent item to list
-                            this.listViewRobots.Items.Add(listItem);
-                            //load apps data
-                            appRemotePC.loadAppData(xmlRead);
+                                //delete non-visible robots
+                                listViewRobots.Items.Remove(item);
+                            }
                         }
                     }
+                    //clear application data
+                    appsClearData();
+                    //create instance of xml to read
+                    XmlReader xmlRead = XmlReader.Create(filePath);
+                    while (xmlRead.Read()) {
+                        //read every node from XML document
+                        if ((xmlRead.NodeType == XmlNodeType.Element) && (xmlRead.Name.StartsWith("robot_"))) {
+                            if (xmlRead.HasAttributes) {
+                                string robotName = xmlRead.GetAttribute("name");
+                                ListViewItem listItem = new ListViewItem(robotName);
+                                listItem.Group = listViewRobots.Groups["robotsGroupSaved"];
+                                //check if controller is real or virtual
+                                bool simController = short.Parse(xmlRead.GetAttribute("type")) >= (int)abbStatus.found.sim;
+                                //check if controller is visible and adjust icon
+                                int listController = findController(listItem.Text, simController);
+                                if (listController != -1) {
+                                    //controller visible - delete it from network group and set green icon
+                                    listItem.Tag = listViewRobots.Items[listController].Tag;
+                                    listViewRobots.Items.RemoveAt(listController);
+                                    listItem.StateImageIndex = 1 + Convert.ToInt16(simController) * 3;
+                                } else {
+                                    //controller not visible - set red icon (real or sim)
+                                    listItem.StateImageIndex = 2 + Convert.ToInt16(simController) * 3;
+                                }
+                                //add second column value =  IP address 
+                                listItem.SubItems.Add(xmlRead.GetAttribute("IP"));
+                                //add curent item to list
+                                listViewRobots.Items.Add(listItem);
+                                //load apps data
+                                appsLoadData(ref xmlRead, itemToController(listItem), robotName);
+                            }
+                        }
+                    }
+                    //close up file
+                    xmlRead.Close();
+                } catch (XmlException) {
+                    status.writeLog(logType.error, "Loaded file isn't XML or it's damaged...");
                 }
-                //close up file
-                xmlRead.Close();
             }
         }
 
         private bool sameController(ListViewItem listedRobot, ControllerInfo abbRobot)
         {
             bool sameName = listedRobot.Text == abbRobot.Name;
-            bool sameType = abbRobot.IsVirtual && listedRobot.StateImageIndex>=(int)abbStatus.found.sim;
-            
+            bool sameType = abbRobot.IsVirtual && listedRobot.StateImageIndex >= (int)abbStatus.found.sim;
+
             return sameName && sameType;
         }
 
@@ -588,7 +633,7 @@ namespace abbTools
             int connStatus = connectController(listViewRobots.FocusedItem);
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //show connected icon
-                
+
                 //send controller address to my programs
                 appRemotePC.syncController(abbConn);
             }
@@ -604,9 +649,47 @@ namespace abbTools
             }
         }
 
-        private void exitToolStripMenuItem2_Click(object sender, EventArgs e)
+        private void toolsToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            this.Close();
+            appSettings.ShowDialog();
+        }
+
+        private void sendMail(abbStatus.mail mailType)
+        {
+            //check if sending e-mail is active
+            if (appSettings.getMailStatus(mailType))
+            {
+
+            }
+        }
+
+        /********************************************************
+         ***  USER APPS - add your apps operations here
+         ********************************************************/
+
+        private void appsClearData()
+        {
+            appRemotePC.clearAppData();
+        }
+
+        private void appsLoadData(ref XmlReader myXML, Controller myController, string cName = "")
+        { 
+            appRemotePC.loadAppData(ref myXML, myController, cName);
+        }
+
+        private void appsSaveData(ref XmlWriter myXML, Controller myController, string cName = "")
+        {
+            appRemotePC.saveAppData(ref myXML, myController, cName);
+        }
+
+        private void appsControllerFound(Controller foundController)
+        {
+            appRemotePC.controllerFound(foundController);
+        }
+
+        private void appsControllerLost(Controller lostController)
+        {
+            appRemotePC.controllerLost(lostController);
         }
     }
 }

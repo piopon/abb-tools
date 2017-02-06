@@ -33,7 +33,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>_bin\Debug\</OutputPath>
+    <BaseIntermediateOutputPath>_obj\</BaseIntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -42,7 +43,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>_bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -71,12 +72,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="appRemoteABB.cs">
+    <Compile Include="appRemoteABB\appRemoteABB.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="appRemoteABB.Designer.cs">
+    <Compile Include="appRemoteABB\appRemoteABB.Designer.cs">
       <DependentUpon>appRemoteABB.cs</DependentUpon>
     </Compile>
+    <Compile Include="appRemoteABB\RemoteABB.cs" />
+    <Compile Include="appRemoteABB\RemoteAction.cs" />
+    <Compile Include="appRemoteABB\RemoteSignal.cs" />
     <Compile Include="commonABB.cs" />
     <Compile Include="loggerABB.cs" />
     <Compile Include="windowAbout.cs">
@@ -99,7 +103,13 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="appRemoteABB.resx">
+    <Compile Include="windowSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="windowSettings.Designer.cs">
+      <DependentUpon>windowSettings.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="appRemoteABB\appRemoteABB.resx">
       <DependentUpon>appRemoteABB.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="windowAbout.resx">
@@ -121,6 +131,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="windowSettings.resx">
+      <DependentUpon>windowSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -133,9 +146,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="img\file_icon.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">

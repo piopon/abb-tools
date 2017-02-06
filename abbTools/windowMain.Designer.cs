@@ -55,8 +55,6 @@
             this.minimizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.customizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panelMainMenu = new System.Windows.Forms.Panel();
             this.labelAppTitle = new System.Windows.Forms.Label();
             this.panelStatusBar = new System.Windows.Forms.Panel();
@@ -217,7 +215,7 @@
             this.exitToolStripMenuItem2.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
             this.exitToolStripMenuItem2.Size = new System.Drawing.Size(280, 28);
             this.exitToolStripMenuItem2.Text = "E&xit";
-            this.exitToolStripMenuItem2.Click += new System.EventHandler(this.exitToolStripMenuItem2_Click);
+            this.exitToolStripMenuItem2.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem1
             // 
@@ -233,7 +231,7 @@
             this.exitToolStripMenuItem1.Padding = new System.Windows.Forms.Padding(2);
             this.exitToolStripMenuItem1.Size = new System.Drawing.Size(58, 58);
             this.exitToolStripMenuItem1.Text = " exit";
-            this.exitToolStripMenuItem1.Click += new System.EventHandler(this.exitToolStripMenuItem1_Click);
+            this.exitToolStripMenuItem1.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // minimizeToolStripMenuItem
             // 
@@ -259,25 +257,11 @@
             // toolsToolStripMenuItem1
             // 
             this.toolsToolStripMenuItem1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolsToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.customizeToolStripMenuItem,
-            this.optionsToolStripMenuItem});
             this.toolsToolStripMenuItem1.Image = global::abbTools.Properties.Resources.mainMenu_settings;
             this.toolsToolStripMenuItem1.Name = "toolsToolStripMenuItem1";
             this.toolsToolStripMenuItem1.Size = new System.Drawing.Size(62, 60);
             this.toolsToolStripMenuItem1.Text = "&Tools";
-            // 
-            // customizeToolStripMenuItem
-            // 
-            this.customizeToolStripMenuItem.Name = "customizeToolStripMenuItem";
-            this.customizeToolStripMenuItem.Size = new System.Drawing.Size(170, 28);
-            this.customizeToolStripMenuItem.Text = "&Customize";
-            // 
-            // optionsToolStripMenuItem
-            // 
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(170, 28);
-            this.optionsToolStripMenuItem.Text = "&Options";
+            this.toolsToolStripMenuItem1.Click += new System.EventHandler(this.toolsToolStripMenuItem1_Click);
             // 
             // panelMainMenu
             // 
@@ -515,7 +499,7 @@
             this.tabActions.Margin = new System.Windows.Forms.Padding(100);
             this.tabActions.Name = "tabActions";
             this.tabActions.SelectedIndex = 0;
-            this.tabActions.Size = new System.Drawing.Size(718, 588);
+            this.tabActions.Size = new System.Drawing.Size(724, 588);
             this.tabActions.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabActions.TabIndex = 0;
             // 
@@ -526,7 +510,7 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(710, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(716, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
@@ -537,7 +521,7 @@
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
             this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(710, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(716, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
             // 
@@ -547,7 +531,7 @@
             this.actionAutoFTPupload.Location = new System.Drawing.Point(4, 27);
             this.actionAutoFTPupload.Name = "actionAutoFTPupload";
             this.actionAutoFTPupload.Padding = new System.Windows.Forms.Padding(3);
-            this.actionAutoFTPupload.Size = new System.Drawing.Size(710, 557);
+            this.actionAutoFTPupload.Size = new System.Drawing.Size(716, 557);
             this.actionAutoFTPupload.TabIndex = 1;
             this.actionAutoFTPupload.Text = "uploadFTP";
             // 
@@ -569,7 +553,7 @@
             this.appRemotePC.Location = new System.Drawing.Point(0, 0);
             this.appRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.appRemotePC.Name = "appRemotePC";
-            this.appRemotePC.Size = new System.Drawing.Size(710, 557);
+            this.appRemotePC.Size = new System.Drawing.Size(716, 557);
             this.appRemotePC.TabIndex = 0;
             // 
             // windowMain
@@ -623,8 +607,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem customizeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem minimizeToolStripMenuItem;
