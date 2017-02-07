@@ -55,6 +55,10 @@
   <PropertyGroup>
     <StartupObject>abbTools.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <Win32Resource>
+    </Win32Resource>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ABB.Robotics.Controllers.PC">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\ABB Industrial IT\Robotics IT\SDK\PCSDK 5.61\ABB.Robotics.Controllers.PC.dll</HintPath>
@@ -72,66 +76,66 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="appRemoteABB\appRemoteABB.cs">
+    <Compile Include="AppRemoteABB\appRemoteABB.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="appRemoteABB\appRemoteABB.Designer.cs">
+    <Compile Include="AppRemoteABB\appRemoteABB.Designer.cs">
       <DependentUpon>appRemoteABB.cs</DependentUpon>
     </Compile>
-    <Compile Include="appRemoteABB\RemoteABB.cs" />
-    <Compile Include="appRemoteABB\RemoteAction.cs" />
-    <Compile Include="appRemoteABB\RemoteSignal.cs" />
-    <Compile Include="commonABB.cs" />
-    <Compile Include="loggerABB.cs" />
-    <Compile Include="windowAbout.cs">
+    <Compile Include="AppRemoteABB\RemoteABB.cs" />
+    <Compile Include="AppRemoteABB\RemoteAction.cs" />
+    <Compile Include="AppRemoteABB\RemoteSignal.cs" />
+    <Compile Include="Shared\commonABB.cs" />
+    <Compile Include="Shared\loggerABB.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\windowAbout.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="windowAbout.Designer.cs">
+    <Compile Include="Windows\windowAbout.Designer.cs">
       <DependentUpon>windowAbout.cs</DependentUpon>
     </Compile>
-    <Compile Include="windowInput.cs">
+    <Compile Include="Windows\windowInput.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="windowInput.Designer.cs">
+    <Compile Include="Windows\windowInput.Designer.cs">
       <DependentUpon>windowInput.cs</DependentUpon>
     </Compile>
-    <Compile Include="windowMain.cs">
+    <Compile Include="Windows\windowMain.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="windowMain.Designer.cs">
+    <Compile Include="Windows\windowMain.Designer.cs">
       <DependentUpon>windowMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="windowSettings.cs">
+    <Compile Include="Windows\windowSettings.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="windowSettings.Designer.cs">
+    <Compile Include="Windows\windowSettings.Designer.cs">
       <DependentUpon>windowSettings.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="appRemoteABB\appRemoteABB.resx">
+    <EmbeddedResource Include="AppRemoteABB\appRemoteABB.resx">
       <DependentUpon>appRemoteABB.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="windowAbout.resx">
+    <EmbeddedResource Include="Windows\windowAbout.resx">
       <DependentUpon>windowAbout.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="windowInput.resx">
+    <EmbeddedResource Include="Windows\windowInput.resx">
       <DependentUpon>windowInput.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="windowMain.resx">
+    <EmbeddedResource Include="Windows\windowMain.resx">
       <DependentUpon>windowMain.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <EmbeddedResource Include="windowSettings.resx">
+    <EmbeddedResource Include="Windows\windowSettings.resx">
       <DependentUpon>windowSettings.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
@@ -160,14 +164,16 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\img\windowMain_back.png" />
+    <None Include="Resources\img\mainMenu_abb.png" />
+    <None Include="Resources\img\mainMenu_exit.png" />
+    <None Include="Resources\img\mainMenu_minimize.png" />
+    <None Include="Resources\img\mainMenu_info.png" />
+    <None Include="Resources\img\mainMenu_settings.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="appIcon.ico" />
-    <None Include="img\windowAbout_back.jpg" />
-    <None Include="img\mainMenu_exit.png" />
-    <None Include="img\mainMenu_minimize.png" />
-    <None Include="img\mainMenu_info.png" />
-    <None Include="img\mainMenu_settings.png" />
-    <None Include="img\mainMenu_abb.png" />
-    <None Include="img\windowMain_back.png" />
+    <None Include="Resources\img\windowAbout_back.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
