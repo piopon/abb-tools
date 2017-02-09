@@ -124,7 +124,10 @@ namespace appRemoteABB
 
         public void modify(Signal updSig, string updTrig, string updRes, string updMod, string updApp)
         {
-            if (signal.Name != updSig.Name) signal = updSig;
+            if (signal.Name != updSig.Name) {
+                signal = updSig;
+                storedSignalName = signal.Name;
+            }
             if (myTrigger != actionToTrigger(updTrig)) myTrigger = actionToTrigger(updTrig);
             //modify RemoteAction component
             action.modify(updRes, updMod, updApp);

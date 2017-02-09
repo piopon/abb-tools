@@ -160,21 +160,21 @@ namespace abbTools
                     foundSavedController++;
                 }
                 if (foundSavedController < listViewRobots.Items.Count) {
-                    //controller exists in saved group - update its icon to green
+                    //controller exists in saved group - update its icon to blue
                     currItem = listViewRobots.Items[foundSavedController];
-                    currItem.StateImageIndex -= 1;
+                    updateIcon(listViewRobots.Items[foundSavedController], abbStatus.conn.available);
                 } else {
                     //controller doesnt exist in saved group - add it
                     currItem = new ListViewItem(controllerInfo.Name);
                     //check if controller is real or virtual
                     if (controllerInfo.IsVirtual) {
                         currItem.Group = listViewRobots.Groups["robotsGroupSim"];
-
                         currItem.StateImageIndex = (int)abbStatus.found.sim;
                     } else {
                         currItem.Group = listViewRobots.Groups["robotsGroupNet"];
                         currItem.StateImageIndex = (int)abbStatus.found.net;
                     }
+                    updateIcon(currItem, abbStatus.conn.available);
                     //add second column value =  IP address 
                     currItem.SubItems.Add(controllerInfo.IPAddress.ToString());
                     //add curent item to list
@@ -259,9 +259,9 @@ namespace abbTools
             if (e.Reason == ChangeReasons.New) {
                 //found controller - check if its saved
                 if (foundSavedController < listViewRobots.Items.Count) {
-                    //controller exists in saved group - update its icon to green
+                    //controller exists in saved group - update its icon to available
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
-                    updItem.StateImageIndex -= 1;
+                    updateIcon(updItem, abbStatus.conn.available);
                     updItem.Tag = eventController;
                     //update apps data
                     appsControllerFound(ControllerFactory.CreateFrom(eventController));
@@ -271,11 +271,10 @@ namespace abbTools
                     //check if controller is real or virtual
                     if (eventController.IsVirtual) {
                         updItem.Group = listViewRobots.Groups["robotsGroupSim"];
-                        updItem.StateImageIndex = (int)abbStatus.found.sim;
                     } else {
                         updItem.Group = listViewRobots.Groups["robotsGroupNet"];
-                        updItem.StateImageIndex = (int)abbStatus.found.net;
                     }
+                    updateIcon(updItem, abbStatus.conn.available);
                     updItem.SubItems.Add(eventController.IPAddress.ToString());
                     updItem.Tag = eventController;
                     this.listViewRobots.Items.Add(updItem);
@@ -293,7 +292,7 @@ namespace abbTools
                 if (foundSavedController < listViewRobots.Items.Count) {
                     //controller lost in saved group - update its icon to red
                     ListViewItem updItem = listViewRobots.Items[foundSavedController];
-                    updItem.StateImageIndex += 1;
+                    updateIcon(updItem, abbStatus.conn.notAvailable);
                     updItem.Tag = null;
                     //update apps data
                     appsControllerLost(ControllerFactory.CreateFrom(eventController));
@@ -312,17 +311,33 @@ namespace abbTools
 
         private void removeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //only saved controllers can be removed from list
             ListViewItem currItem = listViewRobots.SelectedItems[0];
+            //check if current element is virtual or real
+            bool simController = currItem.StateImageIndex >= (int)abbStatus.found.sim;
             //if removed controller exists in network then change it group
-            if (currItem.StateImageIndex == (int)abbStatus.found.netSaveConn) {
-                currItem.Group = listViewRobots.Groups[0];
-                currItem.StateImageIndex = (int)abbStatus.found.net;
-            } else if (currItem.StateImageIndex == (int)abbStatus.found.simSaveConn) {
-                currItem.Group = listViewRobots.Groups[1];
-                currItem.StateImageIndex = (int)abbStatus.found.sim;
+            if (simController) {
+                if (currItem.StateImageIndex == (int)abbStatus.found.simSaveAvail) {
+                    currItem.Group = listViewRobots.Groups[1];
+                    updateIcon(currItem, abbStatus.conn.available);
+                } else if (currItem.StateImageIndex == (int)abbStatus.found.simSaveConn) {
+                    currItem.Group = listViewRobots.Groups[1];
+                    updateIcon(currItem, abbStatus.conn.connOK);
+                } else {
+                    //robot not found - remove it from list
+                    listViewRobots.Items.Remove(currItem);
+                }
             } else {
-                //robot not found - remove it from list
-                listViewRobots.Items.Remove(currItem);
+                if (currItem.StateImageIndex == (int)abbStatus.found.netSaveAvail) {
+                    currItem.Group = listViewRobots.Groups[0];
+                    updateIcon(currItem, abbStatus.conn.available);
+                } else if (currItem.StateImageIndex == (int)abbStatus.found.netSaveConn) {
+                    currItem.Group = listViewRobots.Groups[0];
+                    updateIcon(currItem, abbStatus.conn.connOK);
+                } else {
+                    //robot not found - remove it from list
+                    listViewRobots.Items.Remove(currItem);
+                }
             }
             //sort updated elements
             listViewRobots.Sort();
@@ -334,7 +349,11 @@ namespace abbTools
             ListViewItem toSaveItem = listViewRobots.SelectedItems[0];
             //update GUI (move to saved group and change icon to connected!)
             toSaveItem.Group = listViewRobots.Groups[2];
-            toSaveItem.StateImageIndex += 1;
+            if (abbConn != null && abbConn.SystemName == toSaveItem.Text) {
+                updateIcon(toSaveItem, abbStatus.conn.connOK);
+            } else {
+                updateIcon(toSaveItem, abbStatus.conn.available);
+            }
             //sort updated elements
             listViewRobots.Sort();
         }
@@ -395,18 +414,20 @@ namespace abbTools
             //check if path is correct
             if (filePath != "" && File.Exists(filePath)) {
                 try {
+                    //disconnect from current controller
+                    disconnectController(ref abbConn);
                     //move/delete robots from saved group
                     foreach (ListViewItem item in this.listViewRobots.Items) {
                         if (item.Group.Header == "saved") {
                             int currState = item.StateImageIndex;
-                            if (currState == (int)abbStatus.found.netSaveConn) {
+                            if (currState == (int)abbStatus.found.netSaveConn || currState == (int)abbStatus.found.netSaveAvail) {
                                 //visible robots move to network groups
                                 item.Group = listViewRobots.Groups["robotsGroupNet"];
-                                item.StateImageIndex = (int)abbStatus.found.net;
-                            } else if (currState == (int)abbStatus.found.simSaveConn) {
+                                updateIcon(item, abbStatus.conn.available);
+                            } else if (currState == (int)abbStatus.found.simSaveConn || currState == (int)abbStatus.found.simSaveAvail) {
                                 //visible robots move to virtual groups
                                 item.Group = listViewRobots.Groups["robotsGroupSim"];
-                                item.StateImageIndex = (int)abbStatus.found.sim;
+                                updateIcon(item, abbStatus.conn.available);
                             } else {
                                 //delete non-visible robots
                                 listViewRobots.Items.Remove(item);
@@ -429,13 +450,13 @@ namespace abbTools
                                 //check if controller is visible and adjust icon
                                 int listController = findController(listItem.Text, simController);
                                 if (listController != -1) {
-                                    //controller visible - delete it from network group and set green icon
+                                    //controller visible - delete it from network group and set blue icon
                                     listItem.Tag = listViewRobots.Items[listController].Tag;
                                     listViewRobots.Items.RemoveAt(listController);
-                                    listItem.StateImageIndex = 1 + Convert.ToInt16(simController) * 3;
+                                    updateIcon(listItem, abbStatus.conn.available, Convert.ToInt16(simController));
                                 } else {
                                     //controller not visible - set red icon (real or sim)
-                                    listItem.StateImageIndex = 2 + Convert.ToInt16(simController) * 3;
+                                    updateIcon(listItem, abbStatus.conn.notAvailable, Convert.ToInt16(simController));
                                 }
                                 //add second column value =  IP address 
                                 listItem.SubItems.Add(xmlRead.GetAttribute("IP"));
@@ -489,6 +510,15 @@ namespace abbTools
             }
             return result;
         }
+        
+        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //show open dialog
+            openDialog.InitialDirectory = Application.StartupPath;
+            openDialog.ShowDialog();
+            //save elements to selected file
+            loadMyRobots(openDialog.FileName);
+        }
 
         private int connectController(ListViewItem listController)
         {
@@ -498,26 +528,24 @@ namespace abbTools
             if (listController != null && listController.Tag != null) {
                 ControllerInfo controller = (ControllerInfo)listController.Tag;
                 if (controller.Availability == Availability.Available) {
-                    //first disconnect from previous controller (if connected)
-                    if (abbConn != null) {
-                        abbConn.Logoff();
-                        abbConn.Dispose();
-                        abbConn = null;
-                    }
-                    //show status conn status and process messages 
-                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connecting...");
-                    Application.DoEvents();
-                    //create controller and log in
-                    abbConn = ControllerFactory.CreateFrom(controller);
-                    abbConn.Logon(UserInfo.DefaultUser);
-                    if (abbConn.Connected) {
-                        //output
-                        result = (int)abbStatus.conn.connOK;
-                        //update status
-                        status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connected!");
-                    } else {
-                        //output
-                        result = (int)abbStatus.conn.disconnOK;
+                    try {
+                        //first disconnect from previous controller (if connected)
+                        disconnectController(ref abbConn);
+                        //show status conn status and process messages 
+                        status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connecting...");
+                        Application.DoEvents();
+                        //create controller and log in
+                        abbConn = ControllerFactory.CreateFrom(controller);
+                        if (connectController(ref abbConn) == (int)abbStatus.conn.connOK) {
+                            //update status
+                            status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connected!");
+                        }
+                    } catch (ABB.Robotics.GenericControllerException e) {
+                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>:" +
+                                        e.Message+".. wait a while and try again.");
+                    } catch (System.Exception e) {
+                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>:" +
+                                        e.Message + ".. wait a while and try again.");
                     }
                 } else {
                     //output
@@ -535,13 +563,19 @@ namespace abbTools
             return result;
         }
 
-        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+        private int connectController(ref Controller selController)
         {
-            //show open dialog
-            openDialog.InitialDirectory = Application.StartupPath;
-            openDialog.ShowDialog();
-            //save elements to selected file
-            loadMyRobots(openDialog.FileName);
+            selController.Logon(UserInfo.DefaultUser);
+            if (selController.Connected) {
+                //update icon on list (first find which element)
+                int element = findController(selController.SystemName, selController.IsVirtual);
+                updateIcon(listViewRobots.Items[element], abbStatus.conn.connOK);
+                //output
+                return (int)abbStatus.conn.connOK;
+            } else {
+                //output
+                return (int)abbStatus.conn.disconnOK;
+            }
         }
 
         private int disconnectController(ListViewItem listController)
@@ -551,14 +585,9 @@ namespace abbTools
 
             if (listController != null && listController.Tag != null) {
                 ControllerInfo controller = (ControllerInfo)listController.Tag;
-                if (controller.Availability == Availability.Available) {
+                if (abbConn.SystemName == listController.Text && controller.Availability == Availability.Available) {
                     //disconnect from selected controller
-                    if (abbConn != null) {
-                        abbConn.Logoff();
-                        abbConn.Dispose();
-                        abbConn = null;
-                    }
-                    result = (int)abbStatus.conn.disconnOK;
+                    result = disconnectController(ref abbConn);
                     //show disconn status and process messages 
                     status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: disconnected!");
                 } else {
@@ -570,24 +599,55 @@ namespace abbTools
             return result;
         }
 
+        private int disconnectController(ref Controller selController)
+        {
+            //disconnect from selected controller
+            if (selController != null) {
+                //update icon on list (first find which element)
+                int element = findController(selController.SystemName, selController.IsVirtual);
+                updateIcon(listViewRobots.Items[element], abbStatus.conn.disconnOK);
+                //log off from controller
+                selController.Logoff();
+                selController.Dispose();
+                selController = null;
+            }
+            //return disconnect status
+            return (int)abbStatus.conn.disconnOK;
+        }
+
 
         private void btnRobotListCollapse_Click(object sender, EventArgs e)
         {
             //toggle panel collapse
             appContainer.Panel1Collapsed = !appContainer.Panel1Collapsed;
-            //
+            //check if panel is collapsed (then adjust GUI)
             if (appContainer.Panel1Collapsed) {
                 btnRobotListCollapse.Parent = appContainer.Panel2;
                 btnRobotListCollapse.Dock = DockStyle.Left;
                 btnRobotListCollapse.Text = ">>>";
                 tabActions.Location = new Point(42, 12);
                 tabActions.Width -= 40;
+                //if container is collapsed then center all views in tabs
+                foreach (TabPage page in tabActions.TabPages) {
+                    if (page.Controls.Count > 0) {
+                        Control child = page.Controls[0];
+                        child.Dock = DockStyle.None;
+                        child.Left = (tabActions.Width - child.Width) / 2;
+                    }
+                }
             } else {
                 btnRobotListCollapse.Parent = appContainer.Panel1;
                 btnRobotListCollapse.Dock = DockStyle.Right;
                 btnRobotListCollapse.Text = "<<<";
                 tabActions.Location = new Point(2, 12);
                 tabActions.Width += 40;
+                //if container is not collapsed then dock all views in tabs
+                foreach (TabPage page in tabActions.TabPages) {
+                    if (page.Controls.Count > 0) {
+                        Control child = page.Controls[0];
+                        child.Dock = DockStyle.Fill;
+                    }
+                }
             }
         }
 
@@ -619,8 +679,6 @@ namespace abbTools
             //connect to selected controller
             int connStatus = connectController(listViewRobots.FocusedItem);
             if (connStatus == (int)abbStatus.conn.connOK) {
-                //show connected icon
-
                 //send controller address to other classes
                 appRemotePC.syncController(abbConn);
             }
@@ -632,7 +690,6 @@ namespace abbTools
             //connect to selected controller
             int connStatus = connectController(listViewRobots.FocusedItem);
             if (connStatus == (int)abbStatus.conn.connOK) {
-                //show connected icon
 
                 //send controller address to my programs
                 appRemotePC.syncController(abbConn);
@@ -660,6 +717,48 @@ namespace abbTools
             if (appSettings.getMailStatus(mailType))
             {
 
+            }
+        }
+
+        private void updateIcon(ListViewItem cItem, abbStatus.conn newStatus, int overrideSim=-1)
+        {
+            int offset = -1;
+            //check if user specified if current item is sim or real
+            if (overrideSim >= 0) {
+                offset = overrideSim == 0 ? 0 : 4;
+            } else {
+                //check if selected item is virtual or real
+                if (cItem.StateImageIndex >= 0) {
+                    offset = Convert.ToInt16(cItem.StateImageIndex >= (int)abbStatus.found.sim) * 4;
+                } else {
+                    if (cItem.Group == listViewRobots.Groups["robotsGroupNet"]) {
+                        offset = 0;
+                    } else if (cItem.Group == listViewRobots.Groups["robotsGroupSim"]) {
+                        offset = 4;
+                    }
+                }
+            }
+            //check if input is ok
+            if (offset >= 0) {
+                //check new status
+                if (newStatus == abbStatus.conn.available) {
+                    if (cItem.Group.Header == "saved") {
+                        cItem.StateImageIndex = (int)abbStatus.found.netSaveAvail + offset;
+                    } else {
+                        cItem.StateImageIndex = (int)abbStatus.found.net + offset;
+                    }
+                } else if (newStatus == abbStatus.conn.connOK) {
+                    cItem.StateImageIndex = (int)abbStatus.found.netSaveConn + offset;
+                } else if (newStatus == abbStatus.conn.disconnOK) {
+                    if (cItem.Group.Header == "saved") {
+                        cItem.StateImageIndex = (int)abbStatus.found.netSaveAvail + offset;
+                    } else {
+                        cItem.StateImageIndex = (int)abbStatus.found.net + offset;
+                    }
+                } else if (newStatus == abbStatus.conn.notAvailable) {
+                    //only saved items can be visible on list and not available!
+                    cItem.StateImageIndex = (int)abbStatus.found.netSaveDiscon + offset;
+                }
             }
         }
 

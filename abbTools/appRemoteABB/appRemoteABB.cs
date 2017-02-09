@@ -391,6 +391,8 @@ namespace abbTools
         {
             if (lost != null) {
                 remoteABB.clearController(lost);
+                //reset GUI
+                if(abbController != null && lost.SystemName == abbController.SystemName) resetGUI();
             }
         }
     }

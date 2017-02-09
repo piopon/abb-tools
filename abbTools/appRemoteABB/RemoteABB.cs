@@ -127,7 +127,7 @@ namespace appRemoteABB
             foreach (RemoteABB cData in this) {
                 foreach (RemoteSignal cSig in cData.signals) {
                     //remove signal watcher event
-                    cSig.signal.Changed -= signalWatcher;
+                    if (cSig.signal != null) cSig.signal.Changed -= signalWatcher;
                 }
                 //clear all sig collection
                 cData.signals.clear();
@@ -194,7 +194,8 @@ namespace appRemoteABB
                 bool gotController = false;
                 foreach (RemoteABB cItem in this) {
                     result++;
-                    if (cItem.controller.SystemName == controllerName) {
+                    string cItemName = cItem.controller != null ? cItem.controller.SystemName : cItem.storedName;
+                    if (cItemName == controllerName) {
                         gotController = true;
                         break;
                     }
@@ -243,11 +244,21 @@ namespace appRemoteABB
                         //current element is empty (has only stored name)
                         if (selectData.storedName == newController.SystemName) {
                             //its the one to add so lets update its info (online now)
-                            selectData.controller = newController;
-                            foreach (RemoteSignal cSig in selectData.signals) {
-                                string storedSigName = cSig.storedSig;
-                                cSig.signal = newController.IOSystem.GetSignal(storedSigName);
-                                cSig.signal.Changed += signalWatcher;
+                            try {
+                                selectData.controller = newController;
+                                if (!selectData.controller.Connected) {
+                                    selectData.controller.Logoff();
+                                    selectData.controller.Logon(UserInfo.DefaultUser);
+                                }
+                                foreach (RemoteSignal cSig in selectData.signals) {
+                                    string storedSigName = cSig.storedSig;
+                                    cSig.signal = selectData.controller.IOSystem.GetSignal(storedSigName);
+                                    cSig.signal.Changed += signalWatcher;
+                                }
+                            } catch (ABB.Robotics.GenericControllerException e) {
+                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu>: "+e.Message); 
+                            } catch (System.Exception e) {
+                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu>: "+e.Message);
                             }
                         }
                     }
@@ -285,12 +296,15 @@ namespace appRemoteABB
                 //current element might be not visible (only stored info about it)
                 if (selectData.controller != null) {
                     if (selectData.controller.SystemName == toClear.SystemName) {
-                        //we found it - lets clear its controller data
-                        selectData.controller = null;
                         foreach (RemoteSignal cSig in selectData.signals) {
-                            cSig.signal.Changed -= signalWatcher;
-                            cSig.signal = null;
+                            if (cSig.signal != null) {
+                                cSig.signal.Changed -= signalWatcher;
+                                cSig.signal = null;
+                            }
                         }
+                        //we found it - lets clear its controller data
+                        selectData.controller.Logoff();
+                        selectData.controller = null;
                         break;
                     }
                 } else {

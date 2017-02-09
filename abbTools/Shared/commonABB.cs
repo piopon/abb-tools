@@ -3,11 +3,13 @@
     public enum found
     {
         net = 0,
-        netSaveConn = 1,
-        netSaveDiscon = 2,
-        sim = 3,
-        simSaveConn = 4,
-        simSaveDisconn = 5
+        netSaveAvail = 1,
+        netSaveConn = 2,
+        netSaveDiscon = 3,
+        sim = 4,
+        simSaveAvail = 5,
+        simSaveConn = 6,
+        simSaveDisconn = 7
     };
 
     public enum conn
@@ -15,7 +17,8 @@
         notVisible = -2,
         notAvailable = -1,
         disconnOK = 0,
-        connOK = 1
+        available = 1,
+        connOK = 2
     };
 
     public enum mail

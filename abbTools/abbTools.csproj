@@ -173,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="appIcon.ico" />
+    <None Include="Resources\img\sidebar.jpg" />
     <None Include="Resources\img\windowAbout_back.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
