@@ -93,6 +93,7 @@
             // 
             this.listActionsWatch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.listActionsWatch.BackColor = System.Drawing.Color.Silver;
             this.listActionsWatch.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.listActionsWatch.CheckBoxes = true;
             this.listActionsWatch.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {

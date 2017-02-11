@@ -282,11 +282,9 @@ namespace abbTools
             } else {
                 //lost controller - check if it was connected
                 if (abbConn != null && eventController.Name == abbConn.SystemName) {
-                    abbConn.Logoff();
-                    abbConn.Dispose();
-                    abbConn = null;
+                    disconnectController(ref abbConn);
                     //show disconn status and process messages 
-                    status.writeLog(logType.info, "controller <bu>" + eventController.Name + "</bu>: disconnected!");
+                    status.writeLog(logType.info, "controller <bu>" + eventController.Name + "</bu> disconnected!");
                 }
                 //check if controller was in saved group
                 if (foundSavedController < listViewRobots.Items.Count) {
@@ -532,32 +530,33 @@ namespace abbTools
                         //first disconnect from previous controller (if connected)
                         disconnectController(ref abbConn);
                         //show status conn status and process messages 
-                        status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connecting...");
+                        status.writeLog(logType.info, "controller <bu>" + cName + "</bu> connecting...");
                         Application.DoEvents();
                         //create controller and log in
                         abbConn = ControllerFactory.CreateFrom(controller);
-                        if (connectController(ref abbConn) == (int)abbStatus.conn.connOK) {
+                        result = connectController(ref abbConn);
+                        if (result == (int)abbStatus.conn.connOK) {
                             //update status
-                            status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: connected!");
+                            status.writeLog(logType.info, "controller <bu>" + cName + "</bu> connected!");
                         }
                     } catch (ABB.Robotics.GenericControllerException e) {
-                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>:" +
+                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>" +
                                         e.Message+".. wait a while and try again.");
                     } catch (System.Exception e) {
-                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>:" +
+                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>" +
                                         e.Message + ".. wait a while and try again.");
                     }
                 } else {
                     //output
                     result = (int)abbStatus.conn.notAvailable;
                     //update status
-                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: not available!");
+                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu> not available!");
                 }
             } else {
                 //output
                 result = (int)abbStatus.conn.notVisible;
                 //update status
-                status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: not visible in network!");
+                status.writeLog(logType.info, "controller <bu>" + cName + "</bu> not visible in network!");
             }
 
             return result;
@@ -570,6 +569,8 @@ namespace abbTools
                 //update icon on list (first find which element)
                 int element = findController(selController.SystemName, selController.IsVirtual);
                 updateIcon(listViewRobots.Items[element], abbStatus.conn.connOK);
+                //update conn label
+                labelConnControllerName.Text = "connected to: "+selController.SystemName;
                 //output
                 return (int)abbStatus.conn.connOK;
             } else {
@@ -589,11 +590,11 @@ namespace abbTools
                     //disconnect from selected controller
                     result = disconnectController(ref abbConn);
                     //show disconn status and process messages 
-                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: disconnected!");
+                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu> disconnected!");
                 } else {
                     result = (int)abbStatus.conn.notAvailable;
                     //show disconn status and process messages 
-                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu>: not available!");
+                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu> not available!");
                 }
             }
             return result;
@@ -611,6 +612,8 @@ namespace abbTools
                 selController.Dispose();
                 selController = null;
             }
+            //update conn label
+            labelConnControllerName.Text = "connected to: ---";
             //return disconnect status
             return (int)abbStatus.conn.disconnOK;
         }
@@ -690,7 +693,6 @@ namespace abbTools
             //connect to selected controller
             int connStatus = connectController(listViewRobots.FocusedItem);
             if (connStatus == (int)abbStatus.conn.connOK) {
-
                 //send controller address to my programs
                 appRemotePC.syncController(abbConn);
             }

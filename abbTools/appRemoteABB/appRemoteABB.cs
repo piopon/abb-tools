@@ -78,6 +78,7 @@ namespace abbTools
             abbController = myController;
             //add controller to remote collection
             remoteABB.addController(abbController);
+            listActionsWatch.BackColor = Color.White;
             remoteABB.fillWinFormControl(ref listActionsWatch);
         }
 
@@ -293,6 +294,7 @@ namespace abbTools
             labelLoadSignals.Text = "update signals...";
             //clear watch signal table
             listActionsWatch.Items.Clear();
+            listActionsWatch.BackColor = Color.Silver;
             //clear app label
             labelAppDir.Text = "- application directory -";
             //clear resultant selection

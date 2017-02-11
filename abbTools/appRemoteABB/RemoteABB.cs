@@ -244,6 +244,7 @@ namespace appRemoteABB
                         //current element is empty (has only stored name)
                         if (selectData.storedName == newController.SystemName) {
                             //its the one to add so lets update its info (online now)
+                            currData = selectData;
                             try {
                                 selectData.controller = newController;
                                 if (!selectData.controller.Connected) {
@@ -256,9 +257,11 @@ namespace appRemoteABB
                                     cSig.signal.Changed += signalWatcher;
                                 }
                             } catch (ABB.Robotics.GenericControllerException e) {
-                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu>: "+e.Message); 
+                                selectData.controller.ConnectionChanged += busyControllerConnChanged;
+                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu> "+e.Message.ToLower()+".. waiting for connection..."); 
                             } catch (System.Exception e) {
-                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu>: "+e.Message);
+                                selectData.controller.ConnectionChanged += busyControllerConnChanged;
+                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu> "+e.Message.ToLower()+".. waiting for connection...");
                             }
                         }
                     }
@@ -287,6 +290,34 @@ namespace appRemoteABB
             }
 
             return result;
+        }
+
+        private void busyControllerConnChanged(object sender, ConnectionChangedEventArgs e)
+        {
+            //this event was triggered by busy controller which has shown online
+            if (e.Connected) {
+                //we dont have access to controller which triggered this event
+                //so we have to find it manually - search all collection items
+                foreach (RemoteABB collectionItem in this) {
+                    //this event will only occur on existing controllers
+                    if (collectionItem.controller != null && collectionItem.controller.Connected) {
+                        //we found controller if signal doesnt exist
+                        if (collectionItem.signals[0].signal == null) {
+                            collectionItem.controller.Logon(UserInfo.DefaultUser);
+                            foreach (RemoteSignal cSig in collectionItem.signals) {
+                                string storedSigName = cSig.storedSig;
+                                cSig.signal = collectionItem.controller.IOSystem.GetSignal(storedSigName);
+                                cSig.signal.Changed += signalWatcher;
+                            }
+                            //remove event on changed connection status
+                            collectionItem.controller.ConnectionChanged -= busyControllerConnChanged;
+                            //log status
+                            collectionItem.log(logType.error, "controller <bu>" + collectionItem.controller.SystemName + "</bu> connected and updated!");
+                            break;
+                        }
+                    }
+                }                
+            }
         }
 
         public void clearController(Controller toClear)
