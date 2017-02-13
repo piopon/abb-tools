@@ -14,6 +14,8 @@ namespace abbTools
     public class loggerABB
     {
         //private components
+        private ImageList typeImgs;
+        private PictureBox img;
         private Control parent;
         private string parentClass;
         private bool checkTags;
@@ -28,9 +30,11 @@ namespace abbTools
             lastLine = "";
         }
 
-        public loggerABB(Control textDest, bool textFormatted)
+        public loggerABB(ImageList statusImgs, PictureBox imgDest, Control textDest, bool textFormatted)
         {
             checkTags = textFormatted;
+            img = imgDest;
+            typeImgs = statusImgs;
             parent = textDest;
             parentClass = textDest.GetType().Name;
             lastLine = textDest.Text;
@@ -39,20 +43,26 @@ namespace abbTools
         ~loggerABB()
         {
             parent = null;
+            typeImgs = null;
+            img = null;
             parentClass = "";
         }
 
-        public void setParent(Control textDest)
+        public void setParent(ImageList statusImgs, PictureBox imgDest, Control textDest)
         {
             checkTags = false;
+            img = imgDest;
+            typeImgs = statusImgs;
             parent = textDest;
             parentClass = textDest.GetType().Name;
             lastLine = textDest.Text;
         }
 
-        public void setParent(Control textDest, bool textFormatted)
+        public void setParent(ImageList statusImgs, PictureBox imgDest, Control textDest, bool textFormatted)
         {
             checkTags = textFormatted;
+            img = imgDest;
+            typeImgs = statusImgs;
             parent = textDest;
             parentClass = textDest.GetType().Name;
             lastLine = textDest.Text;
@@ -60,6 +70,12 @@ namespace abbTools
 
         public void writeLog(logType type,string text)
         {
+            //set img of log
+            if (img != null && typeImgs != null) {
+                img.Image = typeImgs.Images[(int)type];
+                Application.DoEvents();
+            }
+            //set texe of log
             if (parent != null) {
                 //check if we want to input formatted text
                 if (checkTags) {
@@ -87,6 +103,7 @@ namespace abbTools
                                     owner.Select(tagPos[i], tagPos[i + 1] - tagPos[i]);
                                     owner.SelectionFont = new Font(owner.Font, stringToFontStyle(tags[i]));
                                 }
+                                Application.DoEvents();
                             } else {
                                 //formatting is wrong
                                 parent.Text = text + "   [ !!! ERROR: bad tags !!! ] ";

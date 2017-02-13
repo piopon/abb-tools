@@ -30,13 +30,13 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(windowMain));
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "ABBtrack",
             "127.0.0.1"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
             "robot 3",
             "255.255.255.255"}, -1);
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
@@ -58,7 +58,11 @@
             this.panelMainMenu = new System.Windows.Forms.Panel();
             this.labelAppTitle = new System.Windows.Forms.Label();
             this.panelStatusBar = new System.Windows.Forms.Panel();
+            this.panelConnStatus = new System.Windows.Forms.Panel();
+            this.labelConnControllerName = new System.Windows.Forms.Label();
+            this.panelLogger = new System.Windows.Forms.Panel();
             this.statusTextBox = new System.Windows.Forms.RichTextBox();
+            this.pictureLogType = new System.Windows.Forms.PictureBox();
             this.panelApp = new System.Windows.Forms.Panel();
             this.appContainer = new System.Windows.Forms.SplitContainer();
             this.btnRobotListCollapse = new System.Windows.Forms.Button();
@@ -77,12 +81,15 @@
             this.actionBackupManager = new System.Windows.Forms.TabPage();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.openDialog = new System.Windows.Forms.OpenFileDialog();
-            this.labelConnControllerName = new System.Windows.Forms.Label();
+            this.imagesLogType = new System.Windows.Forms.ImageList(this.components);
             this.appRemotePC = new abbTools.appRemoteABB();
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
             this.panelStatusBar.SuspendLayout();
+            this.panelConnStatus.SuspendLayout();
+            this.panelLogger.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).BeginInit();
             this.panelApp.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.appContainer)).BeginInit();
             this.appContainer.Panel1.SuspendLayout();
@@ -298,14 +305,47 @@
             // 
             this.panelStatusBar.BackColor = System.Drawing.Color.Gray;
             this.panelStatusBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelStatusBar.Controls.Add(this.labelConnControllerName);
-            this.panelStatusBar.Controls.Add(this.statusTextBox);
+            this.panelStatusBar.Controls.Add(this.panelConnStatus);
+            this.panelStatusBar.Controls.Add(this.panelLogger);
             this.panelStatusBar.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panelStatusBar.Location = new System.Drawing.Point(0, 679);
             this.panelStatusBar.Name = "panelStatusBar";
-            this.panelStatusBar.Padding = new System.Windows.Forms.Padding(5, 4, 5, 0);
+            this.panelStatusBar.Padding = new System.Windows.Forms.Padding(5, 0, 5, 0);
             this.panelStatusBar.Size = new System.Drawing.Size(1010, 30);
             this.panelStatusBar.TabIndex = 3;
+            // 
+            // panelConnStatus
+            // 
+            this.panelConnStatus.Controls.Add(this.labelConnControllerName);
+            this.panelConnStatus.Dock = System.Windows.Forms.DockStyle.Right;
+            this.panelConnStatus.Location = new System.Drawing.Point(820, 0);
+            this.panelConnStatus.Name = "panelConnStatus";
+            this.panelConnStatus.Padding = new System.Windows.Forms.Padding(5, 5, 0, 5);
+            this.panelConnStatus.Size = new System.Drawing.Size(183, 28);
+            this.panelConnStatus.TabIndex = 5;
+            // 
+            // labelConnControllerName
+            // 
+            this.labelConnControllerName.BackColor = System.Drawing.Color.Transparent;
+            this.labelConnControllerName.Dock = System.Windows.Forms.DockStyle.Left;
+            this.labelConnControllerName.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelConnControllerName.ForeColor = System.Drawing.Color.DarkOrange;
+            this.labelConnControllerName.Location = new System.Drawing.Point(5, 5);
+            this.labelConnControllerName.Name = "labelConnControllerName";
+            this.labelConnControllerName.Size = new System.Drawing.Size(205, 18);
+            this.labelConnControllerName.TabIndex = 2;
+            this.labelConnControllerName.Text = "connected to: ---";
+            // 
+            // panelLogger
+            // 
+            this.panelLogger.Controls.Add(this.statusTextBox);
+            this.panelLogger.Controls.Add(this.pictureLogType);
+            this.panelLogger.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelLogger.Location = new System.Drawing.Point(5, 0);
+            this.panelLogger.Name = "panelLogger";
+            this.panelLogger.Padding = new System.Windows.Forms.Padding(5, 5, 0, 5);
+            this.panelLogger.Size = new System.Drawing.Size(809, 28);
+            this.panelLogger.TabIndex = 4;
             // 
             // statusTextBox
             // 
@@ -313,19 +353,31 @@
             this.statusTextBox.BackColor = System.Drawing.Color.Gray;
             this.statusTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.statusTextBox.Cursor = System.Windows.Forms.Cursors.Default;
-            this.statusTextBox.Dock = System.Windows.Forms.DockStyle.Left;
+            this.statusTextBox.Dock = System.Windows.Forms.DockStyle.Right;
             this.statusTextBox.Font = new System.Drawing.Font("GOST Common", 7.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.statusTextBox.ForeColor = System.Drawing.Color.White;
-            this.statusTextBox.Location = new System.Drawing.Point(5, 4);
+            this.statusTextBox.Location = new System.Drawing.Point(29, 5);
             this.statusTextBox.Multiline = false;
             this.statusTextBox.Name = "statusTextBox";
             this.statusTextBox.ReadOnly = true;
             this.statusTextBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
             this.statusTextBox.ShortcutsEnabled = false;
-            this.statusTextBox.Size = new System.Drawing.Size(742, 24);
+            this.statusTextBox.Size = new System.Drawing.Size(780, 18);
             this.statusTextBox.TabIndex = 1;
             this.statusTextBox.TabStop = false;
             this.statusTextBox.Text = "abbTools: app running  ";
+            // 
+            // pictureLogType
+            // 
+            this.pictureLogType.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureLogType.Dock = System.Windows.Forms.DockStyle.Left;
+            this.pictureLogType.ErrorImage = null;
+            this.pictureLogType.InitialImage = null;
+            this.pictureLogType.Location = new System.Drawing.Point(5, 5);
+            this.pictureLogType.Name = "pictureLogType";
+            this.pictureLogType.Size = new System.Drawing.Size(18, 18);
+            this.pictureLogType.TabIndex = 3;
+            this.pictureLogType.TabStop = false;
             // 
             // panelApp
             // 
@@ -391,27 +443,27 @@
             this.robotGroupColIP});
             this.listViewRobots.ContextMenuStrip = this.robotListQMenu;
             this.listViewRobots.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            listViewGroup4.Header = "network";
-            listViewGroup4.Name = "robotsGroupNet";
-            listViewGroup5.Header = "virtual";
-            listViewGroup5.Name = "robotsGroupSim";
-            listViewGroup6.Header = "saved";
-            listViewGroup6.Name = "robotsGroupSaved";
+            listViewGroup1.Header = "network";
+            listViewGroup1.Name = "robotsGroupNet";
+            listViewGroup2.Header = "virtual";
+            listViewGroup2.Name = "robotsGroupSim";
+            listViewGroup3.Header = "saved";
+            listViewGroup3.Name = "robotsGroupSaved";
             this.listViewRobots.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup4,
-            listViewGroup5,
-            listViewGroup6});
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3});
             this.listViewRobots.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewRobots.HideSelection = false;
-            listViewItem3.Checked = true;
-            listViewItem3.Group = listViewGroup6;
-            listViewItem3.StateImageIndex = 4;
-            listViewItem4.Checked = true;
-            listViewItem4.Group = listViewGroup6;
-            listViewItem4.StateImageIndex = 4;
+            listViewItem1.Checked = true;
+            listViewItem1.Group = listViewGroup3;
+            listViewItem1.StateImageIndex = 4;
+            listViewItem2.Checked = true;
+            listViewItem2.Group = listViewGroup3;
+            listViewItem2.StateImageIndex = 4;
             this.listViewRobots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem3,
-            listViewItem4});
+            listViewItem1,
+            listViewItem2});
             this.listViewRobots.Location = new System.Drawing.Point(12, 12);
             this.listViewRobots.Margin = new System.Windows.Forms.Padding(0);
             this.listViewRobots.MultiSelect = false;
@@ -503,7 +555,7 @@
             this.tabActions.Margin = new System.Windows.Forms.Padding(100);
             this.tabActions.Name = "tabActions";
             this.tabActions.SelectedIndex = 0;
-            this.tabActions.Size = new System.Drawing.Size(720, 588);
+            this.tabActions.Size = new System.Drawing.Size(716, 588);
             this.tabActions.TabIndex = 0;
             // 
             // actionDashboard
@@ -513,7 +565,7 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(712, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(708, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
@@ -526,7 +578,7 @@
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
             this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(712, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(718, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
             // 
@@ -536,7 +588,7 @@
             this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
             this.actionBackupManager.Name = "actionBackupManager";
             this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
-            this.actionBackupManager.Size = new System.Drawing.Size(712, 557);
+            this.actionBackupManager.Size = new System.Drawing.Size(718, 557);
             this.actionBackupManager.TabIndex = 1;
             this.actionBackupManager.Text = "backupManager";
             // 
@@ -551,17 +603,13 @@
             this.openDialog.FileName = "openDialog";
             this.openDialog.Filter = "XML file|*.xml|All files|*.*";
             // 
-            // labelConnControllerName
+            // imagesLogType
             // 
-            this.labelConnControllerName.BackColor = System.Drawing.Color.Transparent;
-            this.labelConnControllerName.Dock = System.Windows.Forms.DockStyle.Right;
-            this.labelConnControllerName.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelConnControllerName.ForeColor = System.Drawing.Color.DarkOrange;
-            this.labelConnControllerName.Location = new System.Drawing.Point(798, 4);
-            this.labelConnControllerName.Name = "labelConnControllerName";
-            this.labelConnControllerName.Size = new System.Drawing.Size(205, 24);
-            this.labelConnControllerName.TabIndex = 2;
-            this.labelConnControllerName.Text = "connected to: ---";
+            this.imagesLogType.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesLogType.ImageStream")));
+            this.imagesLogType.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesLogType.Images.SetKeyName(0, "log_info.png");
+            this.imagesLogType.Images.SetKeyName(1, "log_warning.png");
+            this.imagesLogType.Images.SetKeyName(2, "log_error.png");
             // 
             // appRemotePC
             // 
@@ -597,6 +645,9 @@
             this.panelMainMenu.ResumeLayout(false);
             this.panelMainMenu.PerformLayout();
             this.panelStatusBar.ResumeLayout(false);
+            this.panelConnStatus.ResumeLayout(false);
+            this.panelLogger.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).EndInit();
             this.panelApp.ResumeLayout(false);
             this.appContainer.Panel1.ResumeLayout(false);
             this.appContainer.Panel2.ResumeLayout(false);
@@ -651,6 +702,10 @@
         private System.Windows.Forms.TabPage actionDashboard;
         private appRemoteABB appRemotePC;
         private System.Windows.Forms.Label labelConnControllerName;
+        private System.Windows.Forms.Panel panelLogger;
+        private System.Windows.Forms.PictureBox pictureLogType;
+        private System.Windows.Forms.Panel panelConnStatus;
+        private System.Windows.Forms.ImageList imagesLogType;
     }
 }
 

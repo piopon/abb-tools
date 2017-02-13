@@ -131,7 +131,7 @@ namespace abbTools
             //position in center of main form
             helpWindow.StartPosition = FormStartPosition.Manual;
             helpWindow.Top = Top + (Height - helpWindow.Height) / 2;
-            helpWindow.Left = Left + (Width - helpWindow.Width) / 2; ;
+            helpWindow.Left = Left + (Width - helpWindow.Width) / 2;
             //show form
             helpWindow.ShowDialog();
         }
@@ -141,7 +141,7 @@ namespace abbTools
             int foundSavedController = -1;
 
             //update app run-up time
-            status = new loggerABB(statusTextBox, true);
+            status = new loggerABB(imagesLogType, pictureLogType, statusTextBox, true);
             status.appendLog("<u>[ start " + DateTime.Now.ToString() + " ]</u>");
             appRemotePC.syncLogger(status);
             //load saved robots to list view
@@ -257,6 +257,8 @@ namespace abbTools
             }
             //check if controller was found or lost
             if (e.Reason == ChangeReasons.New) {
+                //log that controller was found
+                status.writeLog(logType.info, "controller <bu>" + eventController.Name + "</bu> found...");
                 //found controller - check if its saved
                 if (foundSavedController < listViewRobots.Items.Count) {
                     //controller exists in saved group - update its icon to available
@@ -282,9 +284,18 @@ namespace abbTools
             } else {
                 //lost controller - check if it was connected
                 if (abbConn != null && eventController.Name == abbConn.SystemName) {
-                    disconnectController(ref abbConn);
-                    //show disconn status and process messages 
-                    status.writeLog(logType.info, "controller <bu>" + eventController.Name + "</bu> disconnected!");
+                    if (disconnectController(ref abbConn) == (int)abbStatus.conn.disconnOK) {
+                        //clear controller address in my programs
+                        appRemotePC.desyncController();
+                        //log that current controller was disconnected because its lost
+                        status.writeLog(logType.warning, "controller <bu>" + eventController.Name + "</bu> lost and disconnected...");
+                    } else {
+                        //log that current controller not disconnected
+                        status.writeLog(logType.error, "controller <bu>" + eventController.Name + "</bu> can't disconnect...");
+                    }
+                } else {
+                    //log that controller was found
+                    status.writeLog(logType.info, "controller <bu>" + eventController.Name + "</bu> lost...");
                 }
                 //check if controller was in saved group
                 if (foundSavedController < listViewRobots.Items.Count) {
@@ -311,6 +322,7 @@ namespace abbTools
         {
             //only saved controllers can be removed from list
             ListViewItem currItem = listViewRobots.SelectedItems[0];
+            string controllerName = currItem.Text;
             //check if current element is virtual or real
             bool simController = currItem.StateImageIndex >= (int)abbStatus.found.sim;
             //if removed controller exists in network then change it group
@@ -339,12 +351,14 @@ namespace abbTools
             }
             //sort updated elements
             listViewRobots.Sort();
+            status.writeLog(logType.warning, "controller <bu>" + controllerName + "</bu> removed from saved group!");
         }
 
         private void addToSavedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //get selected item with quick menu
             ListViewItem toSaveItem = listViewRobots.SelectedItems[0];
+            string controllerName = toSaveItem.Text;
             //update GUI (move to saved group and change icon to connected!)
             toSaveItem.Group = listViewRobots.Groups[2];
             if (abbConn != null && abbConn.SystemName == toSaveItem.Text) {
@@ -354,6 +368,7 @@ namespace abbTools
             }
             //sort updated elements
             listViewRobots.Sort();
+            status.writeLog(logType.info, "controller <bu>" + controllerName + "</bu> added to saved group!");
         }
 
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
@@ -400,7 +415,7 @@ namespace abbTools
                     //close up file
                     xmlFile.WriteEndElement();
                     xmlFile.Close();
-                    status.writeLog(logType.error, "File saved (only robots from saved group)!");
+                    status.writeLog(logType.info, "File saved (only robots from saved group)!");
                 } catch (XmlException) {
                     status.writeLog(logType.error, "Error while saving to XML...");
                 }
@@ -556,7 +571,7 @@ namespace abbTools
                 //output
                 result = (int)abbStatus.conn.notVisible;
                 //update status
-                status.writeLog(logType.info, "controller <bu>" + cName + "</bu> not visible in network!");
+                status.writeLog(logType.warning, "controller <bu>" + cName + "</bu> not visible in network!");
             }
 
             return result;
@@ -594,7 +609,7 @@ namespace abbTools
                 } else {
                     result = (int)abbStatus.conn.notAvailable;
                     //show disconn status and process messages 
-                    status.writeLog(logType.info, "controller <bu>" + cName + "</bu> not available!");
+                    status.writeLog(logType.warning, "controller <bu>" + cName + "</bu> not available!");
                 }
             }
             return result;
@@ -710,6 +725,13 @@ namespace abbTools
 
         private void toolsToolStripMenuItem1_Click(object sender, EventArgs e)
         {
+            //no new taskbar element
+            appSettings.ShowInTaskbar = false;
+            //position in center of main form
+            appSettings.StartPosition = FormStartPosition.Manual;
+            appSettings.Top = Top + (Height - appSettings.Height) / 2;
+            appSettings.Left = Left + (Width - appSettings.Width) / 2;
+            //show form
             appSettings.ShowDialog();
         }
 

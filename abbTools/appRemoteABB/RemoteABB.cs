@@ -246,6 +246,7 @@ namespace appRemoteABB
                             //its the one to add so lets update its info (online now)
                             currData = selectData;
                             try {
+                                System.Threading.Thread.Sleep(1000);
                                 selectData.controller = newController;
                                 if (!selectData.controller.Connected) {
                                     selectData.controller.Logoff();
@@ -258,10 +259,10 @@ namespace appRemoteABB
                                 }
                             } catch (ABB.Robotics.GenericControllerException e) {
                                 selectData.controller.ConnectionChanged += busyControllerConnChanged;
-                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu> "+e.Message.ToLower()+".. waiting for connection..."); 
+                                currentData.log(logType.warning, "controller <bu>" + selectData.controller.SystemName + "</bu> "+e.Message.ToLower()+".. waiting for connection..."); 
                             } catch (System.Exception e) {
-                                selectData.controller.ConnectionChanged += busyControllerConnChanged;
-                                currentData.log(logType.error, "controller <bu>" + selectData.controller.SystemName + "</bu> "+e.Message.ToLower()+".. waiting for connection...");
+                                selectData.controller.ConnectionChanged += busyControllerConnChanged;                               
+                                currentData.log(logType.warning, "controller <bu>" + selectData.controller.SystemName + "</bu> "+e.Message.ToLower()+".. waiting for connection...");
                             }
                         }
                     }
@@ -312,7 +313,7 @@ namespace appRemoteABB
                             //remove event on changed connection status
                             collectionItem.controller.ConnectionChanged -= busyControllerConnChanged;
                             //log status
-                            collectionItem.log(logType.error, "controller <bu>" + collectionItem.controller.SystemName + "</bu> connected and updated!");
+                            collectionItem.log(logType.info, "controller <bu>" + collectionItem.controller.SystemName + "</bu> connected and updated!");
                             break;
                         }
                     }
@@ -364,11 +365,11 @@ namespace appRemoteABB
                                                   + " signal " + newSig.signal.Name + " subscibtion ON!");
                 } else {
                     //signal exists in collection = NO MORE THAN ONE ACTION TO ONE SIGNAL
-                    currentData.log(logType.info, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
+                    currentData.log(logType.warning, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
                                                   + " signal " + newSig.signal.Name + " already has subscription...");
                 }
             } else {
-                currentData.log(logType.info, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
+                currentData.log(logType.error, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
                                               + " not present in collection...");
             }
         }
@@ -391,7 +392,7 @@ namespace appRemoteABB
                     }
                 }
             } else {
-                currentData.log(logType.info, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
+                currentData.log(logType.error, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
                                                 + " not present in collection...");
             }
 
@@ -419,7 +420,7 @@ namespace appRemoteABB
                                                 + "subscibtion CHANGED ( " + oldSig + " >>> " + newSig + ")!");
                 }
             } else {
-                currentData.log(logType.info, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
+                currentData.log(logType.error, "controller <bu>" + currentData.controller.SystemName + "</bu>:"
                                                 + " not present in collection...");
             }
         }

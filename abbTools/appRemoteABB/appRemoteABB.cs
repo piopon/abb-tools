@@ -112,7 +112,7 @@ namespace abbTools
                 labelLoadSignals.Text = "reading signals...";
                 panelLoading.Visible = true;
             } else {
-                abbLogger.writeLog(logType.error, "No controller connected!");
+                abbLogger.writeLog(logType.warning, "can't update signals... no controller connected!");
                 panelLoading.BackColor = Color.Red;
                 labelLoadSignals.Text = "no controller...";
             }
@@ -332,7 +332,7 @@ namespace abbTools
                 watchCondition = listActionsWatch.CheckedItems.Count != 0;
                 checkEnableButtons();
             } else {
-                abbLogger.writeLog(logType.error, "Select only one element to modify!");
+                abbLogger.writeLog(logType.warning, "select only one element to modify!");
             }
         }
 
@@ -368,7 +368,7 @@ namespace abbTools
             if (saveName.Length > 0) {
                 remoteABB.saveToXml(ref saveXml, saveName);
             } else {
-                abbLogger.writeLog(logType.error, "Cant save controller(s) without specified name...");
+                abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
             }
         }
 
