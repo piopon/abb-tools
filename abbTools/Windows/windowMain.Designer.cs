@@ -78,11 +78,13 @@
             this.tabActions = new System.Windows.Forms.TabControl();
             this.actionDashboard = new System.Windows.Forms.TabPage();
             this.actionRemotePC = new System.Windows.Forms.TabPage();
+            this.appRemotePC = new abbTools.appRemoteABB();
             this.actionBackupManager = new System.Windows.Forms.TabPage();
+            this.actionWinIPC = new System.Windows.Forms.TabPage();
+            this.appWindowsIPC = new abbTools.AppWindowsIPC.appWindowsIPC();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.openDialog = new System.Windows.Forms.OpenFileDialog();
             this.imagesLogType = new System.Windows.Forms.ImageList(this.components);
-            this.appRemotePC = new abbTools.appRemoteABB();
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
@@ -98,6 +100,7 @@
             this.robotListQMenu.SuspendLayout();
             this.tabActions.SuspendLayout();
             this.actionRemotePC.SuspendLayout();
+            this.actionWinIPC.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -550,12 +553,13 @@
             this.tabActions.Controls.Add(this.actionDashboard);
             this.tabActions.Controls.Add(this.actionRemotePC);
             this.tabActions.Controls.Add(this.actionBackupManager);
+            this.tabActions.Controls.Add(this.actionWinIPC);
             this.tabActions.ItemSize = new System.Drawing.Size(100, 23);
             this.tabActions.Location = new System.Drawing.Point(1, 12);
             this.tabActions.Margin = new System.Windows.Forms.Padding(100);
             this.tabActions.Name = "tabActions";
             this.tabActions.SelectedIndex = 0;
-            this.tabActions.Size = new System.Drawing.Size(716, 588);
+            this.tabActions.Size = new System.Drawing.Size(722, 588);
             this.tabActions.TabIndex = 0;
             // 
             // actionDashboard
@@ -565,7 +569,7 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(708, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(714, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
@@ -578,9 +582,18 @@
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
             this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(718, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(714, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
+            // 
+            // appRemotePC
+            // 
+            this.appRemotePC.BackColor = System.Drawing.Color.White;
+            this.appRemotePC.Location = new System.Drawing.Point(0, 0);
+            this.appRemotePC.Margin = new System.Windows.Forms.Padding(0);
+            this.appRemotePC.Name = "appRemotePC";
+            this.appRemotePC.Size = new System.Drawing.Size(714, 557);
+            this.appRemotePC.TabIndex = 0;
             // 
             // actionBackupManager
             // 
@@ -588,9 +601,26 @@
             this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
             this.actionBackupManager.Name = "actionBackupManager";
             this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
-            this.actionBackupManager.Size = new System.Drawing.Size(718, 557);
+            this.actionBackupManager.Size = new System.Drawing.Size(714, 557);
             this.actionBackupManager.TabIndex = 1;
             this.actionBackupManager.Text = "backupManager";
+            // 
+            // actionWinIPC
+            // 
+            this.actionWinIPC.Controls.Add(this.appWindowsIPC);
+            this.actionWinIPC.Location = new System.Drawing.Point(4, 27);
+            this.actionWinIPC.Name = "actionWinIPC";
+            this.actionWinIPC.Size = new System.Drawing.Size(714, 557);
+            this.actionWinIPC.TabIndex = 3;
+            this.actionWinIPC.Text = "windowsIPC";
+            this.actionWinIPC.UseVisualStyleBackColor = true;
+            // 
+            // appWindowsIPC
+            // 
+            this.appWindowsIPC.Location = new System.Drawing.Point(67, 44);
+            this.appWindowsIPC.Name = "appWindowsIPC";
+            this.appWindowsIPC.Size = new System.Drawing.Size(504, 347);
+            this.appWindowsIPC.TabIndex = 0;
             // 
             // saveDialog
             // 
@@ -610,15 +640,6 @@
             this.imagesLogType.Images.SetKeyName(0, "log_info.png");
             this.imagesLogType.Images.SetKeyName(1, "log_warning.png");
             this.imagesLogType.Images.SetKeyName(2, "log_error.png");
-            // 
-            // appRemotePC
-            // 
-            this.appRemotePC.BackColor = System.Drawing.Color.White;
-            this.appRemotePC.Location = new System.Drawing.Point(0, 0);
-            this.appRemotePC.Margin = new System.Windows.Forms.Padding(0);
-            this.appRemotePC.Name = "appRemotePC";
-            this.appRemotePC.Size = new System.Drawing.Size(714, 557);
-            this.appRemotePC.TabIndex = 0;
             // 
             // windowMain
             // 
@@ -656,6 +677,7 @@
             this.robotListQMenu.ResumeLayout(false);
             this.tabActions.ResumeLayout(false);
             this.actionRemotePC.ResumeLayout(false);
+            this.actionWinIPC.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -706,6 +728,8 @@
         private System.Windows.Forms.PictureBox pictureLogType;
         private System.Windows.Forms.Panel panelConnStatus;
         private System.Windows.Forms.ImageList imagesLogType;
+        private System.Windows.Forms.TabPage actionWinIPC;
+        private AppWindowsIPC.appWindowsIPC appWindowsIPC;
     }
 }
 

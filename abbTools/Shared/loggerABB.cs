@@ -22,6 +22,8 @@ namespace abbTools
         //for append line
         private string lastLine;
         private logType lastType;
+        //private delegate to write from other thread
+        private delegate void SetTextCallback(string text);
 
         public loggerABB()
         {
@@ -110,7 +112,12 @@ namespace abbTools
                             }
                         } else {
                             //no tags included in text
-                            parent.Text = text;
+                            if (parent.InvokeRequired) {
+                                SetTextCallback threadSafe = new SetTextCallback(SetText);
+                                parent.Invoke(threadSafe, new object[] { text });
+                            } else {
+                                parent.Text = text;
+                            }
                         }
                     } else {
                         //parent is incompatible to format text
@@ -202,6 +209,11 @@ namespace abbTools
             }
 
             return result;
+        }
+
+        private void SetText(string text)
+        {
+            parent.Text = text;
         }
     }
 }

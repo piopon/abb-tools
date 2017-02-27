@@ -85,6 +85,14 @@
     <Compile Include="AppRemoteABB\RemoteABB.cs" />
     <Compile Include="AppRemoteABB\RemoteAction.cs" />
     <Compile Include="AppRemoteABB\RemoteSignal.cs" />
+    <Compile Include="AppWindowsIPC\appWindowsIPC.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AppWindowsIPC\appWindowsIPC.Designer.cs">
+      <DependentUpon>appWindowsIPC.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AppWindowsIPC\WindowsIPCClient.cs" />
+    <Compile Include="AppWindowsIPC\WindowsIPCEvents.cs" />
     <Compile Include="Shared\commonABB.cs" />
     <Compile Include="Shared\loggerABB.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -120,6 +128,9 @@
     </Compile>
     <EmbeddedResource Include="AppRemoteABB\appRemoteABB.resx">
       <DependentUpon>appRemoteABB.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AppWindowsIPC\appWindowsIPC.resx">
+      <DependentUpon>appWindowsIPC.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\windowAbout.resx">
       <DependentUpon>windowAbout.cs</DependentUpon>
@@ -176,6 +187,7 @@
     <None Include="Resources\img\sidebar.jpg" />
     <None Include="Resources\img\windowAbout_back.jpg" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

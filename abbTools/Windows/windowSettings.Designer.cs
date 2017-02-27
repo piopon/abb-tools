@@ -35,16 +35,16 @@
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOK = new System.Windows.Forms.Button();
             this.panelBackground = new System.Windows.Forms.Panel();
+            this.panelHeader = new System.Windows.Forms.Panel();
+            this.labelWindowTitle = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabSettingsGeneral = new System.Windows.Forms.TabPage();
             this.tabSettingsMail = new System.Windows.Forms.TabPage();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.panelHeader = new System.Windows.Forms.Panel();
-            this.labelWindowTitle = new System.Windows.Forms.Label();
             this.panelFooterButtons.SuspendLayout();
             this.panelBackground.SuspendLayout();
-            this.tabControl1.SuspendLayout();
             this.panelHeader.SuspendLayout();
+            this.tabControl1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelFooterButtons
@@ -114,6 +114,28 @@
             this.panelBackground.Size = new System.Drawing.Size(900, 561);
             this.panelBackground.TabIndex = 1;
             // 
+            // panelHeader
+            // 
+            this.panelHeader.BackColor = System.Drawing.Color.DimGray;
+            this.panelHeader.Controls.Add(this.labelWindowTitle);
+            this.panelHeader.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelHeader.Location = new System.Drawing.Point(0, 0);
+            this.panelHeader.Name = "panelHeader";
+            this.panelHeader.Size = new System.Drawing.Size(898, 50);
+            this.panelHeader.TabIndex = 2;
+            // 
+            // labelWindowTitle
+            // 
+            this.labelWindowTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.labelWindowTitle.Font = new System.Drawing.Font("GOST Common", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelWindowTitle.ForeColor = System.Drawing.Color.White;
+            this.labelWindowTitle.Location = new System.Drawing.Point(0, 0);
+            this.labelWindowTitle.Name = "labelWindowTitle";
+            this.labelWindowTitle.Size = new System.Drawing.Size(898, 50);
+            this.labelWindowTitle.TabIndex = 0;
+            this.labelWindowTitle.Text = "settings...";
+            this.labelWindowTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabSettingsGeneral);
@@ -159,28 +181,6 @@
             this.imageList1.Images.SetKeyName(0, "settings_mail.png");
             this.imageList1.Images.SetKeyName(1, "settings_app.png");
             // 
-            // panelHeader
-            // 
-            this.panelHeader.BackColor = System.Drawing.Color.DimGray;
-            this.panelHeader.Controls.Add(this.labelWindowTitle);
-            this.panelHeader.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panelHeader.Location = new System.Drawing.Point(0, 0);
-            this.panelHeader.Name = "panelHeader";
-            this.panelHeader.Size = new System.Drawing.Size(898, 50);
-            this.panelHeader.TabIndex = 2;
-            // 
-            // labelWindowTitle
-            // 
-            this.labelWindowTitle.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.labelWindowTitle.Font = new System.Drawing.Font("GOST Common", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelWindowTitle.ForeColor = System.Drawing.Color.White;
-            this.labelWindowTitle.Location = new System.Drawing.Point(0, 0);
-            this.labelWindowTitle.Name = "labelWindowTitle";
-            this.labelWindowTitle.Size = new System.Drawing.Size(898, 50);
-            this.labelWindowTitle.TabIndex = 0;
-            this.labelWindowTitle.Text = "settings...";
-            this.labelWindowTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // windowSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -192,8 +192,8 @@
             this.Text = "windowSettins";
             this.panelFooterButtons.ResumeLayout(false);
             this.panelBackground.ResumeLayout(false);
-            this.tabControl1.ResumeLayout(false);
             this.panelHeader.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899-12-30 00:00:00.000.414,=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.110,=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.233,C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\NamedPipes.cbproj=C:\Users\pponikowski\Documents\RAD Studio\Projects\Project1.cbproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.767,=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.244,=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.220,=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.666,=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.570,=C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.064,=C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\File1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.838,C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\testPipeServer.cbproj=C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\NamedPipes.cbproj</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.410,C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\NamedPipesServer.h=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.h</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.410,C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\NamedPipesServer.cpp=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.410,C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\NamedPipesServer.dfm=C:\Users\pponikowski\Documents\RAD Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.088,C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\pipeServer.cpp=C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\Unit1.cpp</Transaction>
+    <Transaction>1899-12-30 00:00:00.000.088,C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\pipeServer.h=C:\Users\pponikowski\Documents\RAD Studio\Projects\namedPipesServer\Unit1.h</Transaction>
+  </Transactions>
+</BorlandProject>

@@ -144,6 +144,7 @@ namespace abbTools
             status = new loggerABB(imagesLogType, pictureLogType, statusTextBox, true);
             status.appendLog("<u>[ start " + DateTime.Now.ToString() + " ]</u>");
             appRemotePC.syncLogger(status);
+            appWindowsIPC.syncLogger(status);
             //load saved robots to list view
             listViewRobots.Items.Clear();
             loadMyRobots(appSettings.getProjPath());
