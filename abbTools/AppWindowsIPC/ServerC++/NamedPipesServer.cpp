@@ -12,8 +12,10 @@ TnamedPipeServer *namedPipeServer;
 __fastcall TnamedPipeServer::TnamedPipeServer(TComponent* Owner)
 	: TForm(Owner)
 {
-	myServer = new PipeServer("abc");
+	myServer = new PipeServer("abc",true);
 	myServer->onClientConnected = &triggerClientConn;
+	myServer->onClientDisconnected = &triggerClientDisconn;
+	myServer->onClientWaiting = &triggerClientWaiting;
 	myServer->onSent = &triggerMsgSent;
 	myServer->onReceive = &triggerMsgRecv;
 	myServer->onCommEnd = &triggerCommEnd;
@@ -28,11 +30,9 @@ void __fastcall TnamedPipeServer::chkOpenCloseServerClick(TObject *Sender)
 {
 	if (chkOpenCloseServer->Checked) {
 		myServer->open();
-		statusBar->Panels->Items[0]->Text = "server opened! wait for client...";
 		chkOpenCloseServer->Caption = "CLOSE PIPE SERVER";
 	} else {
 		myServer->close();
-		statusBar->Panels->Items[0]->Text = "server closed!";
 		chkOpenCloseServer->Caption = "OPEN PIPE SERVER";
     }
 }
@@ -56,6 +56,16 @@ void __fastcall TnamedPipeServer::btnSendCurrClick(TObject *Sender)
 void TnamedPipeServer::triggerClientConn(void)
 {
 	namedPipeServer->statusBar->Panels->Items[0]->Text = "client connected";
+}
+//---------------------------------------------------------------------------
+void TnamedPipeServer::triggerClientDisconn(void)
+{
+	namedPipeServer->statusBar->Panels->Items[0]->Text = "client discconnected";
+}
+//---------------------------------------------------------------------------
+void TnamedPipeServer::triggerClientWaiting(void)
+{
+	namedPipeServer->statusBar->Panels->Items[0]->Text = "waiting for client...";
 }
 //---------------------------------------------------------------------------
 void TnamedPipeServer::triggerMsgSent(AnsiString sentMsg)

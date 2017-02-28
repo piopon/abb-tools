@@ -21,20 +21,25 @@ class PipeServer
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		//server operations data
 		bool clientConn;
+		bool userClose;
+		bool restoreConn;
 		AnsiString msgSend;
 		AnsiString msgRecv;
+		//auto reopen communication (if restoreConn = true)
+		bool reopen(void);
 		//message sending and receiving
 		bool send(void);
 		bool receive(void);
 		//client service
 		void waitForClient(void);
 		bool checkConn(void);
+		bool checkRestoreComm(bool wasConnected);
 		//background communication (separate thread = static)
 		static DWORD WINAPI backgroundComm(LPVOID lpvParam);
 	public:
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		//constructor, copy constructor and destructor
-		PipeServer(AnsiString name);
+		PipeServer(AnsiString name, bool autoRecon);
 		PipeServer(const PipeServer &org);
 		~PipeServer();
 		//open and close pipe server
@@ -43,13 +48,14 @@ class PipeServer
 		//
 		void send(AnsiString message);
 		//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		//on client connected
+		//client event handlers
+		void (*onClientWaiting)(void);
 		void (*onClientConnected)(void);
 		void (*onClientDisconnected)(void);
-		//on messaging
+		//messaging event handlers
 		void (*onSent)(AnsiString sentMsg);
 		void (*onReceive)(AnsiString recvMsg);
-		//on communication thread end
+		//communication end event handler
 		void (*onCommEnd)(void);
 	protected:
 };

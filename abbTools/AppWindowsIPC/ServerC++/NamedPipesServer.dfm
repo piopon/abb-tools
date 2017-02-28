@@ -1,6 +1,6 @@
 object namedPipeServer: TnamedPipeServer
-  Left = 0
-  Top = 0
+  Left = 20
+  Top = 21
   BorderStyle = bsToolWindow
   Caption = 'test pipe server'
   ClientHeight = 301
@@ -12,6 +12,7 @@ object namedPipeServer: TnamedPipeServer
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesigned
   OnClose = FormClose
   PixelsPerInch = 120
   TextHeight = 16

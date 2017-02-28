@@ -4,7 +4,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 //------------------------------------------------------------------------------
-PipeServer::PipeServer(AnsiString name)
+PipeServer::PipeServer(AnsiString name, bool autoRecon)
 {
 	myPipe = INVALID_HANDLE_VALUE;
 	myName = L"\\\\.\\pipe\\" + name;
@@ -14,11 +14,15 @@ PipeServer::PipeServer(AnsiString name)
 	myInstances = PIPE_UNLIMITED_INSTANCES;
 	//no client + clear message queue
 	clientConn = false;
+	userClose = false;
+	restoreConn = autoRecon;
 	msgSend = "";
 	msgRecv = "";
 	//clear all events
 	onCommEnd = NULL;
 	onClientConnected = NULL;
+	onClientDisconnected = NULL;
+	onClientWaiting = NULL;
 	onSent = NULL;
     onReceive = NULL;
 }
@@ -33,6 +37,8 @@ PipeServer::PipeServer(const PipeServer &org)
 	myInstances = org.myInstances;
 	//copy client status + message queue
 	clientConn = org.clientConn;
+	userClose = org.userClose;
+	restoreConn = org.restoreConn;
 	msgSend = org.msgSend;
 	msgRecv = org.msgRecv;
 	//copy all events
@@ -52,11 +58,15 @@ PipeServer::~PipeServer()
 	myInstances = 0;
 	//no client + clear message queue
 	clientConn = false;
+	userClose = false;
+	restoreConn = false;
 	msgSend = "";
 	msgRecv = "";
 	//clear all events
 	onCommEnd = NULL;
 	onClientConnected = NULL;
+	onClientDisconnected = NULL;
+	onClientWaiting = NULL;
 	onSent = NULL;
     onReceive = NULL;
 }
@@ -70,6 +80,10 @@ bool PipeServer::open(void)
 	if(myPipe != INVALID_HANDLE_VALUE) {
 		//set initial data
 		clientConn = false;
+		userClose = false;
+		//clear all buffer
+		msgSend = "";
+		msgRecv = "";
 		//wait for client connection in a background thread
 		HANDLE hThread = CreateThread(NULL,0,backgroundComm,this,0,NULL);
 		if (hThread == NULL) {
@@ -81,6 +95,26 @@ bool PipeServer::open(void)
 			//all is OK - communication running
 			return true;
 		}
+	} else {
+        return false;
+    }
+}
+//------------------------------------------------------------------------------
+bool PipeServer::reopen(void)
+{
+	//get security access
+	SECURITY_ATTRIBUTES mySecure = setSecurity();
+	//create named pipe and get handle to it
+	myPipe = CreateNamedPipe(myName.c_str(),myConn,myMode,myInstances,myBuffer,myBuffer,0,&mySecure);
+	if(myPipe != INVALID_HANDLE_VALUE) {
+		//set initial data
+		clientConn = false;
+		userClose = false;
+		//clear all buffer
+		msgSend = "";
+		msgRecv = "";
+		//all is OK
+		return true;
 	} else {
         return false;
     }
@@ -181,6 +215,8 @@ void PipeServer::waitForClient(void)
 			msgRecv = "";
 		} else {
 			clientConn = GetLastError() == ERROR_PIPE_CONNECTED;
+			//we cant get here only if user closed server from GUI
+			userClose = !clientConn;
 		}
 	}
 }
@@ -197,13 +233,40 @@ bool PipeServer::checkConn(void)
 			if((dwError == ERROR_BROKEN_PIPE)||(dwError == ERROR_PIPE_NOT_CONNECTED)){
 				//trigger client disconnected event
 				if (onClientDisconnected!=NULL) onClientDisconnected();
+				userClose = false;
 			} else if (dwError == ERROR_INVALID_HANDLE){
 				//do nothing here (break outside)
+				userClose = true;
 			}
 		} else {
 			//pipe OK
 			result = true;
         }
+	} else {
+		//closed by GUI - terminate anyways
+		userClose = true;
+	}
+	//update client connected flag
+	clientConn = result;
+	//exit method
+	return result;
+}
+//------------------------------------------------------------------------------
+bool PipeServer::checkRestoreComm(bool wasConnected)
+{
+	bool result = false;
+	if(wasConnected) {
+		if(restoreConn && !userClose) {
+            //restore connection = close server
+			close();
+			//re-open new connection
+			result = reopen();
+		} else {
+			result = false;
+		}
+	} else {
+		//not connected yet - restore only if not closed by user
+		result = !userClose;
 	}
 	return result;
 }
@@ -216,22 +279,30 @@ DWORD WINAPI PipeServer::backgroundComm(LPVOID lpvParam)
 		ShowMessage("ERROR::backgroundWait - lpvParam = NULL");
 		return -1;
 	}
-	//wait for client in background
-	currPipe->waitForClient();
-	//run user function
-	if(currPipe->clientConn && currPipe->onClientConnected != NULL) {
-		currPipe->onClientConnected();
-	}
-	//trigger client connected event
-	while (currPipe->clientConn) {
-		//do loop while handle exists (gui thread closes server or clien disconn)
-		if (!currPipe->checkConn()) break;
-		//check if there is something to receive
-        currPipe->receive();
-		//check if there is something to send
-		currPipe->send();
-		//sleep thread to aviod heavy processor load
-		Sleep(100);
+	bool connOK = false;
+	//check if we want to auto reconect
+	while (currPipe->checkRestoreComm(connOK)) {
+		//trigger client waiting event
+		if (currPipe->onClientWaiting!=NULL) currPipe->onClientWaiting();
+		//wait for client in background
+		currPipe->waitForClient();
+		//run user function
+		if(currPipe->clientConn && currPipe->onClientConnected != NULL) {
+			currPipe->onClientConnected();
+			connOK = true;
+		}
+		//trigger client connected event
+		while (currPipe->clientConn) {
+			//do loop while handle exists (gui thread closes server or clien disconn)
+			if (!currPipe->checkConn()) break;
+			//check if there is something to receive
+			currPipe->receive();
+			//check if there is something to send
+			currPipe->send();
+			//sleep thread to aviod heavy processor load
+			Sleep(100);
+		}
+		//client disconnected flag and trigger in checkConn action
 	}
 	//execution action at communication thread end
 	if (currPipe->onCommEnd!=NULL) currPipe->onCommEnd();

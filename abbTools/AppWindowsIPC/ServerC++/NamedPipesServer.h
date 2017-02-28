@@ -28,6 +28,8 @@ __published:	// IDE-managed Components
 private:	// User declarations
 	PipeServer *myServer;
 	static void triggerClientConn(void);
+	static void triggerClientDisconn(void);
+	static void triggerClientWaiting(void);
 	static void triggerMsgSent(AnsiString sentMsg);
 	static void triggerMsgRecv(AnsiString recvMsg);
 	static void triggerCommEnd(void);

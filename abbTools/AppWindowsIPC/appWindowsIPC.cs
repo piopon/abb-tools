@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.IO.Pipes;
 using System.Windows.Forms;
@@ -69,15 +69,15 @@ namespace abbTools.AppWindowsIPC
         }
 
         /// <summary>
-        /// 
+        /// event on change state of checkbox (checkIPCclientState)
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">which component triggered event</param>
+        /// <param name="e">event arguments</param>
         private void checkIPCclientState_CheckedChanged(object sender, EventArgs e)
         {
             if (checkIPCclientState.Checked) {
                 //create client
-                myClient = new WindowsIPCClient("abc",false);
+                myClient = new WindowsIPCClient("abc",true);
                 //subscribe events
                 myClient.OnConnect += clientStatusEvent;
                 myClient.OnDisconnect += clientStatusEvent;
@@ -97,6 +97,11 @@ namespace abbTools.AppWindowsIPC
          ***  APP IPC - named pipe client events
          ********************************************************/
 
+        /// <summary>
+        /// event on background communication thread end
+        /// </summary>
+        /// <param name="sender">object which triggered the event</param>
+        /// <param name="e">window IPC event args</param>
         private void clientEndEvent(object sender, WindowsIPCEventArgs e)
         {
             //unsubscribe all client events
@@ -119,18 +124,33 @@ namespace abbTools.AppWindowsIPC
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] status: " + e.message);
         }
 
+        /// <summary>
+        /// event on change communication status
+        /// </summary>
+        /// <param name="sender">object which triggered the event</param>
+        /// <param name="e">window IPC event args</param>
         private void clientStatusEvent(object sender, WindowsIPCEventArgs e)
         {
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server+"] status: "+e.message);
         }
 
+        /// <summary>
+        /// event on message received from server
+        /// </summary>
+        /// <param name="sender">object which triggered the event</param>
+        /// <param name="e">window IPC event args</param>
         private void clientRecvEvent(object sender, WindowsIPCEventArgs e)
         {
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] received: " + e.message);
         }
 
+        /// <summary>
+        /// event on message sent to server
+        /// </summary>
+        /// <param name="sender">object which triggered the event</param>
+        /// <param name="e">window IPC event args</param>
         private void clientSentEvent(object sender, WindowsIPCEventArgs e)
         {
             //show log info
