@@ -1,6 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.IO.Pipes;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace abbTools.AppWindowsIPC
@@ -12,7 +11,7 @@ namespace abbTools.AppWindowsIPC
          ********************************************************/
 
         //delegate methods for updating GUI from other threads
-        delegate void CheckBoxCallback(CheckBox component, bool checkState);
+        delegate void buttonUpdateUI(Button component, bool enabled, Color clr);
         //data containers
         private loggerABB abbLogger = null;
         private WindowsIPCClient myClient;
@@ -68,16 +67,12 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
-        /// <summary>
-        /// event on change state of checkbox (checkIPCclientState)
-        /// </summary>
-        /// <param name="sender">which component triggered event</param>
-        /// <param name="e">event arguments</param>
-        private void checkIPCclientState_CheckedChanged(object sender, EventArgs e)
+        private void buttonClientON_Click(object sender, EventArgs e)
         {
-            if (checkIPCclientState.Checked) {
+            //check if user defined server name
+            if (textServerName.Text!="") {
                 //create client
-                myClient = new WindowsIPCClient("abc",true);
+                myClient = new WindowsIPCClient(textServerName.Text, checkAutoReconnect.Checked);
                 //subscribe events
                 myClient.OnConnect += clientStatusEvent;
                 myClient.OnDisconnect += clientStatusEvent;
@@ -87,9 +82,51 @@ namespace abbTools.AppWindowsIPC
                 myClient.OnEnd += clientEndEvent;
                 //open communication pipe
                 myClient.open();
+                //update GUI buttons 
+                clientControlButtons(false);
             } else {
-                //close communication pipe
-                myClient.close();
+                abbLogger.writeLog(logType.error, "Server IPC - no server name defined");
+            }
+        }
+
+        private void buttonClientOFF_Click(object sender, EventArgs e)
+        {
+            //close communication pipe
+            myClient.close();
+        }
+
+        private void clientControlButtons(bool clientOff)
+        {
+            if (clientOff) {
+                updateButton(buttonClientON, true, Color.Chartreuse);
+                updateButton(buttonClientOFF, false, Color.Silver);
+                updateButton(btnSendMsg, false, Color.Silver);
+            } else {
+                updateButton(buttonClientON, false, Color.Silver);
+                updateButton(buttonClientOFF, true, Color.OrangeRed);
+                updateButton(btnSendMsg, true, Color.DarkOrange);
+            }
+        }
+
+        private void refreshButton(Button btn, bool enable, Color clr)
+        {
+            btn.BackColor = clr;
+            btn.Enabled = enable;
+        }
+
+        /********************************************************
+         ***  INVOKE GUI FROM BACKGORUND THREAD
+         ********************************************************/
+
+        private void updateButton(Button btn, bool enable, Color clr)
+        {
+            if (btn.InvokeRequired) {
+                //funcion running from other thread - use Invoke
+                buttonUpdateUI test = new buttonUpdateUI(refreshButton);
+                Invoke(test, new object[] { btn, enable, clr });
+            } else {
+                //function running from main thread - normal approach
+                refreshButton(btn, enable, clr);
             }
         }
 
@@ -111,15 +148,8 @@ namespace abbTools.AppWindowsIPC
             myClient.OnReceived -= clientRecvEvent;
             myClient.OnSent -= clientSentEvent;
             myClient.OnEnd -= clientEndEvent;
-            //uncheck box - check if running in other thread
-            if (checkIPCclientState.InvokeRequired) {
-                //funcion running from other thread - use Invoke
-                CheckBoxCallback test = new CheckBoxCallback(updCheckBoxState);
-                Invoke(test, new object[] { checkIPCclientState, e.restore });
-            } else {
-                //function running from main thread - normal approach
-                updCheckBoxState(checkIPCclientState, e.restore);
-            }
+            //update GUI buttons 
+            clientControlButtons(true);
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] status: " + e.message);
         }
@@ -142,8 +172,13 @@ namespace abbTools.AppWindowsIPC
         /// <param name="e">window IPC event args</param>
         private void clientRecvEvent(object sender, WindowsIPCEventArgs e)
         {
+            //check if we want to input incomming messages to list
+            if (checkAutoFillMessages.Checked) {
+                
+            }
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] received: " + e.message);
+
         }
 
         /// <summary>

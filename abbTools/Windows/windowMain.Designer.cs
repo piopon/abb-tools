@@ -30,13 +30,13 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(windowMain));
-            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
             "ABBtrack",
             "127.0.0.1"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
             "robot 3",
             "255.255.255.255"}, -1);
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
@@ -64,17 +64,20 @@
             this.statusTextBox = new System.Windows.Forms.RichTextBox();
             this.pictureLogType = new System.Windows.Forms.PictureBox();
             this.panelApp = new System.Windows.Forms.Panel();
-            this.appContainer = new System.Windows.Forms.SplitContainer();
-            this.btnRobotListCollapse = new System.Windows.Forms.Button();
-            this.listViewRobots = new System.Windows.Forms.ListView();
-            this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.robotListQMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.connectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToSavedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imagesStatus = new System.Windows.Forms.ImageList(this.components);
+            this.saveDialog = new System.Windows.Forms.SaveFileDialog();
+            this.openDialog = new System.Windows.Forms.OpenFileDialog();
+            this.imagesLogType = new System.Windows.Forms.ImageList(this.components);
+            this.appContainer = new System.Windows.Forms.SplitContainer();
+            this.btnRobotListCollapse = new System.Windows.Forms.Button();
+            this.listViewRobots = new System.Windows.Forms.ListView();
+            this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabActions = new System.Windows.Forms.TabControl();
             this.actionDashboard = new System.Windows.Forms.TabPage();
             this.actionRemotePC = new System.Windows.Forms.TabPage();
@@ -82,9 +85,6 @@
             this.actionBackupManager = new System.Windows.Forms.TabPage();
             this.actionWinIPC = new System.Windows.Forms.TabPage();
             this.appWindowsIPC = new abbTools.AppWindowsIPC.appWindowsIPC();
-            this.saveDialog = new System.Windows.Forms.SaveFileDialog();
-            this.openDialog = new System.Windows.Forms.OpenFileDialog();
-            this.imagesLogType = new System.Windows.Forms.ImageList(this.components);
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
@@ -93,11 +93,11 @@
             this.panelLogger.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).BeginInit();
             this.panelApp.SuspendLayout();
+            this.robotListQMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.appContainer)).BeginInit();
             this.appContainer.Panel1.SuspendLayout();
             this.appContainer.Panel2.SuspendLayout();
             this.appContainer.SuspendLayout();
-            this.robotListQMenu.SuspendLayout();
             this.tabActions.SuspendLayout();
             this.actionRemotePC.SuspendLayout();
             this.actionWinIPC.SuspendLayout();
@@ -394,103 +394,6 @@
             this.panelApp.Size = new System.Drawing.Size(1010, 614);
             this.panelApp.TabIndex = 4;
             // 
-            // appContainer
-            // 
-            this.appContainer.BackColor = System.Drawing.Color.Transparent;
-            this.appContainer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.appContainer.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.appContainer.ForeColor = System.Drawing.Color.Black;
-            this.appContainer.IsSplitterFixed = true;
-            this.appContainer.Location = new System.Drawing.Point(0, 0);
-            this.appContainer.Name = "appContainer";
-            // 
-            // appContainer.Panel1
-            // 
-            this.appContainer.Panel1.Controls.Add(this.btnRobotListCollapse);
-            this.appContainer.Panel1.Controls.Add(this.listViewRobots);
-            this.appContainer.Panel1.Padding = new System.Windows.Forms.Padding(12, 12, 7, 12);
-            this.appContainer.Panel1MinSize = 280;
-            // 
-            // appContainer.Panel2
-            // 
-            this.appContainer.Panel2.Controls.Add(this.tabActions);
-            this.appContainer.Panel2.Padding = new System.Windows.Forms.Padding(7, 12, 7, 12);
-            this.appContainer.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.appContainer.Size = new System.Drawing.Size(1008, 612);
-            this.appContainer.SplitterDistance = 280;
-            this.appContainer.SplitterWidth = 1;
-            this.appContainer.TabIndex = 1;
-            // 
-            // btnRobotListCollapse
-            // 
-            this.btnRobotListCollapse.BackColor = System.Drawing.Color.DarkOrange;
-            this.btnRobotListCollapse.Dock = System.Windows.Forms.DockStyle.Right;
-            this.btnRobotListCollapse.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Gold;
-            this.btnRobotListCollapse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnRobotListCollapse.Font = new System.Drawing.Font("GOST Common", 13.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnRobotListCollapse.Location = new System.Drawing.Point(251, 12);
-            this.btnRobotListCollapse.Name = "btnRobotListCollapse";
-            this.btnRobotListCollapse.Size = new System.Drawing.Size(22, 588);
-            this.btnRobotListCollapse.TabIndex = 1;
-            this.btnRobotListCollapse.Text = "<<<";
-            this.btnRobotListCollapse.UseVisualStyleBackColor = false;
-            this.btnRobotListCollapse.Click += new System.EventHandler(this.btnRobotListCollapse_Click);
-            // 
-            // listViewRobots
-            // 
-            this.listViewRobots.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.listViewRobots.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.robotGroupColName,
-            this.robotGroupColIP});
-            this.listViewRobots.ContextMenuStrip = this.robotListQMenu;
-            this.listViewRobots.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            listViewGroup1.Header = "network";
-            listViewGroup1.Name = "robotsGroupNet";
-            listViewGroup2.Header = "virtual";
-            listViewGroup2.Name = "robotsGroupSim";
-            listViewGroup3.Header = "saved";
-            listViewGroup3.Name = "robotsGroupSaved";
-            this.listViewRobots.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1,
-            listViewGroup2,
-            listViewGroup3});
-            this.listViewRobots.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.listViewRobots.HideSelection = false;
-            listViewItem1.Checked = true;
-            listViewItem1.Group = listViewGroup3;
-            listViewItem1.StateImageIndex = 4;
-            listViewItem2.Checked = true;
-            listViewItem2.Group = listViewGroup3;
-            listViewItem2.StateImageIndex = 4;
-            this.listViewRobots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2});
-            this.listViewRobots.Location = new System.Drawing.Point(12, 12);
-            this.listViewRobots.Margin = new System.Windows.Forms.Padding(0);
-            this.listViewRobots.MultiSelect = false;
-            this.listViewRobots.Name = "listViewRobots";
-            this.listViewRobots.ShowItemToolTips = true;
-            this.listViewRobots.Size = new System.Drawing.Size(234, 588);
-            this.listViewRobots.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this.listViewRobots.StateImageList = this.imagesStatus;
-            this.listViewRobots.TabIndex = 0;
-            this.listViewRobots.UseCompatibleStateImageBehavior = false;
-            this.listViewRobots.View = System.Windows.Forms.View.Details;
-            this.listViewRobots.DoubleClick += new System.EventHandler(this.listViewRobots_DoubleClick);
-            this.listViewRobots.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewRobots_KeyDown);
-            // 
-            // robotGroupColName
-            // 
-            this.robotGroupColName.Text = "name";
-            this.robotGroupColName.Width = 120;
-            // 
-            // robotGroupColIP
-            // 
-            this.robotGroupColIP.Text = "ip address";
-            this.robotGroupColIP.Width = 110;
-            // 
             // robotListQMenu
             // 
             this.robotListQMenu.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -545,83 +448,6 @@
             this.imagesStatus.Images.SetKeyName(6, "status_virtualConn.png");
             this.imagesStatus.Images.SetKeyName(7, "status_virtualDisconn.png");
             // 
-            // tabActions
-            // 
-            this.tabActions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tabActions.Controls.Add(this.actionDashboard);
-            this.tabActions.Controls.Add(this.actionRemotePC);
-            this.tabActions.Controls.Add(this.actionBackupManager);
-            this.tabActions.Controls.Add(this.actionWinIPC);
-            this.tabActions.ItemSize = new System.Drawing.Size(100, 23);
-            this.tabActions.Location = new System.Drawing.Point(1, 12);
-            this.tabActions.Margin = new System.Windows.Forms.Padding(100);
-            this.tabActions.Name = "tabActions";
-            this.tabActions.SelectedIndex = 0;
-            this.tabActions.Size = new System.Drawing.Size(722, 588);
-            this.tabActions.TabIndex = 0;
-            // 
-            // actionDashboard
-            // 
-            this.actionDashboard.BackColor = System.Drawing.Color.Transparent;
-            this.actionDashboard.BackgroundImage = global::abbTools.Properties.Resources.windowMain_back;
-            this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
-            this.actionDashboard.Location = new System.Drawing.Point(4, 27);
-            this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(714, 557);
-            this.actionDashboard.TabIndex = 2;
-            this.actionDashboard.Text = "dashboard";
-            // 
-            // actionRemotePC
-            // 
-            this.actionRemotePC.AllowDrop = true;
-            this.actionRemotePC.BackColor = System.Drawing.Color.White;
-            this.actionRemotePC.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
-            this.actionRemotePC.Controls.Add(this.appRemotePC);
-            this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
-            this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
-            this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(714, 557);
-            this.actionRemotePC.TabIndex = 0;
-            this.actionRemotePC.Text = "remotePC";
-            // 
-            // appRemotePC
-            // 
-            this.appRemotePC.BackColor = System.Drawing.Color.White;
-            this.appRemotePC.Location = new System.Drawing.Point(0, 0);
-            this.appRemotePC.Margin = new System.Windows.Forms.Padding(0);
-            this.appRemotePC.Name = "appRemotePC";
-            this.appRemotePC.Size = new System.Drawing.Size(714, 557);
-            this.appRemotePC.TabIndex = 0;
-            // 
-            // actionBackupManager
-            // 
-            this.actionBackupManager.BackColor = System.Drawing.Color.White;
-            this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
-            this.actionBackupManager.Name = "actionBackupManager";
-            this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
-            this.actionBackupManager.Size = new System.Drawing.Size(714, 557);
-            this.actionBackupManager.TabIndex = 1;
-            this.actionBackupManager.Text = "backupManager";
-            // 
-            // actionWinIPC
-            // 
-            this.actionWinIPC.Controls.Add(this.appWindowsIPC);
-            this.actionWinIPC.Location = new System.Drawing.Point(4, 27);
-            this.actionWinIPC.Name = "actionWinIPC";
-            this.actionWinIPC.Size = new System.Drawing.Size(714, 557);
-            this.actionWinIPC.TabIndex = 3;
-            this.actionWinIPC.Text = "windowsIPC";
-            this.actionWinIPC.UseVisualStyleBackColor = true;
-            // 
-            // appWindowsIPC
-            // 
-            this.appWindowsIPC.Location = new System.Drawing.Point(67, 44);
-            this.appWindowsIPC.Name = "appWindowsIPC";
-            this.appWindowsIPC.Size = new System.Drawing.Size(504, 347);
-            this.appWindowsIPC.TabIndex = 0;
-            // 
             // saveDialog
             // 
             this.saveDialog.DefaultExt = "*.xml";
@@ -640,6 +466,182 @@
             this.imagesLogType.Images.SetKeyName(0, "log_info.png");
             this.imagesLogType.Images.SetKeyName(1, "log_warning.png");
             this.imagesLogType.Images.SetKeyName(2, "log_error.png");
+            // 
+            // appContainer
+            // 
+            this.appContainer.BackColor = System.Drawing.Color.Transparent;
+            this.appContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.appContainer.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.appContainer.ForeColor = System.Drawing.Color.Black;
+            this.appContainer.IsSplitterFixed = true;
+            this.appContainer.Location = new System.Drawing.Point(0, 0);
+            this.appContainer.Name = "appContainer";
+            // 
+            // appContainer.Panel1
+            // 
+            this.appContainer.Panel1.Controls.Add(this.btnRobotListCollapse);
+            this.appContainer.Panel1.Controls.Add(this.listViewRobots);
+            this.appContainer.Panel1.Padding = new System.Windows.Forms.Padding(12, 12, 7, 12);
+            this.appContainer.Panel1MinSize = 280;
+            // 
+            // appContainer.Panel2
+            // 
+            this.appContainer.Panel2.Controls.Add(this.tabActions);
+            this.appContainer.Panel2.Padding = new System.Windows.Forms.Padding(7, 12, 7, 12);
+            this.appContainer.Panel2.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.appContainer.Size = new System.Drawing.Size(1008, 612);
+            this.appContainer.SplitterDistance = 280;
+            this.appContainer.SplitterWidth = 1;
+            this.appContainer.TabIndex = 1;
+            // 
+            // btnRobotListCollapse
+            // 
+            this.btnRobotListCollapse.BackColor = System.Drawing.Color.DarkOrange;
+            this.btnRobotListCollapse.Dock = System.Windows.Forms.DockStyle.Right;
+            this.btnRobotListCollapse.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Gold;
+            this.btnRobotListCollapse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRobotListCollapse.Font = new System.Drawing.Font("GOST Common", 13.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.btnRobotListCollapse.Location = new System.Drawing.Point(251, 12);
+            this.btnRobotListCollapse.Name = "btnRobotListCollapse";
+            this.btnRobotListCollapse.Size = new System.Drawing.Size(22, 588);
+            this.btnRobotListCollapse.TabIndex = 1;
+            this.btnRobotListCollapse.Text = "<<<";
+            this.btnRobotListCollapse.UseVisualStyleBackColor = false;
+            this.btnRobotListCollapse.Click += new System.EventHandler(this.btnRobotListCollapse_Click);
+            // 
+            // listViewRobots
+            // 
+            this.listViewRobots.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.listViewRobots.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.robotGroupColName,
+            this.robotGroupColIP});
+            this.listViewRobots.ContextMenuStrip = this.robotListQMenu;
+            this.listViewRobots.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            listViewGroup4.Header = "network";
+            listViewGroup4.Name = "robotsGroupNet";
+            listViewGroup5.Header = "virtual";
+            listViewGroup5.Name = "robotsGroupSim";
+            listViewGroup6.Header = "saved";
+            listViewGroup6.Name = "robotsGroupSaved";
+            this.listViewRobots.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup4,
+            listViewGroup5,
+            listViewGroup6});
+            this.listViewRobots.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listViewRobots.HideSelection = false;
+            listViewItem3.Checked = true;
+            listViewItem3.Group = listViewGroup6;
+            listViewItem3.StateImageIndex = 4;
+            listViewItem4.Checked = true;
+            listViewItem4.Group = listViewGroup6;
+            listViewItem4.StateImageIndex = 4;
+            this.listViewRobots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
+            listViewItem3,
+            listViewItem4});
+            this.listViewRobots.Location = new System.Drawing.Point(12, 12);
+            this.listViewRobots.Margin = new System.Windows.Forms.Padding(0);
+            this.listViewRobots.MultiSelect = false;
+            this.listViewRobots.Name = "listViewRobots";
+            this.listViewRobots.ShowItemToolTips = true;
+            this.listViewRobots.Size = new System.Drawing.Size(234, 588);
+            this.listViewRobots.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewRobots.StateImageList = this.imagesStatus;
+            this.listViewRobots.TabIndex = 0;
+            this.listViewRobots.UseCompatibleStateImageBehavior = false;
+            this.listViewRobots.View = System.Windows.Forms.View.Details;
+            this.listViewRobots.DoubleClick += new System.EventHandler(this.listViewRobots_DoubleClick);
+            this.listViewRobots.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listViewRobots_KeyDown);
+            // 
+            // robotGroupColName
+            // 
+            this.robotGroupColName.Text = "name";
+            this.robotGroupColName.Width = 120;
+            // 
+            // robotGroupColIP
+            // 
+            this.robotGroupColIP.Text = "ip address";
+            this.robotGroupColIP.Width = 110;
+            // 
+            // tabActions
+            // 
+            this.tabActions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabActions.Controls.Add(this.actionDashboard);
+            this.tabActions.Controls.Add(this.actionRemotePC);
+            this.tabActions.Controls.Add(this.actionBackupManager);
+            this.tabActions.Controls.Add(this.actionWinIPC);
+            this.tabActions.ItemSize = new System.Drawing.Size(100, 23);
+            this.tabActions.Location = new System.Drawing.Point(1, 12);
+            this.tabActions.Margin = new System.Windows.Forms.Padding(100);
+            this.tabActions.Name = "tabActions";
+            this.tabActions.SelectedIndex = 0;
+            this.tabActions.Size = new System.Drawing.Size(715, 588);
+            this.tabActions.TabIndex = 0;
+            // 
+            // actionDashboard
+            // 
+            this.actionDashboard.BackColor = System.Drawing.Color.Transparent;
+            this.actionDashboard.BackgroundImage = global::abbTools.Properties.Resources.windowMain_back;
+            this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.actionDashboard.Location = new System.Drawing.Point(4, 27);
+            this.actionDashboard.Name = "actionDashboard";
+            this.actionDashboard.Size = new System.Drawing.Size(710, 557);
+            this.actionDashboard.TabIndex = 2;
+            this.actionDashboard.Text = "dashboard";
+            // 
+            // actionRemotePC
+            // 
+            this.actionRemotePC.AllowDrop = true;
+            this.actionRemotePC.BackColor = System.Drawing.Color.White;
+            this.actionRemotePC.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
+            this.actionRemotePC.Controls.Add(this.appRemotePC);
+            this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
+            this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
+            this.actionRemotePC.Name = "actionRemotePC";
+            this.actionRemotePC.Size = new System.Drawing.Size(710, 557);
+            this.actionRemotePC.TabIndex = 0;
+            this.actionRemotePC.Text = "remotePC";
+            // 
+            // appRemotePC
+            // 
+            this.appRemotePC.BackColor = System.Drawing.Color.White;
+            this.appRemotePC.Location = new System.Drawing.Point(0, 0);
+            this.appRemotePC.Margin = new System.Windows.Forms.Padding(0);
+            this.appRemotePC.Name = "appRemotePC";
+            this.appRemotePC.Size = new System.Drawing.Size(714, 557);
+            this.appRemotePC.TabIndex = 0;
+            // 
+            // actionBackupManager
+            // 
+            this.actionBackupManager.BackColor = System.Drawing.Color.White;
+            this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
+            this.actionBackupManager.Name = "actionBackupManager";
+            this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
+            this.actionBackupManager.Size = new System.Drawing.Size(710, 557);
+            this.actionBackupManager.TabIndex = 1;
+            this.actionBackupManager.Text = "backupManager";
+            // 
+            // actionWinIPC
+            // 
+            this.actionWinIPC.Controls.Add(this.appWindowsIPC);
+            this.actionWinIPC.Location = new System.Drawing.Point(4, 27);
+            this.actionWinIPC.Name = "actionWinIPC";
+            this.actionWinIPC.Size = new System.Drawing.Size(707, 557);
+            this.actionWinIPC.TabIndex = 3;
+            this.actionWinIPC.Text = "windowsIPC";
+            this.actionWinIPC.UseVisualStyleBackColor = true;
+            // 
+            // appWindowsIPC
+            // 
+            this.appWindowsIPC.BackColor = System.Drawing.Color.White;
+            this.appWindowsIPC.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.appWindowsIPC.Location = new System.Drawing.Point(0, 0);
+            this.appWindowsIPC.Name = "appWindowsIPC";
+            this.appWindowsIPC.Size = new System.Drawing.Size(707, 557);
+            this.appWindowsIPC.TabIndex = 0;
             // 
             // windowMain
             // 
@@ -670,11 +672,11 @@
             this.panelLogger.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).EndInit();
             this.panelApp.ResumeLayout(false);
+            this.robotListQMenu.ResumeLayout(false);
             this.appContainer.Panel1.ResumeLayout(false);
             this.appContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.appContainer)).EndInit();
             this.appContainer.ResumeLayout(false);
-            this.robotListQMenu.ResumeLayout(false);
             this.tabActions.ResumeLayout(false);
             this.actionRemotePC.ResumeLayout(false);
             this.actionWinIPC.ResumeLayout(false);
