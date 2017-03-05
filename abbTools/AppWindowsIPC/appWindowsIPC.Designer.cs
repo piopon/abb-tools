@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.textMsgToSend = new System.Windows.Forms.TextBox();
             this.btnSendMsg = new System.Windows.Forms.Button();
             this.groupRemoteSignals = new System.Windows.Forms.GroupBox();
@@ -62,6 +63,11 @@
             this.buttonMsgRemove = new System.Windows.Forms.Button();
             this.buttonMsgModify = new System.Windows.Forms.Button();
             this.buttonMsgNew = new System.Windows.Forms.Button();
+            this.listBoxMsgMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.removeItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.labelManualMessage = new System.Windows.Forms.Label();
+            this.backThread = new System.ComponentModel.BackgroundWorker();
             this.groupRemoteSignals.SuspendLayout();
             this.panelLoading.SuspendLayout();
             this.groupNamedPipeClient.SuspendLayout();
@@ -71,6 +77,7 @@
             this.groupClientSettings.SuspendLayout();
             this.groupMessages.SuspendLayout();
             this.groupWatchMsg.SuspendLayout();
+            this.listBoxMsgMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // textMsgToSend
@@ -129,6 +136,7 @@
             // 
             // radioSigTo1
             // 
+            this.radioSigTo1.Checked = true;
             this.radioSigTo1.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.radioSigTo1.Location = new System.Drawing.Point(30, 278);
             this.radioSigTo1.Name = "radioSigTo1";
@@ -147,6 +155,7 @@
             this.buttonUpdateSignals.TabIndex = 6;
             this.buttonUpdateSignals.Text = "update";
             this.buttonUpdateSignals.UseVisualStyleBackColor = true;
+            this.buttonUpdateSignals.Click += new System.EventHandler(this.buttonUpdateSignals_Click);
             // 
             // panelLoading
             // 
@@ -199,7 +208,7 @@
             this.groupClientTestMessages.Controls.Add(this.btnSendMsg);
             this.groupClientTestMessages.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupClientTestMessages.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.groupClientTestMessages.Location = new System.Drawing.Point(13, 198);
+            this.groupClientTestMessages.Location = new System.Drawing.Point(13, 199);
             this.groupClientTestMessages.Name = "groupClientTestMessages";
             this.groupClientTestMessages.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.groupClientTestMessages.Size = new System.Drawing.Size(239, 108);
@@ -322,6 +331,7 @@
             // 
             // groupMessages
             // 
+            this.groupMessages.Controls.Add(this.labelManualMessage);
             this.groupMessages.Controls.Add(this.textManualMessage);
             this.groupMessages.Controls.Add(this.btnAddManualMessage);
             this.groupMessages.Controls.Add(this.checkAutoFillMessages);
@@ -337,7 +347,7 @@
             // textManualMessage
             // 
             this.textManualMessage.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textManualMessage.Location = new System.Drawing.Point(16, 278);
+            this.textManualMessage.Location = new System.Drawing.Point(16, 284);
             this.textManualMessage.Name = "textManualMessage";
             this.textManualMessage.Size = new System.Drawing.Size(125, 23);
             this.textManualMessage.TabIndex = 3;
@@ -345,12 +355,13 @@
             // btnAddManualMessage
             // 
             this.btnAddManualMessage.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnAddManualMessage.Location = new System.Drawing.Point(147, 278);
+            this.btnAddManualMessage.Location = new System.Drawing.Point(147, 284);
             this.btnAddManualMessage.Name = "btnAddManualMessage";
             this.btnAddManualMessage.Size = new System.Drawing.Size(75, 23);
             this.btnAddManualMessage.TabIndex = 2;
             this.btnAddManualMessage.Text = "add";
             this.btnAddManualMessage.UseVisualStyleBackColor = true;
+            this.btnAddManualMessage.Click += new System.EventHandler(this.btnAddManualMessage_Click);
             // 
             // checkAutoFillMessages
             // 
@@ -365,15 +376,10 @@
             // 
             // listBoxAllMessages
             // 
+            this.listBoxAllMessages.ContextMenuStrip = this.listBoxMsgMenu;
             this.listBoxAllMessages.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.listBoxAllMessages.FormattingEnabled = true;
             this.listBoxAllMessages.ItemHeight = 16;
-            this.listBoxAllMessages.Items.AddRange(new object[] {
-            "START",
-            "STOP",
-            "message",
-            "Test",
-            "tesT2"});
             this.listBoxAllMessages.Location = new System.Drawing.Point(16, 56);
             this.listBoxAllMessages.Name = "listBoxAllMessages";
             this.listBoxAllMessages.Size = new System.Drawing.Size(206, 212);
@@ -485,6 +491,46 @@
             this.buttonMsgNew.Text = "NEW";
             this.buttonMsgNew.UseVisualStyleBackColor = false;
             // 
+            // listBoxMsgMenu
+            // 
+            this.listBoxMsgMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.listBoxMsgMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.removeItemToolStripMenuItem,
+            this.clearAllToolStripMenuItem});
+            this.listBoxMsgMenu.Name = "listBoxMsgMenu";
+            this.listBoxMsgMenu.Size = new System.Drawing.Size(169, 56);
+            this.listBoxMsgMenu.Opening += new System.ComponentModel.CancelEventHandler(this.listBoxMsgMenu_Opening);
+            // 
+            // removeItemToolStripMenuItem
+            // 
+            this.removeItemToolStripMenuItem.Name = "removeItemToolStripMenuItem";
+            this.removeItemToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
+            this.removeItemToolStripMenuItem.Text = "remove item";
+            this.removeItemToolStripMenuItem.Click += new System.EventHandler(this.removeItemToolStripMenuItem_Click);
+            // 
+            // clearAllToolStripMenuItem
+            // 
+            this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
+            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
+            this.clearAllToolStripMenuItem.Text = "clear all";
+            this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
+            // 
+            // labelManualMessage
+            // 
+            this.labelManualMessage.AutoSize = true;
+            this.labelManualMessage.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelManualMessage.Location = new System.Drawing.Point(13, 268);
+            this.labelManualMessage.Name = "labelManualMessage";
+            this.labelManualMessage.Size = new System.Drawing.Size(81, 16);
+            this.labelManualMessage.TabIndex = 4;
+            this.labelManualMessage.Text = "add message";
+            // 
+            // backThread
+            // 
+            this.backThread.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backThread_DoWork);
+            this.backThread.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backThread_ProgressChanged);
+            this.backThread.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backThread_RunWorkerCompleted);
+            // 
             // appWindowsIPC
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -508,6 +554,7 @@
             this.groupMessages.ResumeLayout(false);
             this.groupMessages.PerformLayout();
             this.groupWatchMsg.ResumeLayout(false);
+            this.listBoxMsgMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -547,5 +594,10 @@
         private System.Windows.Forms.ColumnHeader watchHeaderMsg;
         private System.Windows.Forms.ColumnHeader watchHeaderSig;
         private System.Windows.Forms.ColumnHeader watchHeaderState;
+        private System.Windows.Forms.ContextMenuStrip listBoxMsgMenu;
+        private System.Windows.Forms.ToolStripMenuItem removeItemToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearAllToolStripMenuItem;
+        private System.Windows.Forms.Label labelManualMessage;
+        private System.ComponentModel.BackgroundWorker backThread;
     }
 }
