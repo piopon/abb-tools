@@ -20,6 +20,7 @@ namespace abbTools.AppWindowsIPC
         private StreamWriter sendMsg;
         private bool closeComm;
         private bool restartComm;
+        private bool autoOpen;
         private string myServer;
         private string sendBuffor;
         private string recvBuffor;
@@ -41,7 +42,8 @@ namespace abbTools.AppWindowsIPC
         /// </summary>
         /// <param name="serverName">specify server name (defined in server app)</param>
         /// <param name="restoreConn">true if communication should restore after disconnection</param>
-        public WindowsIPCClient(string serverName, bool restoreConn)
+        /// <param name="autoStart">true if communication should start at program start</param>
+        public WindowsIPCClient(string serverName, bool restoreConn, bool autoStart)
         {
             //check if there was pipe client before
             if (pipeStream != null) {
@@ -54,6 +56,7 @@ namespace abbTools.AppWindowsIPC
             //named pipe operations
             closeComm = false;
             restartComm = restoreConn;
+            autoOpen = autoStart;
             //clear send and receive buffors
             sendBuffor = "";
             recvBuffor = "";
@@ -114,6 +117,22 @@ namespace abbTools.AppWindowsIPC
         public void send(string message)
         {
             sendBuffor = message;
+        }
+
+        /// <summary>
+        /// Get server name
+        /// </summary>
+        public string serverName
+        {
+            get { return myServer; }
+        }
+
+        /// <summary>
+        /// Get auto start property
+        /// </summary>
+        public bool autoStart
+        {
+            get { return autoOpen; }
         }
 
         /********************************************************

@@ -280,7 +280,7 @@ namespace abbTools
                     updateIcon(updItem, abbStatus.conn.available);
                     updItem.SubItems.Add(eventController.IPAddress.ToString());
                     updItem.Tag = eventController;
-                    this.listViewRobots.Items.Add(updItem);
+                    listViewRobots.Items.Add(updItem);
                 }
             } else {
                 //lost controller - check if it was connected
@@ -558,7 +558,7 @@ namespace abbTools
                     } catch (ABB.Robotics.GenericControllerException e) {
                         status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>" +
                                         e.Message+".. wait a while and try again.");
-                    } catch (System.Exception e) {
+                    } catch (Exception e) {
                         status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>" +
                                         e.Message + ".. wait a while and try again.");
                     }
@@ -700,6 +700,7 @@ namespace abbTools
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //send controller address to other classes
                 appRemotePC.syncController(abbConn);
+                appWindowsIPC.syncController(abbConn);
             }
 
         }
@@ -711,6 +712,7 @@ namespace abbTools
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //send controller address to my programs
                 appRemotePC.syncController(abbConn);
+                appWindowsIPC.syncController(abbConn);
             }
         }
 
@@ -721,6 +723,7 @@ namespace abbTools
             if (disconnStatus == (int)abbStatus.conn.disconnOK) {
                 //clear controller address in my programs
                 appRemotePC.desyncController();
+                appWindowsIPC.desyncController();
             }
         }
 

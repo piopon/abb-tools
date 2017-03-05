@@ -110,7 +110,6 @@ namespace appRemoteABB
         public void fillWinFormControl(ref ListViewItem fill)
         {
             //fill all subitems
-            
             if (mySignal != null) {
                 fill.Text = mySignal.Name;
             } else {

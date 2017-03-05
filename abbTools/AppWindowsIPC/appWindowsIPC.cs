@@ -15,16 +15,21 @@ namespace abbTools.AppWindowsIPC
         //delegate methods for updating GUI from other threads
         delegate void buttonUpdateUI(Button component, bool enabled, Color clr);
         delegate void listBoxUpdateUI(ListBox list, string newItem);
-        //data containers
+        //current connection data containers
         private Controller abbController = null;
         private SignalCollection abbSignals = null;
         private loggerABB abbLogger = null;
-        private WindowsIPCClient myClient;
+        private WindowsIPCClient myClient = null;
+        //data containers
+        private WindowsIPCCollection allData = null;
         //enable buttons logic vars
         private bool sigCondition = false,
                      msgCondition = false,
                      serverCondition = false,
                      watchCondition = false;
+        //remember current selected data
+        private string currMessage = "";
+        private string currSignal = "";
 
         /********************************************************
          ***  APP IPC - named pipe client event
@@ -37,7 +42,18 @@ namespace abbTools.AppWindowsIPC
         {
             //init all form components
             InitializeComponent();
-        }
+            //init data containers
+            abbController = null;
+            abbSignals = null;
+            abbLogger = null;
+            myClient = null;
+            allData = new WindowsIPCCollection();
+            //connect collection data with GUI container
+            allData.connectContainerGUI(listMessagesWatch);
+            //reset current data
+            currMessage = "";
+            currSignal = "";
+    }
 
         /// <summary>
         /// Synchronize logging component address with current app
@@ -67,6 +83,39 @@ namespace abbTools.AppWindowsIPC
             abbController = null;
         }
 
+        public void openClientIPC(string serverName, bool recon, bool autoStart)
+        {
+            bool openClient = false;
+            //check if running client is other then current
+            if (myClient == null) {
+                //no client exists yet
+                openClient = true;
+            } else {
+                //client exists - check if its different then other
+                if (myClient.serverName != serverName)
+                {
+                    //close communication pipe
+                    myClient.close();
+                    //open new client
+                    openClient = true;
+                }
+            }
+            //check if we want to open client
+            if (openClient) {
+                //create client 
+                myClient = new WindowsIPCClient(serverName, recon, autoStart);
+                //subscribe events
+                myClient.OnConnect += clientStatusEvent;
+                myClient.OnDisconnect += clientStatusEvent;
+                myClient.OnWaiting += clientStatusEvent;
+                myClient.OnReceived += clientRecvEvent;
+                myClient.OnSent += clientSentEvent;
+                myClient.OnEnd += clientEndEvent;
+                //open communication pipe
+                myClient.open();
+            }
+        }
+
         /********************************************************
          ***  APP IPC - GUI
          ********************************************************/
@@ -88,17 +137,7 @@ namespace abbTools.AppWindowsIPC
         {
             //check if user defined server name
             if (textServerName.Text!="") {
-                //create client
-                myClient = new WindowsIPCClient(textServerName.Text, checkAutoReconnect.Checked);
-                //subscribe events
-                myClient.OnConnect += clientStatusEvent;
-                myClient.OnDisconnect += clientStatusEvent;
-                myClient.OnWaiting += clientStatusEvent;
-                myClient.OnReceived += clientRecvEvent;
-                myClient.OnSent += clientSentEvent;
-                myClient.OnEnd += clientEndEvent;
-                //open communication pipe
-                myClient.open();
+                openClientIPC(textServerName.Text, checkAutoReconnect.Checked, checkAutoOpen.Checked);
                 //update GUI buttons 
                 clientControlButtons(false);
             } else {
@@ -188,7 +227,7 @@ namespace abbTools.AppWindowsIPC
          ***  LOGIC
          ********************************************************/
 
-        private void checkEnableButtons()
+        private void checkWatchButtons()
         {
             //modify button condition
             bool modifyCondition = sigCondition && serverCondition && msgCondition && watchCondition;
@@ -247,10 +286,12 @@ namespace abbTools.AppWindowsIPC
         private void backThread_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             //get all signals and report to main thread when finished
-            abbSignals = abbController.IOSystem.GetSignals(IOFilterTypes.Output);
+            abbSignals = abbController.IOSystem.GetSignals(IOFilterTypes.Digital);
             //update list in process changed event
             foreach (Signal sig in abbSignals) {
-                if (abbController != null) backThread.ReportProgress(0, sig);
+                if (sig.Type == SignalType.DigitalOutput) {
+                    if (abbController != null) backThread.ReportProgress(0, sig);
+                }
             }
         }
 
@@ -331,6 +372,58 @@ namespace abbTools.AppWindowsIPC
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] status: " + e.message);
         }
 
+        private void textServerName_TextChanged(object sender, EventArgs e)
+        {
+            //update logic condition for enabling buttons
+            serverCondition = textServerName.Text != "";
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void listBoxAllMessages_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int sIndex = listBoxAllMessages.SelectedIndex;
+            //update logic condition for enabling buttons
+            msgCondition = sIndex >= 0;
+            currMessage = listBoxAllMessages.Items[sIndex].ToString();
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            //uncheck other elements
+            for (int i = 0; i < listRobotSignals.Items.Count; ++i) {
+                if (i != e.Index) {
+                    listRobotSignals.SetItemChecked(i, false);
+                }
+            }
+            //update logic condition for enabling buttons
+            sigCondition = e.NewValue == CheckState.Checked;
+            currSignal = listRobotSignals.Items[e.Index].ToString();
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void listMessagesWatch_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            //update logic condition for enabling buttons
+            watchCondition = listMessagesWatch.CheckedItems.Count != 0;
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void buttonMsgNew_Click(object sender, EventArgs e)
+        {
+            //add new element to collection
+            WindowsIPC newItem = new WindowsIPC(abbController,myClient,abbLogger);
+            //fill new item messages
+            Signal cSig = abbController.IOSystem.GetSignal(currSignal);
+            newItem.addMessageAction(currMessage, cSig, 1);
+            //add new item to collection (GUI auto-fill)
+            allData.itemAdd(newItem);
+        }
+
         /// <summary>
         /// event on change communication status
         /// </summary>
@@ -358,7 +451,6 @@ namespace abbTools.AppWindowsIPC
             }
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] received: " + e.message);
-
         }
 
         /// <summary>

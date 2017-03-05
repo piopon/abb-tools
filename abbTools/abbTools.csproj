@@ -92,8 +92,10 @@
     <Compile Include="AppWindowsIPC\appWindowsIPC.Designer.cs">
       <DependentUpon>appWindowsIPC.cs</DependentUpon>
     </Compile>
+    <Compile Include="AppWindowsIPC\WindowsIPC.cs" />
     <Compile Include="AppWindowsIPC\WindowsIPCClient.cs" />
     <Compile Include="AppWindowsIPC\WindowsIPCEvents.cs" />
+    <Compile Include="AppWindowsIPC\WindowsIPCMessages.cs" />
     <Compile Include="Shared\commonABB.cs" />
     <Compile Include="Shared\loggerABB.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

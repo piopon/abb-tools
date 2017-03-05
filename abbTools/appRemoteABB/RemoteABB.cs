@@ -12,7 +12,7 @@ namespace appRemoteABB
         private Controller myController;
         private RemoteSignalCollection mySignals;
         private loggerABB myLogger;
-        //backup signal name field (when controller not visible in network)
+        //backup controller name field (when controller not visible in network)
         private string storedControllerName;
 
         public RemoteABB()
@@ -96,7 +96,7 @@ namespace appRemoteABB
 
     class RemoteABBCollection : List<RemoteABB>
     {
-        //current edited controller
+        //current edited data
         private RemoteABB currentData;
         private loggerABB defaultLogger;
 

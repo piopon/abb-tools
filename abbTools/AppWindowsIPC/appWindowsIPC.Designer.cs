@@ -50,10 +50,14 @@
             this.checkAutoReconnect = new System.Windows.Forms.CheckBox();
             this.textServerName = new System.Windows.Forms.TextBox();
             this.groupMessages = new System.Windows.Forms.GroupBox();
+            this.labelManualMessage = new System.Windows.Forms.Label();
             this.textManualMessage = new System.Windows.Forms.TextBox();
             this.btnAddManualMessage = new System.Windows.Forms.Button();
             this.checkAutoFillMessages = new System.Windows.Forms.CheckBox();
             this.listBoxAllMessages = new System.Windows.Forms.ListBox();
+            this.listBoxMsgMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.removeItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupWatchMsg = new System.Windows.Forms.GroupBox();
             this.listMessagesWatch = new System.Windows.Forms.ListView();
             this.watchHeaderServer = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -63,10 +67,6 @@
             this.buttonMsgRemove = new System.Windows.Forms.Button();
             this.buttonMsgModify = new System.Windows.Forms.Button();
             this.buttonMsgNew = new System.Windows.Forms.Button();
-            this.listBoxMsgMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.removeItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.clearAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.labelManualMessage = new System.Windows.Forms.Label();
             this.backThread = new System.ComponentModel.BackgroundWorker();
             this.groupRemoteSignals.SuspendLayout();
             this.panelLoading.SuspendLayout();
@@ -76,8 +76,8 @@
             this.groupClientControl.SuspendLayout();
             this.groupClientSettings.SuspendLayout();
             this.groupMessages.SuspendLayout();
-            this.groupWatchMsg.SuspendLayout();
             this.listBoxMsgMenu.SuspendLayout();
+            this.groupWatchMsg.SuspendLayout();
             this.SuspendLayout();
             // 
             // textMsgToSend
@@ -188,6 +188,7 @@
             this.listRobotSignals.Name = "listRobotSignals";
             this.listRobotSignals.Size = new System.Drawing.Size(239, 238);
             this.listRobotSignals.TabIndex = 2;
+            this.listRobotSignals.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.listRobotSignals_ItemCheck);
             // 
             // groupNamedPipeClient
             // 
@@ -328,6 +329,7 @@
             this.textServerName.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.textServerName.Size = new System.Drawing.Size(206, 28);
             this.textServerName.TabIndex = 5;
+            this.textServerName.TextChanged += new System.EventHandler(this.textServerName_TextChanged);
             // 
             // groupMessages
             // 
@@ -343,6 +345,16 @@
             this.groupMessages.TabIndex = 17;
             this.groupMessages.TabStop = false;
             this.groupMessages.Text = "MESSAGES";
+            // 
+            // labelManualMessage
+            // 
+            this.labelManualMessage.AutoSize = true;
+            this.labelManualMessage.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelManualMessage.Location = new System.Drawing.Point(13, 268);
+            this.labelManualMessage.Name = "labelManualMessage";
+            this.labelManualMessage.Size = new System.Drawing.Size(83, 17);
+            this.labelManualMessage.TabIndex = 4;
+            this.labelManualMessage.Text = "add message";
             // 
             // textManualMessage
             // 
@@ -384,6 +396,31 @@
             this.listBoxAllMessages.Name = "listBoxAllMessages";
             this.listBoxAllMessages.Size = new System.Drawing.Size(206, 212);
             this.listBoxAllMessages.TabIndex = 0;
+            this.listBoxAllMessages.SelectedIndexChanged += new System.EventHandler(this.listBoxAllMessages_SelectedIndexChanged);
+            // 
+            // listBoxMsgMenu
+            // 
+            this.listBoxMsgMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.listBoxMsgMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.removeItemToolStripMenuItem,
+            this.clearAllToolStripMenuItem});
+            this.listBoxMsgMenu.Name = "listBoxMsgMenu";
+            this.listBoxMsgMenu.Size = new System.Drawing.Size(163, 52);
+            this.listBoxMsgMenu.Opening += new System.ComponentModel.CancelEventHandler(this.listBoxMsgMenu_Opening);
+            // 
+            // removeItemToolStripMenuItem
+            // 
+            this.removeItemToolStripMenuItem.Name = "removeItemToolStripMenuItem";
+            this.removeItemToolStripMenuItem.Size = new System.Drawing.Size(162, 24);
+            this.removeItemToolStripMenuItem.Text = "remove item";
+            this.removeItemToolStripMenuItem.Click += new System.EventHandler(this.removeItemToolStripMenuItem_Click);
+            // 
+            // clearAllToolStripMenuItem
+            // 
+            this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
+            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(162, 24);
+            this.clearAllToolStripMenuItem.Text = "clear all";
+            this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
             // 
             // groupWatchMsg
             // 
@@ -425,6 +462,7 @@
             this.listMessagesWatch.TabIndex = 22;
             this.listMessagesWatch.UseCompatibleStateImageBehavior = false;
             this.listMessagesWatch.View = System.Windows.Forms.View.Details;
+            this.listMessagesWatch.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listMessagesWatch_ItemChecked);
             // 
             // watchHeaderServer
             // 
@@ -490,43 +528,11 @@
             this.buttonMsgNew.TabIndex = 19;
             this.buttonMsgNew.Text = "NEW";
             this.buttonMsgNew.UseVisualStyleBackColor = false;
-            // 
-            // listBoxMsgMenu
-            // 
-            this.listBoxMsgMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.listBoxMsgMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.removeItemToolStripMenuItem,
-            this.clearAllToolStripMenuItem});
-            this.listBoxMsgMenu.Name = "listBoxMsgMenu";
-            this.listBoxMsgMenu.Size = new System.Drawing.Size(169, 56);
-            this.listBoxMsgMenu.Opening += new System.ComponentModel.CancelEventHandler(this.listBoxMsgMenu_Opening);
-            // 
-            // removeItemToolStripMenuItem
-            // 
-            this.removeItemToolStripMenuItem.Name = "removeItemToolStripMenuItem";
-            this.removeItemToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
-            this.removeItemToolStripMenuItem.Text = "remove item";
-            this.removeItemToolStripMenuItem.Click += new System.EventHandler(this.removeItemToolStripMenuItem_Click);
-            // 
-            // clearAllToolStripMenuItem
-            // 
-            this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
-            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
-            this.clearAllToolStripMenuItem.Text = "clear all";
-            this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
-            // 
-            // labelManualMessage
-            // 
-            this.labelManualMessage.AutoSize = true;
-            this.labelManualMessage.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelManualMessage.Location = new System.Drawing.Point(13, 268);
-            this.labelManualMessage.Name = "labelManualMessage";
-            this.labelManualMessage.Size = new System.Drawing.Size(81, 16);
-            this.labelManualMessage.TabIndex = 4;
-            this.labelManualMessage.Text = "add message";
+            this.buttonMsgNew.Click += new System.EventHandler(this.buttonMsgNew_Click);
             // 
             // backThread
             // 
+            this.backThread.WorkerReportsProgress = true;
             this.backThread.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backThread_DoWork);
             this.backThread.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backThread_ProgressChanged);
             this.backThread.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backThread_RunWorkerCompleted);
@@ -553,8 +559,8 @@
             this.groupClientSettings.PerformLayout();
             this.groupMessages.ResumeLayout(false);
             this.groupMessages.PerformLayout();
-            this.groupWatchMsg.ResumeLayout(false);
             this.listBoxMsgMenu.ResumeLayout(false);
+            this.groupWatchMsg.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
