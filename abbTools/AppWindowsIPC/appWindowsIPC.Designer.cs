@@ -82,7 +82,7 @@
             // 
             // textMsgToSend
             // 
-            this.textMsgToSend.BackColor = System.Drawing.Color.PapayaWhip;
+            this.textMsgToSend.BackColor = System.Drawing.Color.Silver;
             this.textMsgToSend.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textMsgToSend.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.textMsgToSend.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -95,6 +95,7 @@
             // btnSendMsg
             // 
             this.btnSendMsg.BackColor = System.Drawing.Color.Silver;
+            this.btnSendMsg.Enabled = false;
             this.btnSendMsg.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
             this.btnSendMsg.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Silver;
             this.btnSendMsg.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -219,9 +220,10 @@
             // 
             // panelTextMessage
             // 
-            this.panelTextMessage.BackColor = System.Drawing.Color.PapayaWhip;
+            this.panelTextMessage.BackColor = System.Drawing.Color.Silver;
             this.panelTextMessage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelTextMessage.Controls.Add(this.textMsgToSend);
+            this.panelTextMessage.Enabled = false;
             this.panelTextMessage.Location = new System.Drawing.Point(16, 25);
             this.panelTextMessage.Name = "panelTextMessage";
             this.panelTextMessage.Padding = new System.Windows.Forms.Padding(10, 0, 10, 10);
@@ -297,6 +299,7 @@
             this.checkAutoOpen.TabIndex = 7;
             this.checkAutoOpen.Text = "auto open";
             this.checkAutoOpen.UseVisualStyleBackColor = true;
+            this.checkAutoOpen.CheckedChanged += new System.EventHandler(this.checkAutoOpen_CheckedChanged);
             // 
             // labelServerName
             // 
@@ -318,6 +321,7 @@
             this.checkAutoReconnect.TabIndex = 4;
             this.checkAutoReconnect.Text = "auto recon";
             this.checkAutoReconnect.UseVisualStyleBackColor = true;
+            this.checkAutoReconnect.CheckedChanged += new System.EventHandler(this.checkAutoReconnect_CheckedChanged);
             // 
             // textServerName
             // 
@@ -330,6 +334,8 @@
             this.textServerName.Size = new System.Drawing.Size(206, 28);
             this.textServerName.TabIndex = 5;
             this.textServerName.TextChanged += new System.EventHandler(this.textServerName_TextChanged);
+            this.textServerName.Enter += new System.EventHandler(this.textServerName_Enter);
+            this.textServerName.Leave += new System.EventHandler(this.textServerName_Leave);
             // 
             // groupMessages
             // 
@@ -358,26 +364,35 @@
             // 
             // textManualMessage
             // 
+            this.textManualMessage.BackColor = System.Drawing.Color.Silver;
+            this.textManualMessage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textManualMessage.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textManualMessage.Location = new System.Drawing.Point(16, 284);
+            this.textManualMessage.ForeColor = System.Drawing.Color.Black;
+            this.textManualMessage.Location = new System.Drawing.Point(16, 285);
             this.textManualMessage.Name = "textManualMessage";
             this.textManualMessage.Size = new System.Drawing.Size(125, 23);
             this.textManualMessage.TabIndex = 3;
             // 
             // btnAddManualMessage
             // 
-            this.btnAddManualMessage.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnAddManualMessage.Location = new System.Drawing.Point(147, 284);
+            this.btnAddManualMessage.BackColor = System.Drawing.Color.Silver;
+            this.btnAddManualMessage.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.btnAddManualMessage.Enabled = false;
+            this.btnAddManualMessage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAddManualMessage.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.btnAddManualMessage.Location = new System.Drawing.Point(147, 285);
             this.btnAddManualMessage.Name = "btnAddManualMessage";
             this.btnAddManualMessage.Size = new System.Drawing.Size(75, 23);
             this.btnAddManualMessage.TabIndex = 2;
             this.btnAddManualMessage.Text = "add";
-            this.btnAddManualMessage.UseVisualStyleBackColor = true;
+            this.btnAddManualMessage.UseVisualStyleBackColor = false;
             this.btnAddManualMessage.Click += new System.EventHandler(this.btnAddManualMessage_Click);
             // 
             // checkAutoFillMessages
             // 
             this.checkAutoFillMessages.AutoSize = true;
+            this.checkAutoFillMessages.Checked = true;
+            this.checkAutoFillMessages.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkAutoFillMessages.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.checkAutoFillMessages.Location = new System.Drawing.Point(16, 32);
             this.checkAutoFillMessages.Name = "checkAutoFillMessages";
@@ -388,6 +403,7 @@
             // 
             // listBoxAllMessages
             // 
+            this.listBoxAllMessages.BackColor = System.Drawing.Color.Silver;
             this.listBoxAllMessages.ContextMenuStrip = this.listBoxMsgMenu;
             this.listBoxAllMessages.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.listBoxAllMessages.FormattingEnabled = true;
@@ -405,20 +421,20 @@
             this.removeItemToolStripMenuItem,
             this.clearAllToolStripMenuItem});
             this.listBoxMsgMenu.Name = "listBoxMsgMenu";
-            this.listBoxMsgMenu.Size = new System.Drawing.Size(163, 52);
+            this.listBoxMsgMenu.Size = new System.Drawing.Size(169, 56);
             this.listBoxMsgMenu.Opening += new System.ComponentModel.CancelEventHandler(this.listBoxMsgMenu_Opening);
             // 
             // removeItemToolStripMenuItem
             // 
             this.removeItemToolStripMenuItem.Name = "removeItemToolStripMenuItem";
-            this.removeItemToolStripMenuItem.Size = new System.Drawing.Size(162, 24);
+            this.removeItemToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
             this.removeItemToolStripMenuItem.Text = "remove item";
             this.removeItemToolStripMenuItem.Click += new System.EventHandler(this.removeItemToolStripMenuItem_Click);
             // 
             // clearAllToolStripMenuItem
             // 
             this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
-            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(162, 24);
+            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(168, 26);
             this.clearAllToolStripMenuItem.Text = "clear all";
             this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
             // 

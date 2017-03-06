@@ -133,6 +133,16 @@ namespace abbTools.AppWindowsIPC
         public bool autoStart
         {
             get { return autoOpen; }
+            set { autoOpen = value; }
+        }
+
+        /// <summary>
+        /// Get auto start property
+        /// </summary>
+        public bool autoRecon
+        {
+            get { return restartComm; }
+            set { restartComm = value; }
         }
 
         /********************************************************

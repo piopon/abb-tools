@@ -85,27 +85,24 @@ namespace abbTools.AppWindowsIPC
             Clear();
         }
 
-        public bool theSame(WindowsIPCMessagesCollection reference)
+        public bool hasMessage(WindowsIPCMessages current)
         {
             bool result = false;
-            int currItem = 0;
             //check if reference object exists
-            result = reference != null;
-            //first compare sizes
-            result = result && Count == reference.Count;
-            //finally check every item...
-            if (result) {
+            if (current != null) {
+                //check every collection item
                 foreach (WindowsIPCMessages item in this) {
                     //check message
-                    result = item.message == reference[currItem].message;
+                    result = item.message == current.message;
                     //check signal name
-                    result = result && item.sigName == reference[currItem].sigName;
+                    result = result && item.sigName == current.sigName;
                     //check signal value
-                    result = result && item.sigValue == reference[currItem].sigValue;
-                    //if its nok then collections are different
-                    if (!result) break;
-                    //its ok so increment elements no
-                    currItem++;
+                    result = result && item.sigValue == current.sigValue;
+                    //if current exists in collection then break with true
+                    if (result) {
+                        result = true;
+                        break;
+                    }
                 }
             }
             return result;

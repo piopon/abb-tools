@@ -21,7 +21,7 @@ namespace abbTools.AppWindowsIPC
         private loggerABB abbLogger = null;
         private WindowsIPCClient myClient = null;
         //data containers
-        private WindowsIPCCollection allData = null;
+        private WindowsIPCCollection ipcData = null;
         //enable buttons logic vars
         private bool sigCondition = false,
                      msgCondition = false,
@@ -47,9 +47,9 @@ namespace abbTools.AppWindowsIPC
             abbSignals = null;
             abbLogger = null;
             myClient = null;
-            allData = new WindowsIPCCollection();
+            ipcData = new WindowsIPCCollection();
             //connect collection data with GUI container
-            allData.connectContainerGUI(listMessagesWatch);
+            ipcData.connectContainerGUI(listMessagesWatch);
             //reset current data
             currMessage = "";
             currSignal = "";
@@ -63,6 +63,7 @@ namespace abbTools.AppWindowsIPC
         {
             //update logging components address
             abbLogger = myLogger;
+            ipcData.connectLogger(myLogger);
         }
 
         public void desyncLogger()
@@ -79,31 +80,21 @@ namespace abbTools.AppWindowsIPC
 
         public void desyncController()
         {
+            //clear all robot digital outputs
+            if (abbSignals != null) {
+                abbSignals.Clear();
+                abbSignals = null;
+            }
             //reset controller address
             abbController = null;
+            //reset GUI
+            resetGUI();
         }
 
-        public void openClientIPC(string serverName, bool recon, bool autoStart)
+        public void openClientIPC()
         {
-            bool openClient = false;
-            //check if running client is other then current
-            if (myClient == null) {
-                //no client exists yet
-                openClient = true;
-            } else {
-                //client exists - check if its different then other
-                if (myClient.serverName != serverName)
-                {
-                    //close communication pipe
-                    myClient.close();
-                    //open new client
-                    openClient = true;
-                }
-            }
-            //check if we want to open client
-            if (openClient) {
-                //create client 
-                myClient = new WindowsIPCClient(serverName, recon, autoStart);
+            //check if client exists
+            if (myClient != null) {
                 //subscribe events
                 myClient.OnConnect += clientStatusEvent;
                 myClient.OnDisconnect += clientStatusEvent;
@@ -120,11 +111,24 @@ namespace abbTools.AppWindowsIPC
          ***  APP IPC - GUI
          ********************************************************/
 
-            /// <summary>
-            /// Action on click button btnSendMsg
-            /// </summary>
-            /// <param name="sender">which component triggered event</param>
-            /// <param name="e">event arguments</param>
+        public void resetGUI()
+        {
+            //clear signals list and show info panel
+            listRobotSignals.Items.Clear();
+            listRobotSignals.BackColor = Color.Silver;
+            panelLoading.Visible = true;
+            panelLoading.BackColor = Color.Gold;
+            labelLoadSignals.Text = "update signals...";
+            //clear watch signal table
+            listMessagesWatch.Items.Clear();
+            listMessagesWatch.BackColor = Color.Silver;
+        }
+
+        /// <summary>
+        /// Action on click button btnSendMsg
+        /// </summary>
+        /// <param name="sender">which component triggered event</param>
+        /// <param name="e">event arguments</param>
         private void btnSendMsg_Click(object sender, EventArgs e)
         {
             //send inputted message from client to 
@@ -137,7 +141,7 @@ namespace abbTools.AppWindowsIPC
         {
             //check if user defined server name
             if (textServerName.Text!="") {
-                openClientIPC(textServerName.Text, checkAutoReconnect.Checked, checkAutoOpen.Checked);
+                openClientIPC();
                 //update GUI buttons 
                 clientControlButtons(false);
             } else {
@@ -157,15 +161,21 @@ namespace abbTools.AppWindowsIPC
             string cMsg = textManualMessage.Text;
             if (cMsg != "") {
                 //check if inputted element doesnt exist in list
-                if (checkMsgIndex(cMsg) == -1) {
+                int checkIndex = checkMsgIndex(cMsg);
+                if (checkIndex == -1) {
                     updateListBox(listBoxAllMessages, cMsg);
+                    abbLogger.writeLog(logType.info, "Message <b>"+cMsg+"</b> added to list!");
+                    //select last added item
+                    listBoxAllMessages.SelectedIndex = listBoxAllMessages.Items.Count - 1;
                 } else {
-                    abbLogger.writeLog(logType.warning, "Inputted message exists in list...");
+                    abbLogger.writeLog(logType.warning, "Inputted message <b>"+cMsg+"</b> exists in list [index = "+checkIndex.ToString()+"]...");
+                    //select exisiting element number
+                    listBoxAllMessages.SelectedIndex = checkIndex;
                 }
                 //clear message after update
                 textManualMessage.Text = "";
             } else {
-                abbLogger.writeLog(logType.error, "Input message to be added!");
+                abbLogger.writeLog(logType.error, "No message inputted in box!");
             }
         }
 
@@ -195,6 +205,118 @@ namespace abbTools.AppWindowsIPC
                 updateButton(buttonClientOFF, true, Color.OrangeRed);
                 updateButton(btnSendMsg, true, Color.DarkOrange);
             }
+        }
+
+        private void textServerName_TextChanged(object sender, EventArgs e)
+        {
+            //update logic condition for enabling buttons
+            serverCondition = textServerName.Text != "";
+            if (serverCondition) {
+                //server name present - enable message test components
+                panelTextMessage.BackColor = Color.PapayaWhip;
+                panelTextMessage.Enabled = true;
+                textMsgToSend.BackColor = Color.PapayaWhip;
+                textMsgToSend.Enabled = true;
+                btnSendMsg.BackColor = Color.DarkOrange;
+                btnSendMsg.Enabled = true;
+                //server name present - enable message group components
+                listBoxAllMessages.BackColor = Color.White;
+                listBoxAllMessages.Enabled = true;
+                textManualMessage.BackColor = Color.PapayaWhip;
+                textManualMessage.Enabled = true;
+                btnAddManualMessage.BackColor = Color.DarkOrange;
+                btnAddManualMessage.Enabled = true;
+            } else {
+                //server name missing - disable message test components
+                panelTextMessage.BackColor = Color.Silver;
+                panelTextMessage.Enabled = false;
+                textMsgToSend.BackColor = Color.Silver;
+                textMsgToSend.Enabled = false;
+                btnSendMsg.BackColor = Color.Silver;
+                btnSendMsg.Enabled = true;
+                //server name missing - disable message group components
+                listBoxAllMessages.BackColor = Color.Silver;
+                listBoxAllMessages.Enabled = false;
+                textManualMessage.BackColor = Color.Silver;
+                textManualMessage.Enabled = false;
+                textManualMessage.Text = "";
+                btnAddManualMessage.BackColor = Color.Silver;
+                btnAddManualMessage.Enabled = false;
+            }
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void listBoxAllMessages_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            int sIndex = listBoxAllMessages.SelectedIndex;
+            //update logic condition for enabling buttons
+            msgCondition = sIndex >= 0;
+            if (sIndex>=0) currMessage = listBoxAllMessages.Items[sIndex].ToString();
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            //uncheck other elements
+            for (int i = 0; i < listRobotSignals.Items.Count; ++i) {
+                if (i != e.Index) {
+                    listRobotSignals.SetItemChecked(i, false);
+                }
+            }
+            //update logic condition for enabling buttons
+            sigCondition = e.NewValue == CheckState.Checked;
+            currSignal = listRobotSignals.Items[e.Index].ToString();
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void listMessagesWatch_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            //update logic condition for enabling buttons
+            watchCondition = listMessagesWatch.CheckedItems.Count != 0;
+            //check watch buttons enabled status
+            checkWatchButtons();
+        }
+
+        private void buttonMsgNew_Click(object sender, EventArgs e)
+        {
+            //add new element to collection
+            WindowsIPC newItem = new WindowsIPC(abbController, myClient, abbLogger);
+            //fill new item messages
+            Signal cSig = abbController.IOSystem.GetSignal(currSignal);
+            newItem.addMessageAction(currMessage, cSig, 1);
+            //add new item to collection (GUI auto-fill)
+            ipcData.itemAdd(newItem);
+            //update GUI
+            listMessagesWatch.BackColor = Color.White;
+        }
+
+        private void textServerName_Leave(object sender, EventArgs e)
+        {
+            //get client data
+            string serverName = textServerName.Text;
+            bool recon = checkAutoReconnect.Checked;
+            bool autoStart = checkAutoOpen.Checked;
+            //create client 
+            if (serverName != "") {
+                myClient = new WindowsIPCClient(serverName, recon, autoStart);
+                //update description
+                groupClientControl.Text = "client control = " + serverName;
+            } else {
+                myClient = null;
+                //update description
+                groupClientControl.Text = "client control = null";
+            }
+        }
+
+        private void textServerName_Enter(object sender, EventArgs e)
+        {
+            //clear my client
+            myClient = null;
+            //update description
+            groupClientControl.Text = "client control = null";
         }
 
         /// <summary>
@@ -370,58 +492,7 @@ namespace abbTools.AppWindowsIPC
             clientControlButtons(true);
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] status: " + e.message);
-        }
-
-        private void textServerName_TextChanged(object sender, EventArgs e)
-        {
-            //update logic condition for enabling buttons
-            serverCondition = textServerName.Text != "";
-            //check watch buttons enabled status
-            checkWatchButtons();
-        }
-
-        private void listBoxAllMessages_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            int sIndex = listBoxAllMessages.SelectedIndex;
-            //update logic condition for enabling buttons
-            msgCondition = sIndex >= 0;
-            currMessage = listBoxAllMessages.Items[sIndex].ToString();
-            //check watch buttons enabled status
-            checkWatchButtons();
-        }
-
-        private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
-            //uncheck other elements
-            for (int i = 0; i < listRobotSignals.Items.Count; ++i) {
-                if (i != e.Index) {
-                    listRobotSignals.SetItemChecked(i, false);
-                }
-            }
-            //update logic condition for enabling buttons
-            sigCondition = e.NewValue == CheckState.Checked;
-            currSignal = listRobotSignals.Items[e.Index].ToString();
-            //check watch buttons enabled status
-            checkWatchButtons();
-        }
-
-        private void listMessagesWatch_ItemChecked(object sender, ItemCheckedEventArgs e)
-        {
-            //update logic condition for enabling buttons
-            watchCondition = listMessagesWatch.CheckedItems.Count != 0;
-            //check watch buttons enabled status
-            checkWatchButtons();
-        }
-
-        private void buttonMsgNew_Click(object sender, EventArgs e)
-        {
-            //add new element to collection
-            WindowsIPC newItem = new WindowsIPC(abbController,myClient,abbLogger);
-            //fill new item messages
-            Signal cSig = abbController.IOSystem.GetSignal(currSignal);
-            newItem.addMessageAction(currMessage, cSig, 1);
-            //add new item to collection (GUI auto-fill)
-            allData.itemAdd(newItem);
+            myClient = null;
         }
 
         /// <summary>
@@ -463,5 +534,67 @@ namespace abbTools.AppWindowsIPC
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] sent: " + e.message);
         }
+
+        /********************************************************
+         ***  APP IPC - data management from main window
+         ********************************************************/
+
+        public void clearAppData()
+        {
+            //clear collections 
+            ipcData.clear();
+            //disconnect logger 
+            ipcData.disconnectLogger();
+            //disconnect container
+            ipcData.disconnectContainerGUI();
+        }
+
+        public void saveAppData(ref System.Xml.XmlWriter saveXml, Controller parent = null, string parentName = "")
+        {
+            //save current robot child node to XML document
+            string saveName = parent != null ? parent.SystemName : parentName;
+            if (saveName.Length > 0) {
+                ipcData.saveToXml(ref saveXml, saveName);
+            } else {
+                abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
+            }
+        }
+
+        private void checkAutoReconnect_CheckedChanged(object sender, EventArgs e)
+        {
+            if(myClient != null) myClient.autoRecon = checkAutoReconnect.Checked;
+        }
+
+        private void checkAutoOpen_CheckedChanged(object sender, EventArgs e)
+        {
+            if (myClient != null) myClient.autoStart = checkAutoOpen.Checked;
+        }
+
+        public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
+        {
+            //reset GUI
+            resetGUI();
+            //read next element (this one will be with robot info
+            System.Xml.XmlReader nodeCurrRobot = loadXml.ReadSubtree();
+            //read every child node from XML document (stopped at reading robot)
+            ipcData.loadFromXml(ref nodeCurrRobot, parent);
+        }
+
+        public void controllerFound(Controller found)
+        {
+            if (found != null) {
+                ipcData.addController(found);
+            }
+        }
+
+        public void controllerLost(Controller lost)
+        {
+            if (lost != null) {
+                ipcData.clearController(lost);
+                //reset GUI
+                if (abbController != null && lost.SystemName == abbController.SystemName) resetGUI();
+            }
+        }
+
     }
 }
