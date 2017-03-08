@@ -161,7 +161,7 @@ namespace abbTools.AppWindowsIPC
             string cMsg = textManualMessage.Text;
             if (cMsg != "") {
                 //check if inputted element doesnt exist in list
-                int checkIndex = checkMsgIndex(cMsg);
+                int checkIndex = checkMsgIndex(listBoxAllMessages,cMsg);
                 if (checkIndex == -1) {
                     updateListBox(listBoxAllMessages, cMsg);
                     abbLogger.writeLog(logType.info, "Message <b>"+cMsg+"</b> added to list!");
@@ -199,11 +199,9 @@ namespace abbTools.AppWindowsIPC
             if (clientOff) {
                 updateButton(buttonClientON, true, Color.Chartreuse);
                 updateButton(buttonClientOFF, false, Color.Silver);
-                updateButton(btnSendMsg, false, Color.Silver);
             } else {
                 updateButton(buttonClientON, false, Color.Silver);
                 updateButton(buttonClientOFF, true, Color.OrangeRed);
-                updateButton(btnSendMsg, true, Color.DarkOrange);
             }
         }
 
@@ -233,7 +231,7 @@ namespace abbTools.AppWindowsIPC
                 textMsgToSend.BackColor = Color.Silver;
                 textMsgToSend.Enabled = false;
                 btnSendMsg.BackColor = Color.Silver;
-                btnSendMsg.Enabled = true;
+                btnSendMsg.Enabled = false;
                 //server name missing - disable message group components
                 listBoxAllMessages.BackColor = Color.Silver;
                 listBoxAllMessages.Enabled = false;
@@ -280,21 +278,70 @@ namespace abbTools.AppWindowsIPC
             checkWatchButtons();
         }
 
+        //================================================================
+
         private void buttonMsgNew_Click(object sender, EventArgs e)
         {
             //add new element to collection
             WindowsIPC newItem = new WindowsIPC(abbController, myClient, abbLogger);
             //fill new item messages
             Signal cSig = abbController.IOSystem.GetSignal(currSignal);
-            newItem.addMessageAction(currMessage, cSig, 1);
+            int sigVal = radioSigTo0.Checked ? 0 : 1;
+            newItem.addMessageAction(currMessage, cSig, sigVal);
             //add new item to collection (GUI auto-fill)
             ipcData.itemAdd(newItem);
             //update GUI
             listMessagesWatch.BackColor = Color.White;
         }
 
+        private void buttonMsgModify_Click(object sender, EventArgs e)
+        {
+            //only one element can be modified
+            if (listMessagesWatch.CheckedItems.Count == 1) {
+                //uncheck current element
+                ListViewItem item = listMessagesWatch.CheckedItems[0];
+                item.Checked = false;
+                //fill old item 
+                WindowsIPC oldItem = new WindowsIPC(abbController, myClient, abbLogger);
+                Signal oldSig = abbController.IOSystem.GetSignal(item.SubItems[2].Text);
+                oldItem.addMessageAction(item.SubItems[1].Text, oldSig, int.Parse(item.SubItems[3].Text));
+                //fill new item messages
+                WindowsIPC newItem = new WindowsIPC(abbController, myClient, abbLogger);
+                Signal newSig = abbController.IOSystem.GetSignal(currSignal);
+                newItem.addMessageAction(currMessage, newSig, radioSigTo0.Checked ? 0 : 1);
+                //update element
+                ipcData.itemModify(oldItem, newItem);
+            } else {
+                abbLogger.writeLog(logType.warning, "Select only one element to be modified!");
+            }
+        }
+
+        private void buttonMsgRemove_Click(object sender, EventArgs e)
+        {
+            //remove every selected item
+            foreach (ListViewItem item in listMessagesWatch.CheckedItems) {
+                //uncheck current element
+                item.Checked = false;
+                //fill remove item messages
+                WindowsIPC removeItem = new WindowsIPC(abbController, myClient, abbLogger);
+                Signal cSig = abbController.IOSystem.GetSignal(item.SubItems[2].Text);
+                removeItem.addMessageAction(item.SubItems[1].Text, cSig, int.Parse(item.SubItems[3].Text));
+                //remove item from collection (GUI auto-fill)
+                ipcData.itemRemove(removeItem);
+            }
+            //update GUI
+            if (listMessagesWatch.Items.Count==0) listMessagesWatch.BackColor = Color.Silver;
+        }
+
+        //================================================================
+
         private void textServerName_Leave(object sender, EventArgs e)
         {
+            //check if client exists and its running
+            if (myClient != null && myClient.isRunning()) {
+                //client is running - dont do anything
+                return;
+            }
             //get client data
             string serverName = textServerName.Text;
             bool recon = checkAutoReconnect.Checked;
@@ -302,22 +349,68 @@ namespace abbTools.AppWindowsIPC
             //create client 
             if (serverName != "") {
                 myClient = new WindowsIPCClient(serverName, recon, autoStart);
-                //update description
-                groupClientControl.Text = "client control = " + serverName;
             } else {
                 myClient = null;
-                //update description
-                groupClientControl.Text = "client control = null";
             }
         }
 
         private void textServerName_Enter(object sender, EventArgs e)
         {
-            //clear my client
-            myClient = null;
-            //update description
-            groupClientControl.Text = "client control = null";
+            //check if current client is running
+            if (myClient != null && myClient.isRunning()) {
+                abbLogger.writeLog(logType.error, "Cant change server name while running! Stop client and change name!");
+            } else {
+                //clear my client
+                myClient = null;
+            }
         }
+
+        private void textServerName_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (myClient != null && myClient.isRunning()) {
+                e.Handled = true;
+                abbLogger.writeLog(logType.error, "Key pressed ignored! Stop client and change name!");
+            }
+        }
+
+        private void checkAutoReconnect_CheckedChanged(object sender, EventArgs e)
+        {
+            if (myClient != null) myClient.autoRecon = checkAutoReconnect.Checked;
+        }
+
+        private void checkAutoOpen_CheckedChanged(object sender, EventArgs e)
+        {
+            if (myClient != null) myClient.autoStart = checkAutoOpen.Checked;
+        }
+
+        private void textManualMessage_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            //if user presses Enter (return) then simulate add message click
+            if (e.KeyChar == '\r') {
+                btnAddManualMessage_Click(sender, new EventArgs());
+            }
+        }
+
+        private void textMsgToSend_Enter(object sender, EventArgs e)
+        {
+            textMsgToSend.Text = "";
+        }
+
+        private void textMsgToSend_Leave(object sender, EventArgs e)
+        {
+            textMsgToSend.Text = "test message";
+        }
+
+        private void textMsgToSend_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            //if user presses Enter (return) then simulate add message click
+            if (e.KeyChar == '\r') {
+                btnSendMsg_Click(sender, new EventArgs());
+                textMsgToSend.Text = "";
+            }
+        }
+
+        //================================================================
 
         /// <summary>
         /// wrapper of checkBox checked state to use with Invoke and normal approach
@@ -365,12 +458,18 @@ namespace abbTools.AppWindowsIPC
             buttonMsgRemove.BackColor = deleteCondition ? Color.Red : Color.Silver;
         }
 
-        private int checkMsgIndex(string msg)
+        /// <summary>
+        /// Method used to check index of message in selected ListBox parent
+        /// </summary>
+        /// <param name="parent">ListBox to check for message</param>
+        /// <param name="msg">Message which index we want to find</param>
+        /// <returns>Index of inputted message (-1 if message not exists)</returns>
+        private int checkMsgIndex(ListBox parent, string msg)
         {
             int result = -1;
 
-            for (int i=0; i<listBoxAllMessages.Items.Count; i++) {
-                if(listBoxAllMessages.Items[i].ToString()==msg) {
+            for (int i=0; i< parent.Items.Count; i++) {
+                if(parent.Items[i].ToString()==msg) {
                     result = i;
                     break;
                 }
@@ -443,9 +542,15 @@ namespace abbTools.AppWindowsIPC
         }
 
         /********************************************************
-         ***  INVOKE GUI FROM BACKGORUND THREAD
+         ***  INVOKE GUI FROM BACKGORUND OR MAIN THREAD
          ********************************************************/
 
+        /// <summary>
+        /// Method to update Button color and enable state (auto-check if update from background thread or main)
+        /// </summary>
+        /// <param name="btn">Button to update</param>
+        /// <param name="enable">new Button enable state</param>
+        /// <param name="clr">new Button color</param>
         private void updateButton(Button btn, bool enable, Color clr)
         {
             if (btn.InvokeRequired) {
@@ -458,6 +563,11 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Method to update ListBox item (auto-check if update from background thread or main)
+        /// </summary>
+        /// <param name="list">ListBox item to update</param>
+        /// <param name="txt">New item to add to ListBox</param>
         private void updateListBox(ListBox list, string txt)
         {
             if (list.InvokeRequired) {
@@ -492,7 +602,6 @@ namespace abbTools.AppWindowsIPC
             clientControlButtons(true);
             //show log info
             abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] status: " + e.message);
-            myClient = null;
         }
 
         /// <summary>
@@ -513,10 +622,16 @@ namespace abbTools.AppWindowsIPC
         /// <param name="e">window IPC event args</param>
         private void clientRecvEvent(object sender, WindowsIPCEventArgs e)
         {
+            //check if we are watching current message
+            int msgIndex = -1, ipcIndex = ipcData.checkMessage(e.message, ref msgIndex);
+            if (ipcIndex >= 0) {
+                //execute action from this message
+                ipcData[ipcIndex].executeAction(msgIndex);
+            }
             //check if we want to input incomming messages to list
             if (checkAutoFillMessages.Checked) {
                 //check if curr element doesnt exist in list
-                if (checkMsgIndex(e.message)==-1) {
+                if (checkMsgIndex(listBoxAllMessages,e.message)==-1) {
                     updateListBox(listBoxAllMessages, e.message);
                 }
             }
@@ -558,16 +673,6 @@ namespace abbTools.AppWindowsIPC
             } else {
                 abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
             }
-        }
-
-        private void checkAutoReconnect_CheckedChanged(object sender, EventArgs e)
-        {
-            if(myClient != null) myClient.autoRecon = checkAutoReconnect.Checked;
-        }
-
-        private void checkAutoOpen_CheckedChanged(object sender, EventArgs e)
-        {
-            if (myClient != null) myClient.autoStart = checkAutoOpen.Checked;
         }
 
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")

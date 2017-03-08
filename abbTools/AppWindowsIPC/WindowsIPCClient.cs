@@ -111,6 +111,15 @@ namespace abbTools.AppWindowsIPC
         }
 
         /// <summary>
+        /// Check if communication is running
+        /// </summary>
+        /// <returns>true if communication thread is running</returns>
+        public bool isRunning()
+        {
+            return commThread != null && commThread.IsAlive;
+        }
+
+        /// <summary>
         /// Send message to server
         /// </summary>
         /// <param name="message">Message text to be send</param>

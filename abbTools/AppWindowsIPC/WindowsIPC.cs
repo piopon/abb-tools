@@ -67,11 +67,6 @@ namespace abbTools.AppWindowsIPC
             myLogger = newLogger;
         }
 
-        public void clearMessages()
-        {
-            myData.Clear();
-        }
-
         /// <summary>
         /// Function used to check if this object is the same as inputted
         /// </summary>
@@ -95,6 +90,21 @@ namespace abbTools.AppWindowsIPC
             return result;
         }
 
+        public void clearMessages()
+        {
+            myData.Clear();
+        }
+
+        public void removeMessage(int index)
+        {
+            myData.RemoveAt(index);
+        }
+
+        public int countMessages()
+        {
+            return myData.Count;
+        }
+
         public void addMessageAction(string message, Signal sigData, int sigValue)
         {
             myData.Add(new WindowsIPCMessages(message, sigData, sigValue));
@@ -105,9 +115,33 @@ namespace abbTools.AppWindowsIPC
             myData.Add(messageAction);
         }
 
+        public void updateMessageAction(int index, WindowsIPCMessages updMessageAction)
+        {
+            myData[index] = updMessageAction;
+        }
+
         public WindowsIPCMessages getMessageAction(int index)
         {
             return myData[index];
+        }
+
+        public int findMessageIndex(string message)
+        {
+            int result;
+
+            for (result = 0; result < myData.Count; result++) {
+                if (myData[result].message == message) {
+                    break;
+                }
+            }
+            result = result >= myData.Count ? -1 : result;
+
+            return result;
+        }
+
+        public void executeAction(int index)
+        {
+
         }
 
         public void saveMessages(ref System.Xml.XmlWriter xmlSubtree)
@@ -265,6 +299,39 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        public void itemModify(WindowsIPC oldItem, WindowsIPC newItem)
+        {
+            //check if old item exists in collection 
+            int oldIndex = itemIndex(oldItem);
+            if (oldIndex != -1) {
+                //check if new item doesnt exist in collection
+                if (itemIndex(newItem) == -1) {
+                    //old item is in collection and new one is not - all OK!
+                    if(oldItem.controllerName == newItem.controllerName) {
+                        //its the same controller - change inside it
+                        int cController = itemIndex(oldItem, find.controller);
+                        if (cController != -1) {
+                            int msgIndex = this[cController].findMessageIndex(oldItem.getMessageAction(0).message);
+                            this[cController].updateMessageAction(msgIndex, newItem.getMessageAction(0));
+                        }
+                    } else {
+                        //its a different controller - remove old element
+                        itemRemove(oldItem);
+                        //insert new element
+                        itemAdd(newItem);
+                    }
+                    //update GUI component containing data
+                    updateContainerGUI();
+                } else {
+                    //new item exists in collection
+                    defaultLogger.writeLog(logType.warning, "New item already exists in collection!");
+                }
+            } else {
+                //old item doesnt exist in collection
+                defaultLogger.writeLog(logType.warning, "Item to modify doesnt exist in collection!");
+            }
+        }
+
         /// <summary>
         /// Remove inputted item to collection (internally checking if exists)
         /// </summary>
@@ -273,16 +340,34 @@ namespace abbTools.AppWindowsIPC
         {
             int index = itemIndex(cItem);
             //check if current element exists in collection
-            if (index != -1)
-            {
-                //element exists in collection - remove it
-                RemoveAt(index);
-                currentData = null;
-                //update GUI component containing data
-                updateContainerGUI();
+            if (index != -1) {
+                //element exists in collection - find controller data
+                int cController = itemIndex(cItem, find.controller);
+                if (cController != -1) {
+                    int messagesCount = this[cController].countMessages();
+                    if (messagesCount > 0) {
+                        int msgIndex = this[cController].findMessageIndex(cItem.getMessageAction(0).message);
+                        if (messagesCount == 1 && msgIndex != -1) {
+                            RemoveAt(cController);
+                        } else {
+                            this[cController].removeMessage(msgIndex);
+                        }
+                    } else {
+                        RemoveAt(cController);
+                    }
+                    //update GUI component containing data
+                    updateContainerGUI();
+                }
             }
         }
-        
+
+        public int checkMessage(string msg, ref int msgItem)
+        {
+            int result = -1;
+
+            return result;
+        }
+
         public void clear()
         {
             foreach (WindowsIPC cData in this) {
@@ -322,7 +407,9 @@ namespace abbTools.AppWindowsIPC
 
         public bool addController(Controller newController, string storeName = "")
         {
-            MessageBox.Show("TODO: addController");
+            //add new controller to collection
+            WindowsIPC newItem = new WindowsIPC(newController);
+            itemAdd(newItem);
             return true;
         }
 
@@ -384,7 +471,12 @@ namespace abbTools.AppWindowsIPC
             if (myContainer != null) {
                 //update all collection in GUI container
                 myContainer.Items.Clear();
-                currentData.updateGUI(myContainer);
+                //update GUI for current controller 
+                foreach (WindowsIPC item in this) {
+                    if (item.controllerName == currentData.controllerName) {
+                        item.updateGUI(myContainer);
+                    }
+                }
             } else {
                 if (defaultLogger != null) {
                     defaultLogger.writeLog(logType.warning, "No GUI container connected to data...");

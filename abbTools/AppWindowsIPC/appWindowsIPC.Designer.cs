@@ -91,13 +91,14 @@
             this.textMsgToSend.Size = new System.Drawing.Size(184, 16);
             this.textMsgToSend.TabIndex = 1;
             this.textMsgToSend.Text = "test message";
+            this.textMsgToSend.Enter += new System.EventHandler(this.textMsgToSend_Enter);
+            this.textMsgToSend.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textMsgToSend_KeyPress);
+            this.textMsgToSend.Leave += new System.EventHandler(this.textMsgToSend_Leave);
             // 
             // btnSendMsg
             // 
             this.btnSendMsg.BackColor = System.Drawing.Color.Silver;
             this.btnSendMsg.Enabled = false;
-            this.btnSendMsg.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
-            this.btnSendMsg.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Silver;
             this.btnSendMsg.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSendMsg.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.btnSendMsg.ForeColor = System.Drawing.Color.Black;
@@ -261,6 +262,7 @@
             // buttonClientOFF
             // 
             this.buttonClientOFF.BackColor = System.Drawing.Color.Silver;
+            this.buttonClientOFF.Enabled = false;
             this.buttonClientOFF.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonClientOFF.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.buttonClientOFF.Location = new System.Drawing.Point(122, 24);
@@ -335,6 +337,7 @@
             this.textServerName.TabIndex = 5;
             this.textServerName.TextChanged += new System.EventHandler(this.textServerName_TextChanged);
             this.textServerName.Enter += new System.EventHandler(this.textServerName_Enter);
+            this.textServerName.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textServerName_KeyPress);
             this.textServerName.Leave += new System.EventHandler(this.textServerName_Leave);
             // 
             // groupMessages
@@ -372,6 +375,7 @@
             this.textManualMessage.Name = "textManualMessage";
             this.textManualMessage.Size = new System.Drawing.Size(125, 23);
             this.textManualMessage.TabIndex = 3;
+            this.textManualMessage.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textManualMessage_KeyPress);
             // 
             // btnAddManualMessage
             // 
@@ -514,6 +518,7 @@
             this.buttonMsgRemove.TabIndex = 21;
             this.buttonMsgRemove.Text = "DELETE";
             this.buttonMsgRemove.UseVisualStyleBackColor = false;
+            this.buttonMsgRemove.Click += new System.EventHandler(this.buttonMsgRemove_Click);
             // 
             // buttonMsgModify
             // 
@@ -529,6 +534,7 @@
             this.buttonMsgModify.TabIndex = 20;
             this.buttonMsgModify.Text = "MODIFY";
             this.buttonMsgModify.UseVisualStyleBackColor = false;
+            this.buttonMsgModify.Click += new System.EventHandler(this.buttonMsgModify_Click);
             // 
             // buttonMsgNew
             // 
