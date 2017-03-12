@@ -36,7 +36,7 @@ namespace abbTools.AppWindowsIPC
          ********************************************************/
 
         /// <summary>
-        /// Default class constructor
+        /// Default constructor
         /// </summary>
         public appWindowsIPC()
         {
@@ -49,7 +49,7 @@ namespace abbTools.AppWindowsIPC
             myClient = null;
             ipcData = new WindowsIPCCollection();
             //connect collection data with GUI container
-            ipcData.connectContainerGUI(listMessagesWatch);
+            ipcData.connectContainersGUI(listMessagesWatch,textServerName,checkAutoReconnect,checkAutoOpen);
             //reset current data
             currMessage = "";
             currSignal = "";
@@ -63,21 +63,34 @@ namespace abbTools.AppWindowsIPC
         {
             //update logging components address
             abbLogger = myLogger;
+            //enable main collection to log data
             ipcData.connectLogger(myLogger);
         }
 
+        /// <summary>
+        /// Desynchronize logger from current app (no logging available)
+        /// </summary>
         public void desyncLogger()
         {
             //clear controller logger
             abbLogger = null;
         }
 
+        /// <summary>
+        /// Synchronize ABB controller (called on controller connect!)
+        /// </summary>
+        /// <param name="myController">ABB controller to synchronize with</param>
         public void syncController(Controller myController)
         {
             //update controller address
             abbController = myController;
+            //add controller to ipc collection
+            ipcData.controllerUpdate(abbController);
         }
 
+        /// <summary>
+        /// Desynchronize current ABB controller from app (no controller actions available)
+        /// </summary>
         public void desyncController()
         {
             //clear all robot digital outputs
@@ -91,6 +104,9 @@ namespace abbTools.AppWindowsIPC
             resetGUI();
         }
 
+        /// <summary>
+        /// Procedure to open named-pipe client with subscribing all events
+        /// </summary>
         public void openClientIPC()
         {
             //check if client exists
@@ -102,6 +118,8 @@ namespace abbTools.AppWindowsIPC
                 myClient.OnReceived += clientRecvEvent;
                 myClient.OnSent += clientSentEvent;
                 myClient.OnEnd += clientEndEvent;
+                //update event status
+                myClient.events = true;
                 //open communication pipe
                 myClient.open();
             }
@@ -111,8 +129,15 @@ namespace abbTools.AppWindowsIPC
          ***  APP IPC - GUI
          ********************************************************/
 
+        /// <summary>
+        /// Reset GUI components to initial state
+        /// </summary>
         public void resetGUI()
         {
+            //clear server name and checkboxes
+            textServerName.Text = "";
+            checkAutoOpen.Checked = false;
+            checkAutoReconnect.Checked = false;
             //clear signals list and show info panel
             listRobotSignals.Items.Clear();
             listRobotSignals.BackColor = Color.Silver;
@@ -122,6 +147,24 @@ namespace abbTools.AppWindowsIPC
             //clear watch signal table
             listMessagesWatch.Items.Clear();
             listMessagesWatch.BackColor = Color.Silver;
+        }
+
+        /// <summary>
+        /// Update client control buttons GUI state
+        /// </summary>
+        /// <param name="clientOff"></param>
+        private void clientControlButtons(bool clientOff)
+        {
+            //check clients new state
+            if (clientOff) {
+                //update buttons state (works from main and background threads)
+                updateButton(buttonClientON, true, Color.Chartreuse);
+                updateButton(buttonClientOFF, false, Color.Silver);
+            } else {
+                //update buttons state (works from main and background threads)
+                updateButton(buttonClientON, false, Color.Silver);
+                updateButton(buttonClientOFF, true, Color.OrangeRed);
+            }
         }
 
         /// <summary>
@@ -137,6 +180,11 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Action on click buttonClientON = named-pipe client open communication
+        /// </summary>
+        /// <param name="sender">Object which triggered current event</param>
+        /// <param name="e">Click event arguments</param>
         private void buttonClientON_Click(object sender, EventArgs e)
         {
             //check if user defined server name
@@ -149,12 +197,22 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Action on click buttonClientOFF = named-pipe client close communication
+        /// </summary>
+        /// <param name="sender">Object which triggered current event</param>
+        /// <param name="e">Click event arguments</param>
         private void buttonClientOFF_Click(object sender, EventArgs e)
         {
             //close communication pipe
             myClient.close();
         }
 
+        /// <summary>
+        /// Action on click btnAddManualMessage = add user's message to list
+        /// </summary>
+        /// <param name="sender">Object which triggered current event</param>
+        /// <param name="e">Click event arguments</param>
         private void btnAddManualMessage_Click(object sender, EventArgs e)
         {
             //check if user inputted message
@@ -181,28 +239,20 @@ namespace abbTools.AppWindowsIPC
 
         private void listBoxMsgMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            //enable remove single item from list if any element is selected
             removeItemToolStripMenuItem.Enabled = listBoxAllMessages.SelectedIndex >= 0;
         }
 
         private void removeItemToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //remove selected item from list
             listBoxAllMessages.Items.RemoveAt(listBoxAllMessages.SelectedIndex);
         }
 
         private void clearAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            //clear all elements from list
             listBoxAllMessages.Items.Clear();
-        }
-
-        private void clientControlButtons(bool clientOff)
-        {
-            if (clientOff) {
-                updateButton(buttonClientON, true, Color.Chartreuse);
-                updateButton(buttonClientOFF, false, Color.Silver);
-            } else {
-                updateButton(buttonClientON, false, Color.Silver);
-                updateButton(buttonClientOFF, true, Color.OrangeRed);
-            }
         }
 
         private void textServerName_TextChanged(object sender, EventArgs e)
@@ -285,9 +335,7 @@ namespace abbTools.AppWindowsIPC
             //add new element to collection
             WindowsIPC newItem = new WindowsIPC(abbController, myClient, abbLogger);
             //fill new item messages
-            Signal cSig = abbController.IOSystem.GetSignal(currSignal);
-            int sigVal = radioSigTo0.Checked ? 0 : 1;
-            newItem.addMessageAction(currMessage, cSig, sigVal);
+            newItem.messageAdd(currMessage, currSignal, radioSigTo0.Checked ? 0 : 1);
             //add new item to collection (GUI auto-fill)
             ipcData.itemAdd(newItem);
             //update GUI
@@ -303,12 +351,10 @@ namespace abbTools.AppWindowsIPC
                 item.Checked = false;
                 //fill old item 
                 WindowsIPC oldItem = new WindowsIPC(abbController, myClient, abbLogger);
-                Signal oldSig = abbController.IOSystem.GetSignal(item.SubItems[2].Text);
-                oldItem.addMessageAction(item.SubItems[1].Text, oldSig, int.Parse(item.SubItems[3].Text));
+                oldItem.messageAdd(item.SubItems[1].Text, item.SubItems[2].Text, int.Parse(item.SubItems[3].Text));
                 //fill new item messages
                 WindowsIPC newItem = new WindowsIPC(abbController, myClient, abbLogger);
-                Signal newSig = abbController.IOSystem.GetSignal(currSignal);
-                newItem.addMessageAction(currMessage, newSig, radioSigTo0.Checked ? 0 : 1);
+                newItem.messageAdd(currMessage, currSignal, radioSigTo0.Checked ? 0 : 1);
                 //update element
                 ipcData.itemModify(oldItem, newItem);
             } else {
@@ -324,8 +370,7 @@ namespace abbTools.AppWindowsIPC
                 item.Checked = false;
                 //fill remove item messages
                 WindowsIPC removeItem = new WindowsIPC(abbController, myClient, abbLogger);
-                Signal cSig = abbController.IOSystem.GetSignal(item.SubItems[2].Text);
-                removeItem.addMessageAction(item.SubItems[1].Text, cSig, int.Parse(item.SubItems[3].Text));
+                removeItem.messageAdd(item.SubItems[1].Text, item.SubItems[2].Text, int.Parse(item.SubItems[3].Text));
                 //remove item from collection (GUI auto-fill)
                 ipcData.itemRemove(removeItem);
             }
@@ -393,11 +438,13 @@ namespace abbTools.AppWindowsIPC
 
         private void textMsgToSend_Enter(object sender, EventArgs e)
         {
+            //cleartext box message title
             textMsgToSend.Text = "";
         }
 
         private void textMsgToSend_Leave(object sender, EventArgs e)
         {
+            //show text box message title
             textMsgToSend.Text = "test message";
         }
 
@@ -478,22 +525,25 @@ namespace abbTools.AppWindowsIPC
             return result;
         }
 
-        /********************************************************
-         ***  APP IPC - update signals (BACKGROUND TASK)
-         ********************************************************/
+        /********************************************************/
+        /***  APP IPC - update signals (BACKGROUND TASK)         /
+        /********************************************************/
 
         private void buttonUpdateSignals_Click(object sender, EventArgs e)
         {
             if (abbController != null) {
-                abbLogger.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updating signals...");
-                //clear list items
-                listRobotSignals.Items.Clear();
-                //run background thread
-                backThread.RunWorkerAsync(listRobotSignals);
-                //show loading info panel
-                panelLoading.BackColor = Color.DarkOrange;
-                labelLoadSignals.Text = "reading signals...";
-                panelLoading.Visible = true;
+                //check if background worker is running
+                if (!backThread.IsBusy){
+                    abbLogger.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updating signals...");
+                    //clear list items
+                    listRobotSignals.Items.Clear();
+                    //run background thread
+                    backThread.RunWorkerAsync(listRobotSignals);
+                    //show loading info panel
+                    panelLoading.BackColor = Color.DarkOrange;
+                    labelLoadSignals.Text = "reading signals...";
+                    panelLoading.Visible = true;
+                }
             } else {
                 abbLogger.writeLog(logType.warning, "can't update signals... no controller connected!");
                 panelLoading.BackColor = Color.Red;
@@ -598,10 +648,12 @@ namespace abbTools.AppWindowsIPC
             myClient.OnReceived -= clientRecvEvent;
             myClient.OnSent -= clientSentEvent;
             myClient.OnEnd -= clientEndEvent;
+            //update event status
+            myClient.events = false;
             //update GUI buttons 
             clientControlButtons(true);
             //show log info
-            abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] status: " + e.message);
+            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server + "] status: " + e.message);
         }
 
         /// <summary>
@@ -612,7 +664,7 @@ namespace abbTools.AppWindowsIPC
         private void clientStatusEvent(object sender, WindowsIPCEventArgs e)
         {
             //show log info
-            abbLogger.writeLog(logType.info, "[IPC client " + e.server+"] status: "+e.message);
+            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server+"] status: "+e.message);
         }
 
         /// <summary>
@@ -622,12 +674,6 @@ namespace abbTools.AppWindowsIPC
         /// <param name="e">window IPC event args</param>
         private void clientRecvEvent(object sender, WindowsIPCEventArgs e)
         {
-            //check if we are watching current message
-            int msgIndex = -1, ipcIndex = ipcData.checkMessage(e.message, ref msgIndex);
-            if (ipcIndex >= 0) {
-                //execute action from this message
-                ipcData[ipcIndex].executeAction(msgIndex);
-            }
             //check if we want to input incomming messages to list
             if (checkAutoFillMessages.Checked) {
                 //check if curr element doesnt exist in list
@@ -636,7 +682,7 @@ namespace abbTools.AppWindowsIPC
                 }
             }
             //show log info
-            abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] received: " + e.message);
+            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server + "] received: " + e.message);
         }
 
         /// <summary>
@@ -647,7 +693,7 @@ namespace abbTools.AppWindowsIPC
         private void clientSentEvent(object sender, WindowsIPCEventArgs e)
         {
             //show log info
-            abbLogger.writeLog(logType.info, "[IPC client " + e.server + "] sent: " + e.message);
+            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server + "] sent: " + e.message);
         }
 
         /********************************************************
@@ -660,8 +706,6 @@ namespace abbTools.AppWindowsIPC
             ipcData.clear();
             //disconnect logger 
             ipcData.disconnectLogger();
-            //disconnect container
-            ipcData.disconnectContainerGUI();
         }
 
         public void saveAppData(ref System.Xml.XmlWriter saveXml, Controller parent = null, string parentName = "")
@@ -679,23 +723,39 @@ namespace abbTools.AppWindowsIPC
         {
             //reset GUI
             resetGUI();
+            //read XML untill current app settings node appears
+            while (loadXml.Read()) {
+                bool start = loadXml.NodeType == System.Xml.XmlNodeType.Element,
+                     windowsIPC = loadXml.Name.StartsWith("windowsIPC");
+                //if we are starting to read windowsIPC app setting then break from WHILE loop
+                if (start && windowsIPC) {
+                    //if current element is empty then return
+                    if (loadXml.IsEmptyElement) return;
+                    //if element not empty then load its data
+                    break;
+                }
+                //if we are at end of current robot then dont read anythig
+                if (loadXml.Name.StartsWith("robot_") && loadXml.NodeType == System.Xml.XmlNodeType.EndElement) return;
+            }
             //read next element (this one will be with robot info
             System.Xml.XmlReader nodeCurrRobot = loadXml.ReadSubtree();
             //read every child node from XML document (stopped at reading robot)
-            ipcData.loadFromXml(ref nodeCurrRobot, parent);
+            ipcData.loadFromXml(ref nodeCurrRobot, parent, parentName);
         }
 
-        public void controllerFound(Controller found)
+        public void savedControllerFound(Controller found)
         {
+            //update controllers data in collection
+            //it was saved but non-visible at start, but it showed up right now!
             if (found != null) {
-                ipcData.addController(found);
+                ipcData.controllerUpdate(found);
             }
         }
 
-        public void controllerLost(Controller lost)
+        public void savedControllerLost(Controller lost)
         {
             if (lost != null) {
-                ipcData.clearController(lost);
+                ipcData.controllerClear(lost);
                 //reset GUI
                 if (abbController != null && lost.SystemName == abbController.SystemName) resetGUI();
             }

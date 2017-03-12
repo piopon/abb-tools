@@ -21,6 +21,7 @@ namespace abbTools.AppWindowsIPC
         private bool closeComm;
         private bool restartComm;
         private bool autoOpen;
+        private bool eventsConn;
         private string myServer;
         private string sendBuffor;
         private string recvBuffor;
@@ -57,6 +58,7 @@ namespace abbTools.AppWindowsIPC
             closeComm = false;
             restartComm = restoreConn;
             autoOpen = autoStart;
+            eventsConn = false;
             //clear send and receive buffors
             sendBuffor = "";
             recvBuffor = "";
@@ -152,6 +154,15 @@ namespace abbTools.AppWindowsIPC
         {
             get { return restartComm; }
             set { restartComm = value; }
+        }
+
+        /// <summary>
+        /// Get and set event connected flag
+        /// </summary>
+        public bool events
+        {
+            get { return eventsConn; }
+            set { eventsConn = value; }
         }
 
         /********************************************************

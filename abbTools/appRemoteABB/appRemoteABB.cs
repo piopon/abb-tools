@@ -102,15 +102,18 @@ namespace abbTools
         private void buttonUpdateSignals_Click(object sender, EventArgs e)
         {
             if (abbController != null) {
-                abbLogger.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updating signals...");
-                //clear list items
-                listRobotSignals.Items.Clear();
-                //run background thread
-                backThread.RunWorkerAsync(listRobotSignals);
-                //show loading info panel
-                panelLoading.BackColor = Color.DarkOrange;
-                labelLoadSignals.Text = "reading signals...";
-                panelLoading.Visible = true;
+                //check if background worker is running
+                if (!backThread.IsBusy) {
+                    abbLogger.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updating signals...");
+                    //clear list items
+                    listRobotSignals.Items.Clear();
+                    //run background thread
+                    backThread.RunWorkerAsync(listRobotSignals);
+                    //show loading info panel
+                    panelLoading.BackColor = Color.DarkOrange;
+                    labelLoadSignals.Text = "reading signals...";
+                    panelLoading.Visible = true;
+                }
             } else {
                 abbLogger.writeLog(logType.warning, "can't update signals... no controller connected!");
                 panelLoading.BackColor = Color.Red;
@@ -376,10 +379,24 @@ namespace abbTools
         {
             //reset GUI
             resetGUI();
+            //read XML untill current app settings node appears
+            while (loadXml.Read()) {
+                bool start = loadXml.NodeType == System.Xml.XmlNodeType.Element,
+                     remotePC = loadXml.Name.StartsWith("remotePC");
+                //if we are starting to read remotePC app setting then break from WHILE loop
+                if (start && remotePC) {
+                    //if current element is empty then return
+                    if (loadXml.IsEmptyElement) return;
+                    //if element not empty then load its data
+                    break;
+                }
+                //if we are at end of current robot then dont read anythig
+                if (loadXml.Name.StartsWith("robot_") && loadXml.NodeType == System.Xml.XmlNodeType.EndElement) return;
+            }
             //read next element (this one will be with robot info
             System.Xml.XmlReader nodeCurrRobot = loadXml.ReadSubtree();
             //read every child node from XML document (stopped at reading robot)
-            remoteABB.loadFromXml(ref nodeCurrRobot, parent);
+            remoteABB.loadFromXml(ref nodeCurrRobot, parent, parentName);
         }
 
         public void controllerFound(Controller found)

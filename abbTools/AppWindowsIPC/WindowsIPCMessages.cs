@@ -1,16 +1,14 @@
-﻿using System.Windows.Forms;
+﻿using System.Xml;
+using System.Windows.Forms;
 using System.Collections.Generic;
-using ABB.Robotics.Controllers.IOSystemDomain;
 
 namespace abbTools.AppWindowsIPC
 {
     class WindowsIPCMessages
     {
         private string messageActor;
-        private Signal signalResultant;
+        private string signalResultant;
         private int signalValue;
-        //stored signal name if controller not exists
-        private string storedSignalName;
 
         /// <summary>
         /// Default WindowsIPCMessages constructor
@@ -18,8 +16,7 @@ namespace abbTools.AppWindowsIPC
         public WindowsIPCMessages()
         {
             messageActor = "";
-            signalResultant = null;
-            storedSignalName = "";
+            signalResultant = "";
             signalValue = -1;
         }
 
@@ -29,11 +26,10 @@ namespace abbTools.AppWindowsIPC
         /// <param name="newMessage">Message value</param>
         /// <param name="newSignal">Signal data</param>
         /// <param name="sigVal">Signal value (only '0' or '1' accepted!)</param>
-        public WindowsIPCMessages(string newMessage, Signal newSignal, int sigVal)
+        public WindowsIPCMessages(string newMessage, string newSignal, int sigVal)
         {
             messageActor = newMessage;
             signalResultant = newSignal;
-            storedSignalName = newSignal.Name;
             signalValue = (sigVal == 0 || sigVal == 1) ? sigVal : -1;
         }
 
@@ -45,8 +41,35 @@ namespace abbTools.AppWindowsIPC
         {
             messageActor = org.messageActor;
             signalResultant = org.signalResultant;
-            storedSignalName = org.storedSignalName;
             signalValue = org.signalValue;
+        }
+
+        public void saveToXML(ref XmlWriter xmlNode, int nodeNo)
+        {
+            //write start element
+            xmlNode.WriteStartElement("msg_" + nodeNo.ToString());
+            //message name
+            xmlNode.WriteAttributeString("message", messageActor);
+            //signal name
+            xmlNode.WriteAttributeString("signal", signalResultant);
+            //signal value (0 or 1)
+            xmlNode.WriteAttributeString("value", signalValue.ToString());
+            //finish element
+            xmlNode.WriteEndElement();
+        }
+
+        public void loadFromXML(XmlReader xmlNode)
+        {
+            //only xml element nodes with attributes and "msg_" name are OK
+            bool okNode = (xmlNode.NodeType == XmlNodeType.Element) && (xmlNode.Name.StartsWith("msg_"));
+            if (okNode && xmlNode.HasAttributes) {
+                //fill data from XML - get signal name
+                messageActor = xmlNode.GetAttribute("message");
+                //get actor (short attribute and convert it to useful data)
+                signalResultant = xmlNode.GetAttribute("signal"); 
+                //fill myAction data from sub tree node
+                signalValue = int.Parse(xmlNode.GetAttribute("value"));
+            }
         }
 
         public string message
@@ -56,13 +79,7 @@ namespace abbTools.AppWindowsIPC
 
         public string sigName
         {
-            get {
-                if (signalResultant == null) {
-                    return storedSignalName;
-                } else {
-                    return signalResultant.Name;
-                }
-            }
+            get { return signalResultant; }
         }
 
         public int sigValue
@@ -119,6 +136,29 @@ namespace abbTools.AppWindowsIPC
                     newItem.Checked = false;
                     //add current item to container
                     container.Items.Add(newItem);
+                    //change container color to white
+                    container.BackColor = System.Drawing.Color.White;
+                }
+            }
+        }
+
+        public void saveToXML(ref XmlWriter xmlSubtree)
+        {
+            int itemNo = 0;
+            foreach (WindowsIPCMessages saveMsg in this) {
+                saveMsg.saveToXML(ref xmlSubtree, itemNo++);
+            }
+        }
+
+        public void loadFromXML(ref XmlReader xmlSubtree)
+        {
+            //load every element in delivered XML (faster if only interesting xmlSubtree)
+            while (xmlSubtree.Read()) {
+                if (xmlSubtree.NodeType == XmlNodeType.Element && xmlSubtree.Name.StartsWith("msg_")) {
+                    //add new element to collection and fill its data 
+                    WindowsIPCMessages loadMsg = new WindowsIPCMessages();
+                    loadMsg.loadFromXML(xmlSubtree);
+                    Add(loadMsg);
                 }
             }
         }

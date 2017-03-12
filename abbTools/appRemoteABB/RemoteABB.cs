@@ -456,13 +456,13 @@ namespace appRemoteABB
             }
         }
 
-        public void loadFromXml(ref System.Xml.XmlReader xmlSubnode, Controller parent = null)
+        public void loadFromXml(ref System.Xml.XmlReader xmlSubnode, Controller parent = null, string parentName="")
         {
-            //we should get xml subtree with robot name as parent node
+            //we should get xml subtree with remotePC as parent node
             while (xmlSubnode.Read()) {
-                if (xmlSubnode.Name.StartsWith("robot_")) {
+                if (xmlSubnode.Name.StartsWith("remotePC")) {
                     //create new object in collection (pass string arg if controller not visible [null])
-                    if(addController(parent, xmlSubnode.GetAttribute("name"))) {
+                    if(addController(parent, parentName)) {
                         currentData.signals.loadSignals(ref xmlSubnode, currentData.controller);
                         //if controller is visible then we can add signal watcher to its signals
                         if (currentData.controller != null) {

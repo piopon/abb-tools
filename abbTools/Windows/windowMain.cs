@@ -449,7 +449,7 @@ namespace abbTools
                         }
                     }
                     //clear application data
-                    appsClearData();
+                    appsClearData(true);
                     //create instance of xml to read
                     XmlReader xmlRead = XmlReader.Create(filePath);
                     while (xmlRead.Read()) {
@@ -794,29 +794,54 @@ namespace abbTools
          ***  USER APPS - add your apps operations here
          ********************************************************/
 
-        private void appsClearData()
+        private void appsClearData(bool resyncLogger)
         {
             appRemotePC.clearAppData();
+            appWindowsIPC.clearAppData();
+            //check if we want to resync logger
+            if (resyncLogger && status != null) {
+                appRemotePC.syncLogger(status);
+                appWindowsIPC.syncLogger(status);
+            }
         }
 
         private void appsLoadData(ref XmlReader myXML, Controller myController, string cName = "")
-        { 
-            appRemotePC.loadAppData(ref myXML, myController, cName);
+        {
+            //check if input XML file has correct starting node
+            if (myXML.Name.StartsWith("robot_")) {
+                //check current parent name with file data
+                if (cName == "") {
+                    //update current parent name
+                    cName = myXML.GetAttribute("name");
+                    status.writeLog(logType.warning, "Inputted controller name empty... Updated for " + cName);
+                } else if (cName != myXML.GetAttribute("name")) {
+                    status.writeLog(logType.warning, "Cant load settings for " + cName + " - name differs from file.");
+                    return;
+                }
+                //load applications data
+                appRemotePC.loadAppData(ref myXML, myController, cName);
+                appWindowsIPC.loadAppData(ref myXML, myController, cName);
+            } else {
+                status.writeLog(logType.error, "Cant load settings for "+cName+" - wrong start node in XML file...");
+            }
         }
 
         private void appsSaveData(ref XmlWriter myXML, Controller myController, string cName = "")
         {
             appRemotePC.saveAppData(ref myXML, myController, cName);
+            appWindowsIPC.saveAppData(ref myXML, myController, cName);
         }
 
         private void appsControllerFound(Controller foundController)
         {
             appRemotePC.controllerFound(foundController);
+            appWindowsIPC.savedControllerFound(foundController);
         }
 
         private void appsControllerLost(Controller lostController)
         {
             appRemotePC.controllerLost(lostController);
+            appWindowsIPC.savedControllerLost(lostController);
         }
     }
 }
