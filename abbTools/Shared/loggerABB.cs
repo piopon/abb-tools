@@ -99,7 +99,12 @@ namespace abbTools
                                     for (int j = i + 1; j < tagCount; j++) tagPos[j] -= tagWidth;
                                 }
                                 //na koniec wypisz ostateczny tekst
-                                owner.Text = text;
+                                if (parent.InvokeRequired) {
+                                    SetTextCallback threadSafe = new SetTextCallback(SetText);
+                                    parent.Invoke(threadSafe, new object[] { text });
+                                } else {
+                                    parent.Text = text;
+                                }
                                 //apply format from tags
                                 for (int i = 0; i < tagCount / 2; i++) {
                                     owner.Select(tagPos[i], tagPos[i + 1] - tagPos[i]);

@@ -72,13 +72,13 @@ namespace abbTools.AppWindowsIPC
             //run communication in background thread (if not running)
             if (commThread == null) {
                 commThread = new Thread(commLoop);
+                commThread.IsBackground = true;
             } else {
                 if (commThread.IsAlive) commThread.Abort();
             }
             //set internal data
             closeComm = false;
             //set thread properties and run it
-            commThread.IsBackground = true;
             commThread.Start();
         }
 

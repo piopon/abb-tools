@@ -45,6 +45,8 @@
             this.buttonClientON = new System.Windows.Forms.Button();
             this.buttonClientOFF = new System.Windows.Forms.Button();
             this.groupClientSettings = new System.Windows.Forms.GroupBox();
+            this.linkMoreDescr = new System.Windows.Forms.LinkLabel();
+            this.labelClientAddress = new System.Windows.Forms.Label();
             this.checkAutoOpen = new System.Windows.Forms.CheckBox();
             this.labelServerName = new System.Windows.Forms.Label();
             this.checkAutoReconnect = new System.Windows.Forms.CheckBox();
@@ -86,7 +88,7 @@
             this.textMsgToSend.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textMsgToSend.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.textMsgToSend.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textMsgToSend.Location = new System.Drawing.Point(10, 9);
+            this.textMsgToSend.Location = new System.Drawing.Point(10, 7);
             this.textMsgToSend.Name = "textMsgToSend";
             this.textMsgToSend.Size = new System.Drawing.Size(184, 16);
             this.textMsgToSend.TabIndex = 1;
@@ -102,7 +104,7 @@
             this.btnSendMsg.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSendMsg.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.btnSendMsg.ForeColor = System.Drawing.Color.Black;
-            this.btnSendMsg.Location = new System.Drawing.Point(16, 68);
+            this.btnSendMsg.Location = new System.Drawing.Point(16, 63);
             this.btnSendMsg.Name = "btnSendMsg";
             this.btnSendMsg.Size = new System.Drawing.Size(206, 27);
             this.btnSendMsg.TabIndex = 2;
@@ -211,10 +213,10 @@
             this.groupClientTestMessages.Controls.Add(this.btnSendMsg);
             this.groupClientTestMessages.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupClientTestMessages.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.groupClientTestMessages.Location = new System.Drawing.Point(13, 199);
+            this.groupClientTestMessages.Location = new System.Drawing.Point(13, 209);
             this.groupClientTestMessages.Name = "groupClientTestMessages";
             this.groupClientTestMessages.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.groupClientTestMessages.Size = new System.Drawing.Size(239, 108);
+            this.groupClientTestMessages.Size = new System.Drawing.Size(239, 100);
             this.groupClientTestMessages.TabIndex = 19;
             this.groupClientTestMessages.TabStop = false;
             this.groupClientTestMessages.Text = "test messages";
@@ -225,11 +227,11 @@
             this.panelTextMessage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelTextMessage.Controls.Add(this.textMsgToSend);
             this.panelTextMessage.Enabled = false;
-            this.panelTextMessage.Location = new System.Drawing.Point(16, 25);
+            this.panelTextMessage.Location = new System.Drawing.Point(16, 23);
             this.panelTextMessage.Name = "panelTextMessage";
-            this.panelTextMessage.Padding = new System.Windows.Forms.Padding(10, 0, 10, 10);
+            this.panelTextMessage.Padding = new System.Windows.Forms.Padding(10, 0, 10, 8);
             this.panelTextMessage.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.panelTextMessage.Size = new System.Drawing.Size(206, 37);
+            this.panelTextMessage.Size = new System.Drawing.Size(206, 33);
             this.panelTextMessage.TabIndex = 3;
             // 
             // groupClientControl
@@ -238,10 +240,10 @@
             this.groupClientControl.Controls.Add(this.buttonClientOFF);
             this.groupClientControl.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupClientControl.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.groupClientControl.Location = new System.Drawing.Point(13, 128);
+            this.groupClientControl.Location = new System.Drawing.Point(13, 151);
             this.groupClientControl.Name = "groupClientControl";
             this.groupClientControl.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.groupClientControl.Size = new System.Drawing.Size(239, 67);
+            this.groupClientControl.Size = new System.Drawing.Size(239, 56);
             this.groupClientControl.TabIndex = 18;
             this.groupClientControl.TabStop = false;
             this.groupClientControl.Text = "client control";
@@ -251,9 +253,9 @@
             this.buttonClientON.BackColor = System.Drawing.Color.Chartreuse;
             this.buttonClientON.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonClientON.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.buttonClientON.Location = new System.Drawing.Point(16, 24);
+            this.buttonClientON.Location = new System.Drawing.Point(16, 21);
             this.buttonClientON.Name = "buttonClientON";
-            this.buttonClientON.Size = new System.Drawing.Size(100, 29);
+            this.buttonClientON.Size = new System.Drawing.Size(100, 26);
             this.buttonClientON.TabIndex = 5;
             this.buttonClientON.Text = "on";
             this.buttonClientON.UseVisualStyleBackColor = false;
@@ -265,9 +267,9 @@
             this.buttonClientOFF.Enabled = false;
             this.buttonClientOFF.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonClientOFF.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.buttonClientOFF.Location = new System.Drawing.Point(122, 24);
+            this.buttonClientOFF.Location = new System.Drawing.Point(122, 21);
             this.buttonClientOFF.Name = "buttonClientOFF";
-            this.buttonClientOFF.Size = new System.Drawing.Size(100, 29);
+            this.buttonClientOFF.Size = new System.Drawing.Size(100, 26);
             this.buttonClientOFF.TabIndex = 6;
             this.buttonClientOFF.Text = "off";
             this.buttonClientOFF.UseVisualStyleBackColor = false;
@@ -276,6 +278,8 @@
             // groupClientSettings
             // 
             this.groupClientSettings.BackColor = System.Drawing.Color.White;
+            this.groupClientSettings.Controls.Add(this.linkMoreDescr);
+            this.groupClientSettings.Controls.Add(this.labelClientAddress);
             this.groupClientSettings.Controls.Add(this.checkAutoOpen);
             this.groupClientSettings.Controls.Add(this.labelServerName);
             this.groupClientSettings.Controls.Add(this.checkAutoReconnect);
@@ -286,15 +290,36 @@
             this.groupClientSettings.Location = new System.Drawing.Point(13, 25);
             this.groupClientSettings.Name = "groupClientSettings";
             this.groupClientSettings.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.groupClientSettings.Size = new System.Drawing.Size(239, 100);
+            this.groupClientSettings.Size = new System.Drawing.Size(239, 124);
             this.groupClientSettings.TabIndex = 17;
             this.groupClientSettings.TabStop = false;
             this.groupClientSettings.Text = "settings";
             // 
+            // linkMoreDescr
+            // 
+            this.linkMoreDescr.AutoSize = true;
+            this.linkMoreDescr.Location = new System.Drawing.Point(207, 93);
+            this.linkMoreDescr.Name = "linkMoreDescr";
+            this.linkMoreDescr.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.linkMoreDescr.Size = new System.Drawing.Size(15, 17);
+            this.linkMoreDescr.TabIndex = 9;
+            this.linkMoreDescr.TabStop = true;
+            this.linkMoreDescr.Text = "?";
+            // 
+            // labelClientAddress
+            // 
+            this.labelClientAddress.AutoSize = true;
+            this.labelClientAddress.Location = new System.Drawing.Point(13, 93);
+            this.labelClientAddress.Name = "labelClientAddress";
+            this.labelClientAddress.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.labelClientAddress.Size = new System.Drawing.Size(37, 17);
+            this.labelClientAddress.TabIndex = 5;
+            this.labelClientAddress.Text = "info: ";
+            // 
             // checkAutoOpen
             // 
             this.checkAutoOpen.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.checkAutoOpen.Location = new System.Drawing.Point(126, 67);
+            this.checkAutoOpen.Location = new System.Drawing.Point(126, 63);
             this.checkAutoOpen.Name = "checkAutoOpen";
             this.checkAutoOpen.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.checkAutoOpen.Size = new System.Drawing.Size(101, 22);
@@ -302,12 +327,13 @@
             this.checkAutoOpen.Text = "auto open";
             this.checkAutoOpen.UseVisualStyleBackColor = true;
             this.checkAutoOpen.CheckedChanged += new System.EventHandler(this.checkAutoOpen_CheckedChanged);
+            this.checkAutoOpen.MouseDown += new System.Windows.Forms.MouseEventHandler(this.checkAutoOpen_MouseDown);
             // 
             // labelServerName
             // 
             this.labelServerName.AutoSize = true;
             this.labelServerName.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelServerName.Location = new System.Drawing.Point(16, 18);
+            this.labelServerName.Location = new System.Drawing.Point(16, 14);
             this.labelServerName.Name = "labelServerName";
             this.labelServerName.Size = new System.Drawing.Size(81, 17);
             this.labelServerName.TabIndex = 6;
@@ -316,7 +342,7 @@
             // checkAutoReconnect
             // 
             this.checkAutoReconnect.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.checkAutoReconnect.Location = new System.Drawing.Point(16, 67);
+            this.checkAutoReconnect.Location = new System.Drawing.Point(16, 63);
             this.checkAutoReconnect.Name = "checkAutoReconnect";
             this.checkAutoReconnect.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.checkAutoReconnect.Size = new System.Drawing.Size(106, 22);
@@ -324,13 +350,14 @@
             this.checkAutoReconnect.Text = "auto recon";
             this.checkAutoReconnect.UseVisualStyleBackColor = true;
             this.checkAutoReconnect.CheckedChanged += new System.EventHandler(this.checkAutoReconnect_CheckedChanged);
+            this.checkAutoReconnect.MouseDown += new System.Windows.Forms.MouseEventHandler(this.checkAutoReconnect_MouseDown);
             // 
             // textServerName
             // 
             this.textServerName.BackColor = System.Drawing.Color.White;
             this.textServerName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textServerName.Font = new System.Drawing.Font("GOST Common", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textServerName.Location = new System.Drawing.Point(16, 35);
+            this.textServerName.Location = new System.Drawing.Point(16, 31);
             this.textServerName.Name = "textServerName";
             this.textServerName.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.textServerName.Size = new System.Drawing.Size(206, 28);
@@ -627,5 +654,7 @@
         private System.Windows.Forms.ToolStripMenuItem clearAllToolStripMenuItem;
         private System.Windows.Forms.Label labelManualMessage;
         private System.ComponentModel.BackgroundWorker backThread;
+        private System.Windows.Forms.Label labelClientAddress;
+        private System.Windows.Forms.LinkLabel linkMoreDescr;
     }
 }

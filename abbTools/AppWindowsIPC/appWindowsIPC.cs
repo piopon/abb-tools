@@ -20,6 +20,7 @@ namespace abbTools.AppWindowsIPC
         private SignalCollection abbSignals = null;
         private loggerABB abbLogger = null;
         private WindowsIPCClient myClient = null;
+        private WindowsIPCClient testClient = null;
         //data containers
         private WindowsIPCCollection ipcData = null;
         //enable buttons logic vars
@@ -30,6 +31,7 @@ namespace abbTools.AppWindowsIPC
         //remember current selected data
         private string currMessage = "";
         private string currSignal = "";
+        private bool checkBoxClick;
 
         /********************************************************
          ***  APP IPC - named pipe client event
@@ -48,11 +50,12 @@ namespace abbTools.AppWindowsIPC
             abbLogger = null;
             myClient = null;
             ipcData = new WindowsIPCCollection();
-            //connect collection data with GUI container
-            ipcData.connectContainersGUI(listMessagesWatch,textServerName,checkAutoReconnect,checkAutoOpen);
+            ipcData.ClientControlChange += clientControlButtons;
             //reset current data
             currMessage = "";
             currSignal = "";
+            //reset GUI
+            resetGUI();
     }
 
         /// <summary>
@@ -86,6 +89,18 @@ namespace abbTools.AppWindowsIPC
             abbController = myController;
             //add controller to ipc collection
             ipcData.controllerUpdate(abbController);
+            //update client options
+            myClient = ipcData[ipcData.controllerIndex(myController.SystemName)].client;
+            if (myClient != null) {
+                clientControlButtons(!myClient.isRunning());
+            } else {
+                myClient = testClient;
+            }
+            //reset GUI
+            resetGUI();
+            //update GUI
+            ipcData.updateContainerGUI(listMessagesWatch);
+            ipcData.updateServerGUI(textServerName, checkAutoReconnect, checkAutoOpen);
         }
 
         /// <summary>
@@ -100,6 +115,7 @@ namespace abbTools.AppWindowsIPC
             }
             //reset controller address
             abbController = null;
+            myClient = testClient;
             //reset GUI
             resetGUI();
         }
@@ -135,18 +151,36 @@ namespace abbTools.AppWindowsIPC
         public void resetGUI()
         {
             //clear server name and checkboxes
-            textServerName.Text = "";
-            checkAutoOpen.Checked = false;
-            checkAutoReconnect.Checked = false;
-            //clear signals list and show info panel
-            listRobotSignals.Items.Clear();
-            listRobotSignals.BackColor = Color.Silver;
-            panelLoading.Visible = true;
-            panelLoading.BackColor = Color.Gold;
-            labelLoadSignals.Text = "update signals...";
-            //clear watch signal table
-            listMessagesWatch.Items.Clear();
-            listMessagesWatch.BackColor = Color.Silver;
+            if (myClient != null) {
+                textServerName.Text = myClient.serverName;
+                checkAutoOpen.Checked = myClient.autoStart;
+                checkAutoReconnect.Checked = myClient.autoRecon;
+                clientControlButtons(!myClient.isRunning());
+            } else {
+                textServerName.Text = "";
+                checkAutoOpen.Checked = false;
+                checkAutoReconnect.Checked = false;
+                clientControlButtons(true);
+            }
+            if (abbController == null) {
+                //clear signals list and show info panel
+                listRobotSignals.SelectedItems.Clear();
+                listRobotSignals.Items.Clear();
+                listRobotSignals.BackColor = Color.Silver;
+                panelLoading.Visible = true;
+                panelLoading.BackColor = Color.Gold;
+                labelLoadSignals.Text = "update signals...";
+                //clear watch signal table
+                listMessagesWatch.SelectedItems.Clear();
+                listMessagesWatch.Items.Clear();
+                listMessagesWatch.BackColor = Color.Silver;
+            }
+            //disable watch buttons
+            sigCondition = listRobotSignals.SelectedItems.Count > 0;
+            serverCondition = textServerName.Text != "";
+            msgCondition = listBoxAllMessages.SelectedItems.Count > 0;
+            watchCondition = listMessagesWatch.SelectedItems.Count > 0;
+            checkWatchButtons();
         }
 
         /// <summary>
@@ -165,6 +199,8 @@ namespace abbTools.AppWindowsIPC
                 updateButton(buttonClientON, false, Color.Silver);
                 updateButton(buttonClientOFF, true, Color.OrangeRed);
             }
+            //update label identifing client name
+            updateClientDescr();
         }
 
         /// <summary>
@@ -188,12 +224,18 @@ namespace abbTools.AppWindowsIPC
         private void buttonClientON_Click(object sender, EventArgs e)
         {
             //check if user defined server name
-            if (textServerName.Text!="") {
-                openClientIPC();
-                //update GUI buttons 
-                clientControlButtons(false);
+            if (myClient == testClient) {
+                if (textServerName.Text != "") {
+                    openClientIPC();
+                    clientControlButtons(false);
+                } else {
+                    abbLogger.writeLog(logType.error, "Server IPC - no server name defined");
+                }
             } else {
-                abbLogger.writeLog(logType.error, "Server IPC - no server name defined");
+                int collectionIndex = ipcData.controllerIndex(abbController.SystemName);
+                if (collectionIndex >= 0) {
+                    ipcData[collectionIndex].ipcClientOpen();
+                }
             }
         }
 
@@ -205,7 +247,7 @@ namespace abbTools.AppWindowsIPC
         private void buttonClientOFF_Click(object sender, EventArgs e)
         {
             //close communication pipe
-            myClient.close();
+            if (myClient != null) myClient.close();
         }
 
         /// <summary>
@@ -338,8 +380,11 @@ namespace abbTools.AppWindowsIPC
             newItem.messageAdd(currMessage, currSignal, radioSigTo0.Checked ? 0 : 1);
             //add new item to collection (GUI auto-fill)
             ipcData.itemAdd(newItem);
+            myClient = ipcData[ipcData.controllerIndex(abbController.SystemName)].client;
+            updateClientDescr();
             //update GUI
-            listMessagesWatch.BackColor = Color.White;
+            ipcData.updateContainerGUI(listMessagesWatch);
+            ipcData.updateServerGUI(textServerName, checkAutoReconnect, checkAutoOpen);
         }
 
         private void buttonMsgModify_Click(object sender, EventArgs e)
@@ -357,6 +402,9 @@ namespace abbTools.AppWindowsIPC
                 newItem.messageAdd(currMessage, currSignal, radioSigTo0.Checked ? 0 : 1);
                 //update element
                 ipcData.itemModify(oldItem, newItem);
+                //update GUI
+                ipcData.updateContainerGUI(listMessagesWatch);
+                ipcData.updateServerGUI(textServerName, checkAutoReconnect, checkAutoOpen);
             } else {
                 abbLogger.writeLog(logType.warning, "Select only one element to be modified!");
             }
@@ -373,6 +421,9 @@ namespace abbTools.AppWindowsIPC
                 removeItem.messageAdd(item.SubItems[1].Text, item.SubItems[2].Text, int.Parse(item.SubItems[3].Text));
                 //remove item from collection (GUI auto-fill)
                 ipcData.itemRemove(removeItem);
+                //update GUI
+                ipcData.updateContainerGUI(listMessagesWatch);
+                ipcData.updateServerGUI(textServerName, checkAutoReconnect, checkAutoOpen);
             }
             //update GUI
             if (listMessagesWatch.Items.Count==0) listMessagesWatch.BackColor = Color.Silver;
@@ -391,12 +442,17 @@ namespace abbTools.AppWindowsIPC
             string serverName = textServerName.Text;
             bool recon = checkAutoReconnect.Checked;
             bool autoStart = checkAutoOpen.Checked;
-            //create client 
-            if (serverName != "") {
-                myClient = new WindowsIPCClient(serverName, recon, autoStart);
-            } else {
-                myClient = null;
+            //create client (if no client or test client)
+            if (myClient == null || myClient == testClient) {
+                if (serverName != "") {
+                    testClient = new WindowsIPCClient(serverName, recon, autoStart);
+                } else {
+                    testClient = null;
+                }
+                myClient = testClient;
             }
+            //update label identifing client name
+            updateClientDescr();
         }
 
         private void textServerName_Enter(object sender, EventArgs e)
@@ -405,9 +461,11 @@ namespace abbTools.AppWindowsIPC
             if (myClient != null && myClient.isRunning()) {
                 abbLogger.writeLog(logType.error, "Cant change server name while running! Stop client and change name!");
             } else {
-                //clear my client
-                myClient = null;
+                //clear my client (if no client or test client)
+                if (myClient == null || myClient == testClient) myClient = null;
             }
+            //update label identifing client name
+            updateClientDescr();
         }
 
         private void textServerName_KeyPress(object sender, KeyPressEventArgs e)
@@ -420,12 +478,30 @@ namespace abbTools.AppWindowsIPC
 
         private void checkAutoReconnect_CheckedChanged(object sender, EventArgs e)
         {
-            if (myClient != null) myClient.autoRecon = checkAutoReconnect.Checked;
+            if (myClient != null) {
+                myClient.autoRecon = checkAutoReconnect.Checked;
+                //check if we are operating on client in collection
+                if (myClient != testClient && checkBoxClick) {
+                    //leave info for user that we have changed
+                    if (abbLogger != null && checkBoxClick) abbLogger.writeLog(logType.info, "Setting applied to all messages for current robot!");
+                }
+            }
+            checkBoxClick = false;
         }
 
         private void checkAutoOpen_CheckedChanged(object sender, EventArgs e)
         {
-            if (myClient != null) myClient.autoStart = checkAutoOpen.Checked;
+            if (myClient != null) {
+                myClient.autoStart = checkAutoOpen.Checked;
+                //check if we are operating on client in collection
+                if (myClient != testClient) {
+                    //leave info for user that we have changed
+                    if (abbLogger != null && checkBoxClick) {
+                        abbLogger.writeLog(logType.info, "Setting applied to all messages for current robot!");
+                    }
+                }
+            }
+            checkBoxClick = false;
         }
 
         private void textManualMessage_KeyPress(object sender, KeyPressEventArgs e)
@@ -455,6 +531,21 @@ namespace abbTools.AppWindowsIPC
                 btnSendMsg_Click(sender, new EventArgs());
                 textMsgToSend.Text = "";
             }
+        }
+
+        private void updateClientDescr()
+        {
+            string clientDescr = "";
+            if (myClient != null) {
+                if (myClient == testClient) {
+                    clientDescr = "TEST GUI > "+myClient.serverName;
+                } else {
+                    clientDescr = "MY DATA > "+myClient.serverName;
+                }
+            } else {
+                clientDescr = "null";
+            }
+            labelClientAddress.Text = "info: " + clientDescr;
         }
 
         //================================================================
@@ -719,6 +810,16 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        private void checkAutoOpen_MouseDown(object sender, MouseEventArgs e)
+        {
+            checkBoxClick = true;
+        }
+
+        private void checkAutoReconnect_MouseDown(object sender, MouseEventArgs e)
+        {
+            checkBoxClick = true;
+        }
+
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
         {
             //reset GUI
@@ -741,6 +842,8 @@ namespace abbTools.AppWindowsIPC
             System.Xml.XmlReader nodeCurrRobot = loadXml.ReadSubtree();
             //read every child node from XML document (stopped at reading robot)
             ipcData.loadFromXml(ref nodeCurrRobot, parent, parentName);
+            //reset GUI
+            resetGUI();
         }
 
         public void savedControllerFound(Controller found)
