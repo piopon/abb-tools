@@ -26,6 +26,9 @@ namespace abbTools.AppWindowsIPC
         private loggerABB myLogger;
         //backup controller name field (when controller not visible in network)
         private string storedNameController;
+        //internal stats data
+        private bool abbConnected;
+        private int messagesExeCount;
         //create event delegates
         public delegate void updateClientControl(bool clientStopped);
         public event updateClientControl ClientControlChange;
@@ -44,6 +47,8 @@ namespace abbTools.AppWindowsIPC
             myClient = null;
             myData = new WindowsIPCMessagesCollection();
             myLogger = null;
+            abbConnected = false;
+            messagesExeCount = 0;
         }
 
         /// <summary>
@@ -57,6 +62,8 @@ namespace abbTools.AppWindowsIPC
             myClient = null;
             myData = new WindowsIPCMessagesCollection();
             myLogger = null;
+            abbConnected = false;
+            messagesExeCount = 0;
         }
 
         /// <summary>
@@ -70,6 +77,8 @@ namespace abbTools.AppWindowsIPC
             myClient = null;
             myData = new WindowsIPCMessagesCollection();
             myLogger = null;
+            abbConnected = false;
+            messagesExeCount = 0;
         }
 
         /// <summary>
@@ -85,6 +94,8 @@ namespace abbTools.AppWindowsIPC
             myClient = newClient;
             myData = new WindowsIPCMessagesCollection();
             myLogger = newLogger;
+            abbConnected = false;
+            messagesExeCount = 0;
         }
 
         /// <summary>
@@ -101,6 +112,8 @@ namespace abbTools.AppWindowsIPC
             myClient = new WindowsIPCClient(ipcServer,ipcRecon,ipcAutoOpen);
             myData = new WindowsIPCMessagesCollection();
             myLogger = null;
+            abbConnected = false;
+            messagesExeCount = 0;
         }
 
         /// <summary>
@@ -117,6 +130,8 @@ namespace abbTools.AppWindowsIPC
             myClient = new WindowsIPCClient(ipcServer, ipcRecon, ipcAutoOpen);
             myData = new WindowsIPCMessagesCollection();
             myLogger = null;
+            abbConnected = false;
+            messagesExeCount = 0;
         }
 
         /********************************************************
@@ -292,6 +307,7 @@ namespace abbTools.AppWindowsIPC
                     trigger.Value = signalVal;
                     //log off if controller was not connected
                     if (!isConnected) myController.Logoff();
+                    messagesExeCount++;
                     myLogger.writeLog(logType.info, "Message "+messageName+" - event triggered "+
                                                     "["+myController.SystemName+": "+signalName+" = "+signalVal.ToString()+"]!");
                 } else {
@@ -461,16 +477,18 @@ namespace abbTools.AppWindowsIPC
         {
             //check if client exists
             if (myClient != null) {
-                //subscribe events
-                myClient.OnConnect += clientStatusEvent;
-                myClient.OnDisconnect += clientStatusEvent;
-                myClient.OnWaiting += clientStatusEvent;
-                myClient.OnReceived += clientRecvEvent;
-                myClient.OnEnd += clientEndEvent;
+                //subscribe events (if not subscribed yet)
+                if (!myClient.events) {
+                    myClient.OnConnect += clientStatusEvent;
+                    myClient.OnDisconnect += clientStatusEvent;
+                    myClient.OnWaiting += clientStatusEvent;
+                    myClient.OnReceived += clientRecvEvent;
+                    myClient.OnEnd += clientEndEvent;
+                }
                 //update event status
                 myClient.events = true;
                 //run event
-                eventOnControlChange(false);
+                if (abbConnected) eventOnControlChange(false);
                 //open communication pipe
                 myClient.open();
             }
@@ -493,15 +511,17 @@ namespace abbTools.AppWindowsIPC
         private void clientEndEvent(object sender, WindowsIPCEventArgs e)
         {
             //unsubscribe all client events
-            myClient.OnConnect -= clientStatusEvent;
-            myClient.OnDisconnect -= clientStatusEvent;
-            myClient.OnWaiting -= clientStatusEvent;
-            myClient.OnReceived -= clientRecvEvent;
-            myClient.OnEnd -= clientEndEvent;
+            if (myClient.events) {
+                myClient.OnConnect -= clientStatusEvent;
+                myClient.OnDisconnect -= clientStatusEvent;
+                myClient.OnWaiting -= clientStatusEvent;
+                myClient.OnReceived -= clientRecvEvent;
+                myClient.OnEnd -= clientEndEvent;
+            }
             //update event status
             myClient.events = false;
             //run event
-            eventOnControlChange(true);
+            if (abbConnected) eventOnControlChange(true);
             //show log info
             if (myLogger != null) myLogger.writeLog(logType.info, "[" + storedNameController + " - IPC '" + e.server + "'] status: " + e.message);
         }
@@ -581,6 +601,23 @@ namespace abbTools.AppWindowsIPC
         public WindowsIPCClient client
         {
             get { return myClient; }
+        }
+
+        /// <summary>
+        /// Get current executed messages counter
+        /// </summary>
+        public int messagesExecuted
+        {
+            get { return messagesExeCount; }
+        }
+
+        /// <summary>
+        /// Get or set controller connected flag
+        /// </summary>
+        public bool connected
+        {
+            get { return abbConnected; }
+            set { abbConnected = value; }
         }
     }
 
@@ -739,6 +776,10 @@ namespace abbTools.AppWindowsIPC
                         defaultLogger.writeLog(logType.info, "Updated IPC client and added message to watch list!");
                         //update current data object
                         currentData = this[cController];
+                        //check if we want to auto run client comm thread
+                        if (this[cController].client.autoStart && !this[cController].client.isRunning()) {
+                            currentData.ipcClientOpen();
+                        }
                     } else {
                         //client in collection exists - check if it exists in current item
                         if (cItem.client != null) {
@@ -766,14 +807,14 @@ namespace abbTools.AppWindowsIPC
                             }
                             //update current data object
                             currentData = this[cController];
+                            //check if we want to auto run client comm thread
+                            if (this[cController].client.autoStart && !this[cController].client.isRunning()) {
+                                currentData.ipcClientOpen();
+                            }
                         } else {
                             //client in current item not existent - do nothing but refresh collection GUI
                             currentData = this[cController];
                         }
-                    }
-                    //check if we want to auto run client comm thread
-                    if (this[cController].client.autoStart && !this[cController].client.isRunning()) {
-                        currentData.ipcClientOpen();
                     }
                 }
             } else {
@@ -1086,6 +1127,7 @@ namespace abbTools.AppWindowsIPC
                 int cController = itemIndex(clearItem, find.controller);
                 if (cController != -1) {
                     //invalidate existing controller
+                    this[cController].connected = false;
                     this[cController].invalidate();
                     // close named-pipe client
                     this[cController].ipcClientClose();

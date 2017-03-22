@@ -145,6 +145,8 @@ namespace abbTools
             status.appendLog("<u>[ start " + DateTime.Now.ToString() + " ]</u>");
             appRemotePC.syncLogger(status);
             appWindowsIPC.syncLogger(status);
+            appWindowsIPC.parentHeight = Height;
+            appWindowsIPC.parentWidth = Width;
             //load saved robots to list view
             listViewRobots.Items.Clear();
             loadMyRobots(appSettings.getProjPath());

@@ -30,13 +30,13 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(windowMain));
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup5 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup6 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("network", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("virtual", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("saved", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "ABBtrack",
             "127.0.0.1"}, -1);
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
             "robot 3",
             "255.255.255.255"}, -1);
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
@@ -519,27 +519,27 @@
             this.robotGroupColIP});
             this.listViewRobots.ContextMenuStrip = this.robotListQMenu;
             this.listViewRobots.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            listViewGroup4.Header = "network";
-            listViewGroup4.Name = "robotsGroupNet";
-            listViewGroup5.Header = "virtual";
-            listViewGroup5.Name = "robotsGroupSim";
-            listViewGroup6.Header = "saved";
-            listViewGroup6.Name = "robotsGroupSaved";
+            listViewGroup1.Header = "network";
+            listViewGroup1.Name = "robotsGroupNet";
+            listViewGroup2.Header = "virtual";
+            listViewGroup2.Name = "robotsGroupSim";
+            listViewGroup3.Header = "saved";
+            listViewGroup3.Name = "robotsGroupSaved";
             this.listViewRobots.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup4,
-            listViewGroup5,
-            listViewGroup6});
+            listViewGroup1,
+            listViewGroup2,
+            listViewGroup3});
             this.listViewRobots.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listViewRobots.HideSelection = false;
-            listViewItem3.Checked = true;
-            listViewItem3.Group = listViewGroup6;
-            listViewItem3.StateImageIndex = 4;
-            listViewItem4.Checked = true;
-            listViewItem4.Group = listViewGroup6;
-            listViewItem4.StateImageIndex = 4;
+            listViewItem1.Checked = true;
+            listViewItem1.Group = listViewGroup3;
+            listViewItem1.StateImageIndex = 4;
+            listViewItem2.Checked = true;
+            listViewItem2.Group = listViewGroup3;
+            listViewItem2.StateImageIndex = 4;
             this.listViewRobots.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem3,
-            listViewItem4});
+            listViewItem1,
+            listViewItem2});
             this.listViewRobots.Location = new System.Drawing.Point(12, 12);
             this.listViewRobots.Margin = new System.Windows.Forms.Padding(0);
             this.listViewRobots.MultiSelect = false;
@@ -588,7 +588,7 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(710, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(716, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
@@ -601,7 +601,7 @@
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
             this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(710, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(707, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
             // 
@@ -620,19 +620,20 @@
             this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
             this.actionBackupManager.Name = "actionBackupManager";
             this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
-            this.actionBackupManager.Size = new System.Drawing.Size(710, 557);
+            this.actionBackupManager.Size = new System.Drawing.Size(716, 557);
             this.actionBackupManager.TabIndex = 1;
             this.actionBackupManager.Text = "backupManager";
             // 
             // actionWinIPC
             // 
+            this.actionWinIPC.BackColor = System.Drawing.Color.White;
+            this.actionWinIPC.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
             this.actionWinIPC.Controls.Add(this.appWindowsIPC);
             this.actionWinIPC.Location = new System.Drawing.Point(4, 27);
             this.actionWinIPC.Name = "actionWinIPC";
-            this.actionWinIPC.Size = new System.Drawing.Size(707, 557);
+            this.actionWinIPC.Size = new System.Drawing.Size(716, 557);
             this.actionWinIPC.TabIndex = 3;
             this.actionWinIPC.Text = "windowsIPC";
-            this.actionWinIPC.UseVisualStyleBackColor = true;
             // 
             // appWindowsIPC
             // 
@@ -640,7 +641,7 @@
             this.appWindowsIPC.Dock = System.Windows.Forms.DockStyle.Fill;
             this.appWindowsIPC.Location = new System.Drawing.Point(0, 0);
             this.appWindowsIPC.Name = "appWindowsIPC";
-            this.appWindowsIPC.Size = new System.Drawing.Size(707, 557);
+            this.appWindowsIPC.Size = new System.Drawing.Size(192, 71);
             this.appWindowsIPC.TabIndex = 0;
             // 
             // windowMain

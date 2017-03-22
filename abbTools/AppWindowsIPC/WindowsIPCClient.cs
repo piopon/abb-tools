@@ -22,9 +22,14 @@ namespace abbTools.AppWindowsIPC
         private bool restartComm;
         private bool autoOpen;
         private bool eventsConn;
+        private string myStatus;
         private string myServer;
         private string sendBuffor;
         private string recvBuffor;
+        private int recvCounter;
+        private int sentCounter;
+        private string lastMsgSent;
+        private string lastMsgRecv;
         //client events
         public event WindowsIPCWaiting OnWaiting;
         public event WindowsIPCConnect OnConnect;
@@ -59,6 +64,12 @@ namespace abbTools.AppWindowsIPC
             restartComm = restoreConn;
             autoOpen = autoStart;
             eventsConn = false;
+            //internal data
+            myStatus = "not executed yet";
+            recvCounter = 0;
+            sentCounter = 0;
+            lastMsgSent ="";
+            lastMsgRecv = "";
             //clear send and receive buffors
             sendBuffor = "";
             recvBuffor = "";
@@ -79,6 +90,7 @@ namespace abbTools.AppWindowsIPC
             //set internal data
             closeComm = false;
             //set thread properties and run it
+            myStatus = "opened";
             commThread.Start();
         }
 
@@ -88,6 +100,7 @@ namespace abbTools.AppWindowsIPC
         public void close()
         {
             //cancel background thread
+            myStatus = "closed";
             closeComm = true;
         }
 
@@ -165,6 +178,42 @@ namespace abbTools.AppWindowsIPC
             set { eventsConn = value; }
         }
 
+        /// <summary>
+        /// Get current client status
+        /// </summary>
+        public string status
+        {
+            get { return myStatus; }
+        }
+
+        /// <summary>
+        /// Get current sent messages number
+        /// </summary>
+        public int sentNo
+        {
+            get { return sentCounter; }
+        }
+
+        /// <summary>
+        /// Get current received messages number
+        /// </summary>
+        public int recvNo
+        {
+            get { return recvCounter; }
+        }
+
+        /// <summary>
+        /// Get last messages sent and received
+        /// </summary>
+        public string messageReport
+        {
+            get {
+                string lastSent = lastMsgSent != "" ? lastMsgSent : "---";
+                string lastRecv = lastMsgRecv != "" ? lastMsgRecv : "---";
+                return "SENT: " + lastSent + " RECV: " + lastRecv;
+            }
+        }
+
         /********************************************************
          ***  WINDOWS IPC CLIENT - private methods
          ********************************************************/
@@ -201,14 +250,20 @@ namespace abbTools.AppWindowsIPC
                     Thread.Sleep(100);
                     //to avoid memory leak
                     GC.Collect();
+                    //update current status
+                    myStatus = "com loop running";
                 }
                 //at end close client
                 commCleanup();
                 //run disconnect event (if client was connected)
-                if (connOk) eventOnDisconnect(new WindowsIPCEventArgs("disconnected from server.", myServer, false, isAutoRestart()));
+                if (connOk) {
+                    eventOnDisconnect(new WindowsIPCEventArgs("disconnected from server.", myServer, false, isAutoRestart()));
+                    myStatus = "disconnected from server";
+                }
             }
             //run comm end event
             eventOnCommEnd(new WindowsIPCEventArgs("communication thread end.", myServer, true, isAutoRestart()));
+            myStatus = "com loop stopped";
         }
 
         /// <summary>
@@ -223,14 +278,17 @@ namespace abbTools.AppWindowsIPC
             if (closeComm) {
                 //close thread as usert wanted
                 result = false;
+                myStatus = "closed from GUI";
             } else {
                 //thread not closed by user... 
                 //check if user wanted to reconnect
                 if (triedToConn) {
                     result = restartComm;
+                    myStatus = "try reconnect";
                 } else {
                     //no attempt to connect - try it
                     result = true;
+                    myStatus = "try connect";
                 }
             }
             return result;
@@ -274,6 +332,8 @@ namespace abbTools.AppWindowsIPC
             if (!isAutoRestart()){
                 commThread = null;
             }
+            //update current status
+            myStatus = "com cleanup";
         }
 
         /// <summary>
@@ -304,9 +364,11 @@ namespace abbTools.AppWindowsIPC
                     //check communication status
                     if (closeComm) {
                         //client closed from GUI
+                        myStatus = "closed from GUI";
                         break;
                     } else if (!pipeStream.IsConnected) {
                         //run event if not connected (timeout) 
+                        myStatus = "waiting for server";
                         if (!msgShown) {
                             eventOnWait(new WindowsIPCEventArgs("waiting for server...", myServer, false, isAutoRestart()));
                             msgShown = true;
@@ -318,6 +380,7 @@ namespace abbTools.AppWindowsIPC
             }
             //run event if client connected
             if (pipeStream.IsConnected) {
+                myStatus = "connected to server";
                 eventOnConnect(new WindowsIPCEventArgs("connected to server.", myServer, true, isAutoRestart()));
             }
             return result;
@@ -339,6 +402,10 @@ namespace abbTools.AppWindowsIPC
                     sendMsg.Flush();
                     //all ok
                     result = true;
+                    //update internal data
+                    sentCounter++;
+                    lastMsgSent = sendBuffor;
+                    myStatus = "sent command: " + lastMsgSent;
                 }
             }
             return result;
@@ -368,6 +435,10 @@ namespace abbTools.AppWindowsIPC
                     if (message!="") {
                         recvBuffor = message;
                         result = true;
+                        //update internal data
+                        recvCounter++;
+                        lastMsgRecv = message;
+                        myStatus = "recv command: " + lastMsgRecv;
                     }
                 }
             }

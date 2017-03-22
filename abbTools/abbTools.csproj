@@ -92,6 +92,12 @@
     <Compile Include="AppWindowsIPC\appWindowsIPC.Designer.cs">
       <DependentUpon>appWindowsIPC.cs</DependentUpon>
     </Compile>
+    <Compile Include="Windows\windowClientStatus.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\windowClientStatus.Designer.cs">
+      <DependentUpon>windowClientStatus.cs</DependentUpon>
+    </Compile>
     <Compile Include="AppWindowsIPC\WindowsIPC.cs" />
     <Compile Include="AppWindowsIPC\WindowsIPCClient.cs" />
     <Compile Include="AppWindowsIPC\WindowsIPCEvents.cs" />
@@ -137,6 +143,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\windowAbout.resx">
       <DependentUpon>windowAbout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Windows\windowClientStatus.resx">
+      <DependentUpon>windowClientStatus.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\windowInput.resx">
       <DependentUpon>windowInput.cs</DependentUpon>

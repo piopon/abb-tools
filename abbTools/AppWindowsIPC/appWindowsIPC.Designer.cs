@@ -305,6 +305,7 @@
             this.linkMoreDescr.TabIndex = 9;
             this.linkMoreDescr.TabStop = true;
             this.linkMoreDescr.Text = "?";
+            this.linkMoreDescr.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkMoreDescr_LinkClicked);
             // 
             // labelClientAddress
             // 

@@ -29,6 +29,9 @@ namespace abbTools.AppWindowsIPC
                      serverCondition = false,
                      watchCondition = false;
         //remember current selected data
+        private int syncIndex = -1;
+        public int parentHeight = 0;
+        public int parentWidth = 0;
         private string currMessage = "";
         private string currSignal = "";
         private bool checkBoxClick;
@@ -52,6 +55,7 @@ namespace abbTools.AppWindowsIPC
             ipcData = new WindowsIPCCollection();
             ipcData.ClientControlChange += clientControlButtons;
             //reset current data
+            syncIndex = -1;
             currMessage = "";
             currSignal = "";
             //reset GUI
@@ -89,8 +93,10 @@ namespace abbTools.AppWindowsIPC
             abbController = myController;
             //add controller to ipc collection
             ipcData.controllerUpdate(abbController);
-            //update client options
-            myClient = ipcData[ipcData.controllerIndex(myController.SystemName)].client;
+            //update item options
+            syncIndex = ipcData.controllerIndex(myController.SystemName);
+            ipcData[syncIndex].connected = true;
+            myClient = ipcData[syncIndex].client;
             if (myClient != null) {
                 clientControlButtons(!myClient.isRunning());
             } else {
@@ -116,6 +122,8 @@ namespace abbTools.AppWindowsIPC
             //reset controller address
             abbController = null;
             myClient = testClient;
+            ipcData[syncIndex].connected = false;
+            syncIndex = -1;
             //reset GUI
             resetGUI();
         }
@@ -128,12 +136,14 @@ namespace abbTools.AppWindowsIPC
             //check if client exists
             if (myClient != null) {
                 //subscribe events
-                myClient.OnConnect += clientStatusEvent;
-                myClient.OnDisconnect += clientStatusEvent;
-                myClient.OnWaiting += clientStatusEvent;
-                myClient.OnReceived += clientRecvEvent;
-                myClient.OnSent += clientSentEvent;
-                myClient.OnEnd += clientEndEvent;
+                if (!myClient.events) {
+                    myClient.OnConnect += clientStatusEvent;
+                    myClient.OnDisconnect += clientStatusEvent;
+                    myClient.OnWaiting += clientStatusEvent;
+                    myClient.OnReceived += clientRecvEvent;
+                    myClient.OnSent += clientSentEvent;
+                    myClient.OnEnd += clientEndEvent;
+                }
                 //update event status
                 myClient.events = true;
                 //open communication pipe
@@ -450,6 +460,19 @@ namespace abbTools.AppWindowsIPC
                     testClient = null;
                 }
                 myClient = testClient;
+            } else {
+                //collection data client - check if user changed name
+                if (myClient.serverName != serverName) {
+                    //server name changed - update it
+                    ipcData[syncIndex].ipcClientUpdate(serverName, myClient.autoRecon, myClient.autoStart);
+                    //update GUI (messages list and server settings)
+                    ipcData.updateContainerGUI(listMessagesWatch);
+                    ipcData.updateServerGUI(textServerName,checkAutoReconnect,checkAutoOpen);
+                    //update myClient address
+                    myClient = ipcData[syncIndex].client;
+                    //show log
+                    if (abbLogger != null) abbLogger.writeLog(logType.info, "Setting applied to all messages for current robot!");
+                }
             }
             //update label identifing client name
             updateClientDescr();
@@ -470,9 +493,19 @@ namespace abbTools.AppWindowsIPC
 
         private void textServerName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (myClient != null && myClient.isRunning()) {
-                e.Handled = true;
-                abbLogger.writeLog(logType.error, "Key pressed ignored! Stop client and change name!");
+            if (myClient != null) {
+                //there is client defined
+                if (myClient.isRunning()) {
+                    //its running = cant change name!
+                    e.Handled = true;
+                    abbLogger.writeLog(logType.error, "Key pressed ignored! Stop client and change name!");
+                } else {
+                    //its not running = change name available
+                    if (myClient != testClient && syncIndex >= 0 && ipcData[syncIndex].messagesCount() > 0) {
+                        //let the user know that changing collection client will affect its messages
+                        abbLogger.writeLog(logType.warning, "New server name will be applied to all messages!");
+                    }
+                }
             }
         }
 
@@ -538,9 +571,9 @@ namespace abbTools.AppWindowsIPC
             string clientDescr = "";
             if (myClient != null) {
                 if (myClient == testClient) {
-                    clientDescr = "TEST GUI > "+myClient.serverName;
+                    clientDescr = "TEST > "+myClient.serverName;
                 } else {
-                    clientDescr = "MY DATA > "+myClient.serverName;
+                    clientDescr = "DATA > "+myClient.serverName;
                 }
             } else {
                 clientDescr = "null";
@@ -733,12 +766,14 @@ namespace abbTools.AppWindowsIPC
         private void clientEndEvent(object sender, WindowsIPCEventArgs e)
         {
             //unsubscribe all client events
-            myClient.OnConnect -= clientStatusEvent;
-            myClient.OnDisconnect -= clientStatusEvent;
-            myClient.OnWaiting -= clientStatusEvent;
-            myClient.OnReceived -= clientRecvEvent;
-            myClient.OnSent -= clientSentEvent;
-            myClient.OnEnd -= clientEndEvent;
+            if (myClient.events) {
+                myClient.OnConnect -= clientStatusEvent;
+                myClient.OnDisconnect -= clientStatusEvent;
+                myClient.OnWaiting -= clientStatusEvent;
+                myClient.OnReceived -= clientRecvEvent;
+                myClient.OnSent -= clientSentEvent;
+                myClient.OnEnd -= clientEndEvent;
+            }
             //update event status
             myClient.events = false;
             //update GUI buttons 
@@ -820,6 +855,16 @@ namespace abbTools.AppWindowsIPC
             checkBoxClick = true;
         }
 
+        private void linkMoreDescr_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            windowClientStatus status = new windowClientStatus(testClient,ipcData);
+            status.StartPosition = FormStartPosition.CenterParent;
+            status.Height = parentHeight;
+            status.Width = parentWidth;
+            status.ShowInTaskbar = false;
+            status.ShowDialog();
+        }
+
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
         {
             //reset GUI
@@ -852,6 +897,12 @@ namespace abbTools.AppWindowsIPC
             //it was saved but non-visible at start, but it showed up right now!
             if (found != null) {
                 ipcData.controllerUpdate(found);
+                //check if client has auto-open flag set to true
+                int foundIndex = ipcData.controllerIndex(found.SystemName);
+                if (ipcData[foundIndex].client.autoStart && !ipcData[foundIndex].client.isRunning()) {
+                    //auto-open TRUE = open client
+                    ipcData[foundIndex].ipcClientOpen();
+                }
             }
         }
 
@@ -860,7 +911,15 @@ namespace abbTools.AppWindowsIPC
             if (lost != null) {
                 ipcData.controllerClear(lost);
                 //reset GUI
-                if (abbController != null && lost.SystemName == abbController.SystemName) resetGUI();
+                if (abbController != null && lost.SystemName == abbController.SystemName) {
+                    //clear logger and client
+                    abbController = null;
+                    syncIndex = -1;
+                    myClient = testClient;
+                    updateClientDescr();
+                    //reset GUI
+                    resetGUI();
+                }
             }
         }
 
