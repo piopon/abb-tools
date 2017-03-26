@@ -143,10 +143,8 @@ namespace abbTools
             //update app run-up time
             status = new loggerABB(imagesLogType, pictureLogType, statusTextBox, true);
             status.appendLog("<u>[ start " + DateTime.Now.ToString() + " ]</u>");
-            appRemotePC.syncLogger(status);
-            appWindowsIPC.syncLogger(status);
-            appWindowsIPC.parentHeight = Height;
-            appWindowsIPC.parentWidth = Width;
+            //abbTools opened - do apps open actions
+            appsLoadProgramActions();
             //load saved robots to list view
             listViewRobots.Items.Clear();
             loadMyRobots(appSettings.getProjPath());
@@ -702,6 +700,7 @@ namespace abbTools
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //send controller address to other classes
                 appRemotePC.syncController(abbConn);
+                appBackupManager.syncController(abbConn);
                 appWindowsIPC.syncController(abbConn);
             }
 
@@ -714,6 +713,7 @@ namespace abbTools
             if (connStatus == (int)abbStatus.conn.connOK) {
                 //send controller address to my programs
                 appRemotePC.syncController(abbConn);
+                appBackupManager.syncController(abbConn);
                 appWindowsIPC.syncController(abbConn);
             }
         }
@@ -725,6 +725,7 @@ namespace abbTools
             if (disconnStatus == (int)abbStatus.conn.disconnOK) {
                 //clear controller address in my programs
                 appRemotePC.desyncController();
+                appBackupManager.desyncController();
                 appWindowsIPC.desyncController();
             }
         }
@@ -796,13 +797,29 @@ namespace abbTools
          ***  USER APPS - add your apps operations here
          ********************************************************/
 
+        private void appsLoadProgramActions()
+        {
+            //remotePC
+            appRemotePC.syncLogger(status);
+            //backupManager
+            appBackupManager.syncLogger(status);
+            appBackupManager.parentHeight = Height;
+            appBackupManager.parentWidth = Width;
+            //windows IPC
+            appWindowsIPC.syncLogger(status);
+            appWindowsIPC.parentHeight = Height;
+            appWindowsIPC.parentWidth = Width;
+        }
+
         private void appsClearData(bool resyncLogger)
         {
             appRemotePC.clearAppData();
+            appBackupManager.clearAppData();
             appWindowsIPC.clearAppData();
             //check if we want to resync logger
             if (resyncLogger && status != null) {
                 appRemotePC.syncLogger(status);
+                appBackupManager.syncLogger(status);
                 appWindowsIPC.syncLogger(status);
             }
         }
@@ -822,6 +839,7 @@ namespace abbTools
                 }
                 //load applications data
                 appRemotePC.loadAppData(ref myXML, myController, cName);
+                appBackupManager.loadAppData(ref myXML, myController, cName);
                 appWindowsIPC.loadAppData(ref myXML, myController, cName);
             } else {
                 status.writeLog(logType.error, "Cant load settings for "+cName+" - wrong start node in XML file...");
@@ -831,18 +849,21 @@ namespace abbTools
         private void appsSaveData(ref XmlWriter myXML, Controller myController, string cName = "")
         {
             appRemotePC.saveAppData(ref myXML, myController, cName);
+            appBackupManager.saveAppData(ref myXML, myController, cName);
             appWindowsIPC.saveAppData(ref myXML, myController, cName);
         }
 
         private void appsControllerFound(Controller foundController)
         {
             appRemotePC.controllerFound(foundController);
+            appBackupManager.savedControllerFound(foundController);
             appWindowsIPC.savedControllerFound(foundController);
         }
 
         private void appsControllerLost(Controller lostController)
         {
             appRemotePC.controllerLost(lostController);
+            appBackupManager.savedControllerLost(lostController);
             appWindowsIPC.savedControllerLost(lostController);
         }
     }

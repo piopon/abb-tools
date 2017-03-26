@@ -77,6 +77,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppBackupManager\appBackupManager.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AppBackupManager\appBackupManager.Designer.cs">
+      <DependentUpon>appBackupManager.cs</DependentUpon>
+    </Compile>
     <Compile Include="AppRemoteABB\appRemoteABB.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -129,12 +135,21 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Windows\windowRobotSig.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\windowRobotSig.Designer.cs">
+      <DependentUpon>windowRobotSig.cs</DependentUpon>
+    </Compile>
     <Compile Include="Windows\windowSettings.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Windows\windowSettings.Designer.cs">
       <DependentUpon>windowSettings.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="AppBackupManager\appBackupManager.resx">
+      <DependentUpon>appBackupManager.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="AppRemoteABB\appRemoteABB.resx">
       <DependentUpon>appRemoteABB.cs</DependentUpon>
     </EmbeddedResource>
@@ -157,6 +172,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Windows\windowRobotSig.resx">
+      <DependentUpon>windowRobotSig.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\windowSettings.resx">
       <DependentUpon>windowSettings.cs</DependentUpon>

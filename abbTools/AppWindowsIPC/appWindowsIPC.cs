@@ -37,7 +37,7 @@ namespace abbTools.AppWindowsIPC
         private bool checkBoxClick;
 
         /********************************************************
-         ***  APP IPC - named pipe client event
+         ***  APP IPC - manage connection data containers
          ********************************************************/
 
         /// <summary>
@@ -581,6 +581,26 @@ namespace abbTools.AppWindowsIPC
             labelClientAddress.Text = "info: " + clientDescr;
         }
 
+        private void checkAutoOpen_MouseDown(object sender, MouseEventArgs e)
+        {
+            checkBoxClick = true;
+        }
+
+        private void checkAutoReconnect_MouseDown(object sender, MouseEventArgs e)
+        {
+            checkBoxClick = true;
+        }
+
+        private void linkMoreDescr_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            windowClientStatus status = new windowClientStatus(testClient, ipcData);
+            status.StartPosition = FormStartPosition.CenterParent;
+            status.Height = parentHeight;
+            status.Width = parentWidth;
+            status.ShowInTaskbar = false;
+            status.ShowDialog();
+        }
+
         //================================================================
 
         /// <summary>
@@ -843,26 +863,6 @@ namespace abbTools.AppWindowsIPC
             } else {
                 abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
             }
-        }
-
-        private void checkAutoOpen_MouseDown(object sender, MouseEventArgs e)
-        {
-            checkBoxClick = true;
-        }
-
-        private void checkAutoReconnect_MouseDown(object sender, MouseEventArgs e)
-        {
-            checkBoxClick = true;
-        }
-
-        private void linkMoreDescr_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            windowClientStatus status = new windowClientStatus(testClient,ipcData);
-            status.StartPosition = FormStartPosition.CenterParent;
-            status.Height = parentHeight;
-            status.Width = parentWidth;
-            status.ShowInTaskbar = false;
-            status.ShowDialog();
         }
 
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
