@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows.Forms;
 using abbTools.Windows;
 using ABB.Robotics.Controllers;
+using ABB.Robotics.Controllers.IOSystemDomain;
 
 namespace abbTools.AppBackupManager
 {
@@ -15,31 +16,39 @@ namespace abbTools.AppBackupManager
         //current connection data containers
         Controller abbController = null;
         loggerABB abbLogger = null;
-        //current robot data
+        //current robot data - COMMON
         bool usePC;
         bool useROB;
         bool monitor;
         int clearDays;
+        string backupFolder;
+        string outputPath;
+        //current robot data - PC MASTER
         int backupMin;
         int backupHour;
         int backupDay;
         int duplicateMethodPC;
-        int duplicateMethodRob;
-        string backupFolder;
         string backupSuffixGUI;
         string backupSuffixInterval;
-        string backupSuffixTime;
+        string backupSuffixTime;      
+        DateTime exactPCbackupTime;
+        DateTime lastPCbackupTime;
+        //current robot data - ROBOT MASTER
+        int duplicateMethodRob;
+        int doBackupIndex;
+        int diBackupIndex;
+        string doBackupSigName;
+        string diBackupSigName;
         string backupSuffixRobot;
-        string outputPath;
-        DateTime exactBackupTime;
-        DateTime lastBackupTime;
+        DateTime lastROBbackupTime;
+        Signal sigBackupExe;
+        Signal sigBackupInP;
         //internal data
         public int parentHeight;
         public int parentWidth;
-        string doBackupSigName;
-        string diBackupSigName;
         DateTime emptyTime;
-        windowRobotSig signalsWin;
+        windowRobotSig signalsWindow;
+        windowRobotFiles filesWindow;
         enum sameNameMethod
         {
             overwrite = 0,
@@ -65,10 +74,16 @@ namespace abbTools.AppBackupManager
             emptyTime = new DateTime(1, 1, 1);
             doBackupSigName = "";
             diBackupSigName = "";
+            doBackupIndex = -1;
+            diBackupIndex = -1;
             //init internal signal window
-            signalsWin = new windowRobotSig(abbController);
-            signalsWin.StartPosition = FormStartPosition.CenterParent;
-            signalsWin.ShowInTaskbar = false;
+            signalsWindow = new windowRobotSig(abbController);
+            signalsWindow.StartPosition = FormStartPosition.CenterParent;
+            signalsWindow.ShowInTaskbar = false;
+            //init internal files window
+            filesWindow = new windowRobotFiles(abbController,true,true);
+            filesWindow.StartPosition = FormStartPosition.CenterParent;
+            filesWindow.ShowInTaskbar = false;
             //clear robot data (no robots yet)
             clearData();
             //reset GUI
@@ -102,6 +117,18 @@ namespace abbTools.AppBackupManager
         {
             //update controller address
             abbController = myController;
+            //update signals in background
+            if (signalsWindow != null) {
+                signalsWindow.Height = parentHeight;
+                signalsWindow.Width = parentWidth;
+                signalsWindow.updateSignals(abbController);
+            }
+            //update file structure in background
+            if (filesWindow != null) {
+                filesWindow.Height = parentHeight;
+                filesWindow.Width = parentWidth;
+                filesWindow.updateFiles(abbController);
+            }
             //get data from collection
             getData(abbController);
             //reset GUI
@@ -140,8 +167,8 @@ namespace abbTools.AppBackupManager
             backupSuffixRobot = "";
             outputPath = "";
             //time
-            exactBackupTime = emptyTime;
-            lastBackupTime = emptyTime;
+            exactPCbackupTime = emptyTime;
+            lastPCbackupTime = emptyTime;
         }
 
         void getData(Controller cController)
@@ -324,12 +351,6 @@ namespace abbTools.AppBackupManager
             if (abbController == null) {
                 if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
             }
-            //update signals in background
-            if (useROB && signalsWin != null) {
-                signalsWin.Height = parentHeight;
-                signalsWin.Width = parentWidth;
-                signalsWin.updateSignals(abbController);
-            }
             //update GUI
             resetGUI();
         }
@@ -362,9 +383,9 @@ namespace abbTools.AppBackupManager
             //=== create backup from interval settings
             if (backupMin != 0 || backupHour != 0 || backupDay != 0) {
                 //check interval (if reference time exist then its OK)
-                if (lastBackupTime != emptyTime) {
+                if (lastPCbackupTime != emptyTime) {
                     //check time difference between current time and ref + interval
-                    TimeSpan diff = now - lastBackupTime;
+                    TimeSpan diff = now - lastPCbackupTime;
                     if (diff.Minutes >= backupMin && diff.Hours >= backupHour && diff.Days >= backupDay) { 
                         createBackup(abbController, outputPath, backupSuffixInterval);
                     }
@@ -376,9 +397,9 @@ namespace abbTools.AppBackupManager
             }
             //==============================================================================  
             //=== create backup from exact time
-            if (exactBackupTime != emptyTime) {
+            if (exactPCbackupTime != emptyTime) {
                 //check if its time for backup
-                if (now.Hour == exactBackupTime.Hour && now.Minute == exactBackupTime.Minute) {
+                if (now.Hour == exactPCbackupTime.Hour && now.Minute == exactPCbackupTime.Minute) {
                     createBackup(abbController, outputPath, backupSuffixTime, false);
                 }
             }
@@ -520,8 +541,8 @@ namespace abbTools.AppBackupManager
                 string update = temp.UICulture.NumberFormat.PositiveSign.Substring(checkPos+1);
                 //check if we want to update time 
                 if (Boolean.Parse(update)) {
-                    lastBackupTime = DateTime.Now;
-                    labelLastTimePC.Text = lastBackupTime.ToString();
+                    lastPCbackupTime = DateTime.Now;
+                    labelLastTimePC.Text = lastPCbackupTime.ToString();
                 }
                 //restore controller application variable
                 temp.UICulture.NumberFormat.PositiveSign = temp.UICulture.NumberFormat.PositiveSign.Substring(0, checkPos);
@@ -598,7 +619,7 @@ namespace abbTools.AppBackupManager
             backupHour = (int)numIntervalHours.Value;
             backupDay = (int)numIntervalDays.Value;
             //check if there was reference backup (to measure time from)
-            if (lastBackupTime == null || lastBackupTime == emptyTime) {
+            if (lastPCbackupTime == null || lastPCbackupTime == emptyTime) {
                 //no reference time - inform user to create backup
                 if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - create backup to get reference to count from...");
             } else {
@@ -625,15 +646,15 @@ namespace abbTools.AppBackupManager
                 if (!e.IsValidInput) {
                     if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - wrong time inputted...");
                 } else {
-                    exactBackupTime = DateTime.Now;
-                    exactBackupTime = DateTime.Parse(textEveryTime.Text);
+                    exactPCbackupTime = DateTime.Now;
+                    exactPCbackupTime = DateTime.Parse(textEveryTime.Text);
                     //check if timer is running
                     if (!monitor) {
                         //timer is not running - inform user to run timer
                         if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
                     } else {
                         //timer is running - inform user that setting is correct
-                        if (abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - backup will be done everyday at "+ exactBackupTime.ToShortTimeString()+"!");
+                        if (abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - backup will be done everyday at "+ exactPCbackupTime.ToShortTimeString()+"!");
                     }
                 }
             }
@@ -677,24 +698,112 @@ namespace abbTools.AppBackupManager
             }
         }
 
+        private void DoBackup_Changed(object sender, SignalChangedEventArgs e)
+        {
+            if (e.NewSignalState.Value == 1) {
+                string abbName = getControllerName((DigitalSignal)sender);
+                if (sigBackupInP != null) {
+                    sigBackupInP.Changed += DiBackup_Changed;
+                    abbLogger.writeLog(logType.info, "controller <b>"+ abbName + "</b>"+
+                                                     " [BACKUP MASTER]:  backup in progress - waiting for end...");
+                } else {
+                    abbLogger.writeLog(logType.error, "controller <b>" + abbName + "</b>"+
+                                                     " [BACKUP MASTER]:  backup in progress - no signal defined!");
+                }
+            }
+        }
+
+        private void DiBackup_Changed(object sender, SignalChangedEventArgs e)
+        {
+            if (sigBackupExe.Value == 0 && e.NewSignalState.Value == 0) {
+                string abbName = getControllerName((DigitalSignal)sender);
+                sigBackupInP.Changed -= DiBackup_Changed;
+                //check if output path is created
+                if (outputPath != null && outputPath != "") {
+                    abbLogger.writeLog(logType.info, "controller <b>" + abbName + "</b>" +
+                                                     " [BACKUP MASTER]:  backup done - download start...");
+                    //backup created - get it from robot
+                    string abbDir = "docs";
+                    if (abbController.FileSystem.DirectoryExists(abbDir)) {
+                        backupFolder = abbController.SystemName + "_BACKUP_" + DateTime.Now.ToShortDateString() + backupSuffixRobot;
+                        string backupPath = outputPath + "\\" + backupFolder;
+                        //copy backup file
+                        IAsyncResult dirCopyRes = abbController.FileSystem.BeginGetDirectory(abbDir, backupPath, true, copyCallback, new object());
+                        //update robot backup time
+                        lastROBbackupTime = DateTime.Now;
+                        labelLastTimeROB.Text = lastROBbackupTime.ToShortTimeString();
+                    }
+                } else {
+                    //now output path - error
+                    abbLogger.writeLog(logType.error, "controller <b>" + abbName + "</b>" +
+                                                      " [BACKUP MASTER]:  backup done - no output directory!");
+                }
+
+            }
+        }
+
+        void copyCallback(IAsyncResult res)
+        {
+            if (res.IsCompleted) {
+                abbController.FileSystem.EndCopyDirectory(res);
+            }
+            
+        }
+
+        private string getControllerName(DigitalSignal sig)
+        {
+            return abbController.SystemName;
+        }
+
         private void textSigDoBackup_Click(object sender, EventArgs e)
         {
-            //select current signal
-            signalsWin.selectSig(doBackupSigName);          
-            signalsWin.ShowDialog();
-            //update signal
-            doBackupSigName = signalsWin.selectedSignal;
-            textSigDoBackup.Text = doBackupSigName;
+            //if signal exists then we subscribe to it - unsubscribe because signal may change
+            if (sigBackupExe != null) sigBackupExe.Changed -= DoBackup_Changed;
+            //select current signal and show it in signals window
+            signalsWindow.selectSig(doBackupIndex);
+            signalsWindow.ShowDialog();
+            //something might changed - update signal
+            doBackupIndex = signalsWindow.selectedIndex;
+            doBackupSigName = signalsWindow.selectedSignal;
+            //update GUI and manage signal object
+            if (doBackupSigName != "") {
+                textSigDoBackup.Text = doBackupSigName;
+                //create DO signal object 
+                sigBackupExe = abbController.IOSystem.GetSignal(doBackupSigName);
+                if (sigBackupExe != null) sigBackupExe.Changed += DoBackup_Changed;
+            } else {
+                textSigDoBackup.Text = "- select signal -";
+                //unsubscribe from DO signal object
+                sigBackupExe = null;
+            }
         }
 
         private void textSigBackupProg_Click(object sender, EventArgs e)
         {
-            //select current signal
-            signalsWin.selectSig(diBackupSigName);
-            signalsWin.ShowDialog();
-            //update signal
-            diBackupSigName = signalsWin.selectedSignal;
-            textSigBackupProg.Text = diBackupSigName;
+            //if signal exists then we subscribe to it - unsubscribe because signal may change
+            if (sigBackupInP != null) sigBackupInP.Changed -= DiBackup_Changed;
+            //select current signal and show it in signals window
+            signalsWindow.selectSig(diBackupIndex);
+            signalsWindow.ShowDialog();
+            //something might changed - update signal
+            diBackupIndex = signalsWindow.selectedIndex;
+            diBackupSigName = signalsWindow.selectedSignal;
+            //update GUI and manage signal object
+            if (diBackupSigName != "") {
+                textSigBackupProg.Text = diBackupSigName;
+                //create DI signal object 
+                sigBackupInP = abbController.IOSystem.GetSignal(diBackupSigName);
+            }
+            else {
+                textSigBackupProg.Text = "- select signal -";
+                //unsubscribe from DO signal object
+                sigBackupInP = null;
+            }
+        }
+
+        private void btnRobBackupDir_Click(object sender, EventArgs e)
+        {
+            filesWindow.ShowDialog();
         }
     }
 }

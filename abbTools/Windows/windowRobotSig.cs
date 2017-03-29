@@ -9,8 +9,9 @@ namespace abbTools.Windows
     {
         private Controller currAbbController;
         private SignalCollection currAbbSignals;
-        public string selectedSignal;
         private Form overrideParent;
+        public string selectedSignal;
+        public int selectedIndex;
 
         public windowRobotSig(Controller abb)
         {
@@ -44,9 +45,22 @@ namespace abbTools.Windows
             btnUpdateSignals_Click(this, null);
         }
 
-        public void selectSig(string sig)
+        public void selectSig(int index)
         {
-
+            listRobotSignals.ClearSelected();
+            if (index >= 0 && index < listRobotSignals.Items.Count) {
+                listRobotSignals.SetItemChecked(index, true);
+                listRobotSignals.SelectedIndex = index;
+            } else {
+                //check if list is ready
+                if (listRobotSignals.Items.Count > 0) {
+                    //uncheck all elements
+                    listRobotSignals.SetItemChecked(0, true);
+                    listRobotSignals.SetItemChecked(0, false);
+                }
+                selectedIndex = -1;
+                selectedSignal = "";
+            }
         }
 
         private void btnUpdateSignals_Click(object sender, System.EventArgs e)
@@ -115,15 +129,19 @@ namespace abbTools.Windows
         private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             //uncheck other elements
-            for (int i = 0; i < listRobotSignals.Items.Count; ++i)
-            {
-                if (i != e.Index)
-                {
+            for (int i = 0; i < listRobotSignals.Items.Count; ++i) {
+                if (i != e.Index) {
                     listRobotSignals.SetItemChecked(i, false);
                 }
             }
             //update logic condition for enabling buttons
-            selectedSignal = listRobotSignals.Items[e.Index].ToString();
+            if (e.NewValue == CheckState.Checked) {
+                selectedIndex = e.Index;
+                selectedSignal = listRobotSignals.Items[e.Index].ToString();
+            } else {
+                selectedIndex = -1;
+                selectedSignal = "";
+            }
         }
     }
 }

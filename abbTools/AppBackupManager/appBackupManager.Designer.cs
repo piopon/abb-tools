@@ -67,19 +67,21 @@
             this.labelOutPathTitle = new System.Windows.Forms.Label();
             this.groupRobMaster = new System.Windows.Forms.GroupBox();
             this.groupDetails = new System.Windows.Forms.GroupBox();
+            this.labelRecentBackupROB = new System.Windows.Forms.Label();
+            this.labelLastTimeROB = new System.Windows.Forms.Label();
             this.labelRobotSuffix = new System.Windows.Forms.Label();
             this.textRobotSuffix = new System.Windows.Forms.TextBox();
             this.groupRobotDuplicate = new System.Windows.Forms.GroupBox();
             this.radioROBTime = new System.Windows.Forms.RadioButton();
             this.radioROBOverwrite = new System.Windows.Forms.RadioButton();
             this.radioROBIncr = new System.Windows.Forms.RadioButton();
-            this.groupRobotSignals = new System.Windows.Forms.GroupBox();
-            this.labelSigDoBackup2 = new System.Windows.Forms.Label();
-            this.labelSigBackupInProg2 = new System.Windows.Forms.Label();
+            this.groupRobotSettings = new System.Windows.Forms.GroupBox();
+            this.labelRobBackupDir = new System.Windows.Forms.Label();
+            this.btnRobBackupDir = new System.Windows.Forms.Button();
+            this.labelSigDoBackup = new System.Windows.Forms.Label();
+            this.labelSigBackupInProg = new System.Windows.Forms.Label();
             this.textSigBackupProg = new System.Windows.Forms.TextBox();
             this.textSigDoBackup = new System.Windows.Forms.TextBox();
-            this.labelSigBackupInProg1 = new System.Windows.Forms.Label();
-            this.labelSigDoBackup1 = new System.Windows.Forms.Label();
             this.checkRobActive = new System.Windows.Forms.CheckBox();
             this.timerCheckBackup = new System.Windows.Forms.Timer(this.components);
             this.dialogOutDir = new System.Windows.Forms.FolderBrowserDialog();
@@ -88,8 +90,6 @@
             this.groupWatchStatus = new System.Windows.Forms.GroupBox();
             this.btnWatchOff = new System.Windows.Forms.Button();
             this.btnWatchOn = new System.Windows.Forms.Button();
-            this.labelRecentBackupROB = new System.Windows.Forms.Label();
-            this.labelLastTimeROB = new System.Windows.Forms.Label();
             this.groupPCmaster.SuspendLayout();
             this.groupBackupTime.SuspendLayout();
             this.groupPCcontrol.SuspendLayout();
@@ -104,7 +104,7 @@
             this.groupRobMaster.SuspendLayout();
             this.groupDetails.SuspendLayout();
             this.groupRobotDuplicate.SuspendLayout();
-            this.groupRobotSignals.SuspendLayout();
+            this.groupRobotSettings.SuspendLayout();
             this.groupCommonSettings.SuspendLayout();
             this.groupWatchStatus.SuspendLayout();
             this.SuspendLayout();
@@ -551,7 +551,7 @@
             // 
             this.groupRobMaster.Controls.Add(this.groupDetails);
             this.groupRobMaster.Controls.Add(this.groupRobotDuplicate);
-            this.groupRobMaster.Controls.Add(this.groupRobotSignals);
+            this.groupRobMaster.Controls.Add(this.groupRobotSettings);
             this.groupRobMaster.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupRobMaster.Font = new System.Drawing.Font("GOST Common", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.groupRobMaster.ForeColor = System.Drawing.Color.Black;
@@ -575,6 +575,25 @@
             this.groupDetails.TabIndex = 14;
             this.groupDetails.TabStop = false;
             this.groupDetails.Text = "details";
+            // 
+            // labelRecentBackupROB
+            // 
+            this.labelRecentBackupROB.AutoSize = true;
+            this.labelRecentBackupROB.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelRecentBackupROB.Location = new System.Drawing.Point(22, 22);
+            this.labelRecentBackupROB.Name = "labelRecentBackupROB";
+            this.labelRecentBackupROB.Size = new System.Drawing.Size(81, 15);
+            this.labelRecentBackupROB.TabIndex = 4;
+            this.labelRecentBackupROB.Text = "recent backup:";
+            // 
+            // labelLastTimeROB
+            // 
+            this.labelLastTimeROB.AutoSize = true;
+            this.labelLastTimeROB.Location = new System.Drawing.Point(23, 39);
+            this.labelLastTimeROB.Name = "labelLastTimeROB";
+            this.labelLastTimeROB.Size = new System.Drawing.Size(15, 17);
+            this.labelLastTimeROB.TabIndex = 5;
+            this.labelLastTimeROB.Text = "-";
             // 
             // labelRobotSuffix
             // 
@@ -647,46 +666,69 @@
             this.radioROBIncr.Text = "increment";
             this.radioROBIncr.UseVisualStyleBackColor = true;
             // 
-            // groupRobotSignals
+            // groupRobotSettings
             // 
-            this.groupRobotSignals.Controls.Add(this.labelSigDoBackup2);
-            this.groupRobotSignals.Controls.Add(this.labelSigBackupInProg2);
-            this.groupRobotSignals.Controls.Add(this.textSigBackupProg);
-            this.groupRobotSignals.Controls.Add(this.textSigDoBackup);
-            this.groupRobotSignals.Controls.Add(this.labelSigBackupInProg1);
-            this.groupRobotSignals.Controls.Add(this.labelSigDoBackup1);
-            this.groupRobotSignals.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.groupRobotSignals.Location = new System.Drawing.Point(13, 31);
-            this.groupRobotSignals.Name = "groupRobotSignals";
-            this.groupRobotSignals.Size = new System.Drawing.Size(363, 119);
-            this.groupRobotSignals.TabIndex = 0;
-            this.groupRobotSignals.TabStop = false;
-            this.groupRobotSignals.Text = "signals";
+            this.groupRobotSettings.Controls.Add(this.labelRobBackupDir);
+            this.groupRobotSettings.Controls.Add(this.btnRobBackupDir);
+            this.groupRobotSettings.Controls.Add(this.labelSigDoBackup);
+            this.groupRobotSettings.Controls.Add(this.labelSigBackupInProg);
+            this.groupRobotSettings.Controls.Add(this.textSigBackupProg);
+            this.groupRobotSettings.Controls.Add(this.textSigDoBackup);
+            this.groupRobotSettings.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.groupRobotSettings.Location = new System.Drawing.Point(13, 31);
+            this.groupRobotSettings.Name = "groupRobotSettings";
+            this.groupRobotSettings.Size = new System.Drawing.Size(363, 119);
+            this.groupRobotSettings.TabIndex = 0;
+            this.groupRobotSettings.TabStop = false;
+            this.groupRobotSettings.Text = "robot settings";
             // 
-            // labelSigDoBackup2
+            // labelRobBackupDir
             // 
-            this.labelSigDoBackup2.AutoSize = true;
-            this.labelSigDoBackup2.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelSigDoBackup2.Location = new System.Drawing.Point(21, 39);
-            this.labelSigDoBackup2.Name = "labelSigDoBackup2";
-            this.labelSigDoBackup2.Size = new System.Drawing.Size(57, 15);
-            this.labelSigDoBackup2.TabIndex = 5;
-            this.labelSigDoBackup2.Text = "do backup";
+            this.labelRobBackupDir.AutoSize = true;
+            this.labelRobBackupDir.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelRobBackupDir.Location = new System.Drawing.Point(243, 22);
+            this.labelRobBackupDir.Name = "labelRobBackupDir";
+            this.labelRobBackupDir.Size = new System.Drawing.Size(62, 15);
+            this.labelRobBackupDir.TabIndex = 7;
+            this.labelRobBackupDir.Text = "backup dir:";
             // 
-            // labelSigBackupInProg2
+            // btnRobBackupDir
             // 
-            this.labelSigBackupInProg2.AutoSize = true;
-            this.labelSigBackupInProg2.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelSigBackupInProg2.Location = new System.Drawing.Point(21, 84);
-            this.labelSigBackupInProg2.Name = "labelSigBackupInProg2";
-            this.labelSigBackupInProg2.Size = new System.Drawing.Size(103, 15);
-            this.labelSigBackupInProg2.TabIndex = 4;
-            this.labelSigBackupInProg2.Text = "backup in progress";
+            this.btnRobBackupDir.BackColor = System.Drawing.Color.Gainsboro;
+            this.btnRobBackupDir.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRobBackupDir.Location = new System.Drawing.Point(243, 38);
+            this.btnRobBackupDir.Name = "btnRobBackupDir";
+            this.btnRobBackupDir.Size = new System.Drawing.Size(101, 71);
+            this.btnRobBackupDir.TabIndex = 6;
+            this.btnRobBackupDir.Text = "select";
+            this.btnRobBackupDir.UseVisualStyleBackColor = false;
+            this.btnRobBackupDir.Click += new System.EventHandler(this.btnRobBackupDir_Click);
+            // 
+            // labelSigDoBackup
+            // 
+            this.labelSigDoBackup.AutoSize = true;
+            this.labelSigDoBackup.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelSigDoBackup.Location = new System.Drawing.Point(18, 22);
+            this.labelSigDoBackup.Name = "labelSigDoBackup";
+            this.labelSigDoBackup.Size = new System.Drawing.Size(115, 15);
+            this.labelSigDoBackup.TabIndex = 5;
+            this.labelSigDoBackup.Text = "system input: backup";
+            // 
+            // labelSigBackupInProg
+            // 
+            this.labelSigBackupInProg.AutoSize = true;
+            this.labelSigBackupInProg.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelSigBackupInProg.Location = new System.Drawing.Point(19, 70);
+            this.labelSigBackupInProg.Name = "labelSigBackupInProg";
+            this.labelSigBackupInProg.Size = new System.Drawing.Size(184, 15);
+            this.labelSigBackupInProg.TabIndex = 4;
+            this.labelSigBackupInProg.Text = "system output: backup in progress";
             // 
             // textSigBackupProg
             // 
             this.textSigBackupProg.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.textSigBackupProg.Location = new System.Drawing.Point(147, 75);
+            this.textSigBackupProg.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.textSigBackupProg.Location = new System.Drawing.Point(21, 86);
             this.textSigBackupProg.Name = "textSigBackupProg";
             this.textSigBackupProg.ReadOnly = true;
             this.textSigBackupProg.Size = new System.Drawing.Size(193, 23);
@@ -697,33 +739,14 @@
             // textSigDoBackup
             // 
             this.textSigDoBackup.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.textSigDoBackup.Location = new System.Drawing.Point(147, 30);
+            this.textSigDoBackup.Cursor = System.Windows.Forms.Cursors.Arrow;
+            this.textSigDoBackup.Location = new System.Drawing.Point(21, 38);
             this.textSigDoBackup.Name = "textSigDoBackup";
             this.textSigDoBackup.ReadOnly = true;
             this.textSigDoBackup.Size = new System.Drawing.Size(193, 23);
             this.textSigDoBackup.TabIndex = 2;
             this.textSigDoBackup.Text = "- select signal -";
             this.textSigDoBackup.Click += new System.EventHandler(this.textSigDoBackup_Click);
-            // 
-            // labelSigBackupInProg1
-            // 
-            this.labelSigBackupInProg1.AutoSize = true;
-            this.labelSigBackupInProg1.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelSigBackupInProg1.Location = new System.Drawing.Point(21, 67);
-            this.labelSigBackupInProg1.Name = "labelSigBackupInProg1";
-            this.labelSigBackupInProg1.Size = new System.Drawing.Size(44, 15);
-            this.labelSigBackupInProg1.TabIndex = 1;
-            this.labelSigBackupInProg1.Text = "output:";
-            // 
-            // labelSigDoBackup1
-            // 
-            this.labelSigDoBackup1.AutoSize = true;
-            this.labelSigDoBackup1.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelSigDoBackup1.Location = new System.Drawing.Point(21, 22);
-            this.labelSigDoBackup1.Name = "labelSigDoBackup1";
-            this.labelSigDoBackup1.Size = new System.Drawing.Size(36, 15);
-            this.labelSigDoBackup1.TabIndex = 0;
-            this.labelSigDoBackup1.Text = "input:";
             // 
             // checkRobActive
             // 
@@ -794,25 +817,6 @@
             this.btnWatchOn.UseVisualStyleBackColor = false;
             this.btnWatchOn.Click += new System.EventHandler(this.btnWatchOn_Click);
             // 
-            // labelRecentBackupROB
-            // 
-            this.labelRecentBackupROB.AutoSize = true;
-            this.labelRecentBackupROB.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelRecentBackupROB.Location = new System.Drawing.Point(22, 22);
-            this.labelRecentBackupROB.Name = "labelRecentBackupROB";
-            this.labelRecentBackupROB.Size = new System.Drawing.Size(81, 15);
-            this.labelRecentBackupROB.TabIndex = 4;
-            this.labelRecentBackupROB.Text = "recent backup:";
-            // 
-            // labelLastTimeROB
-            // 
-            this.labelLastTimeROB.AutoSize = true;
-            this.labelLastTimeROB.Location = new System.Drawing.Point(23, 39);
-            this.labelLastTimeROB.Name = "labelLastTimeROB";
-            this.labelLastTimeROB.Size = new System.Drawing.Size(15, 17);
-            this.labelLastTimeROB.TabIndex = 5;
-            this.labelLastTimeROB.Text = "-";
-            // 
             // appBackupManager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -847,8 +851,8 @@
             this.groupDetails.PerformLayout();
             this.groupRobotDuplicate.ResumeLayout(false);
             this.groupRobotDuplicate.PerformLayout();
-            this.groupRobotSignals.ResumeLayout(false);
-            this.groupRobotSignals.PerformLayout();
+            this.groupRobotSettings.ResumeLayout(false);
+            this.groupRobotSettings.PerformLayout();
             this.groupCommonSettings.ResumeLayout(false);
             this.groupWatchStatus.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -903,11 +907,9 @@
         private System.Windows.Forms.Label labelGUISuffix;
         private System.Windows.Forms.TextBox textGuiSuffix;
         private System.Windows.Forms.Button btnOutShow;
-        private System.Windows.Forms.GroupBox groupRobotSignals;
+        private System.Windows.Forms.GroupBox groupRobotSettings;
         private System.Windows.Forms.TextBox textSigBackupProg;
         private System.Windows.Forms.TextBox textSigDoBackup;
-        private System.Windows.Forms.Label labelSigBackupInProg1;
-        private System.Windows.Forms.Label labelSigDoBackup1;
         private System.Windows.Forms.GroupBox groupDetails;
         private System.Windows.Forms.Label labelRobotSuffix;
         private System.Windows.Forms.TextBox textRobotSuffix;
@@ -915,9 +917,11 @@
         private System.Windows.Forms.RadioButton radioROBTime;
         private System.Windows.Forms.RadioButton radioROBOverwrite;
         private System.Windows.Forms.RadioButton radioROBIncr;
-        private System.Windows.Forms.Label labelSigDoBackup2;
-        private System.Windows.Forms.Label labelSigBackupInProg2;
+        private System.Windows.Forms.Label labelSigDoBackup;
+        private System.Windows.Forms.Label labelSigBackupInProg;
         private System.Windows.Forms.Label labelRecentBackupROB;
         private System.Windows.Forms.Label labelLastTimeROB;
+        private System.Windows.Forms.Label labelRobBackupDir;
+        private System.Windows.Forms.Button btnRobBackupDir;
     }
 }
