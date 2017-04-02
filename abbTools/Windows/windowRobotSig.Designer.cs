@@ -95,6 +95,7 @@
             this.listRobotSignals.Size = new System.Drawing.Size(239, 238);
             this.listRobotSignals.TabIndex = 8;
             this.listRobotSignals.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.listRobotSignals_ItemCheck);
+            this.listRobotSignals.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listRobotSignals_KeyDown);
             // 
             // btnUpdateSignals
             // 

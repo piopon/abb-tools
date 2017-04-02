@@ -37,6 +37,8 @@ namespace abbTools.Windows
             //new form contains user GUI panel
             panelContents.Parent = overrideParent;
             panelContents.Dock = DockStyle.Fill;
+            //set focus on list (to use keyboard)
+            listRobotSignals.Focus();
         }
 
         public void updateSignals(Controller abb)
@@ -141,6 +143,29 @@ namespace abbTools.Windows
             } else {
                 selectedIndex = -1;
                 selectedSignal = "";
+            }
+        }
+
+        private void listRobotSignals_KeyDown(object sender, KeyEventArgs e)
+        {
+            //watch keys only if list is filled (and loading panel not visible)
+            if (panelLoading.Visible == false) {
+                //watch only for ESC and ENTER buttons (keys and alpha chars working internally)
+                if (e.KeyCode == Keys.Escape) {
+                    //user cancelled - result = no selected item
+                    selectedIndex = -1;
+                    selectedSignal = "";
+                    //close window
+                    Close();
+                } else if (e.KeyCode == Keys.Return) {
+                    //user cancelled - result = current selected item
+                    if (listRobotSignals.SelectedIndex >= 0) {
+                        selectedIndex = listRobotSignals.SelectedIndex;
+                        selectedSignal = listRobotSignals.Items[selectedIndex].ToString();
+                    }
+                    //close window
+                    Close();
+                }
             }
         }
     }

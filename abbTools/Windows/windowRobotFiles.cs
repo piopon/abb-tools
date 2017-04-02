@@ -36,32 +36,25 @@ namespace abbTools.Windows
             //update controller address
             abbController = cController;
             //check if background worker is running
-            //if (!backThread.IsBusy) {
-            //    //clear tree
-            //    treeRobotDirs.Nodes.Clear();
-            //    //run background thread
-            //    backThread.RunWorkerAsync(treeRobotDirs);
-            //}
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            //check if background worker is running
-            if (!backThread.IsBusy)
-            {
+            if (!backThread.IsBusy) {
                 //clear tree
                 treeRobotDirs.Nodes.Clear();
                 //run background thread
                 backThread.RunWorkerAsync(treeRobotDirs);
             }
-            ////clear tree
-            //treeRobotDirs.Nodes.Clear();
-            ////get list of all files starting from the top
-            //currDir = abbController.GetEnvironmentVariable("SYSTEM");
-            //parentNode = null;
-            ////sync list of all folders structure 
-            //exploreFiles(currDir, parentNode);
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //clear tree
+            treeRobotDirs.Nodes.Clear();
+            //get list of all files starting from the top
+            levels.Clear();
+            currDir = abbController.GetEnvironmentVariable("SYSTEM");
+            parentNode = null;
+            //sync list of all folders structure 
+            exploreFiles(currDir, parentNode);
         }
 
         private void exploreFiles(string dir, TreeNode node)
@@ -107,14 +100,12 @@ namespace abbTools.Windows
                 //more than one level - add it to path
                 for (int lvl = 0; lvl < levelsCount; lvl++) {
                     if (lvl == 0) {
-                        int index = levels[lvl];
-                        currNode = treeRobotDirs.Nodes[index];
-                    } else if (lvl == levels.Count - 1) {
-                        currNode.Nodes.Add(child);
+                        currNode = treeRobotDirs.Nodes[levels[lvl]];
                     } else {
                         currNode = currNode.Nodes[levels[lvl]];
                     }
                 }
+                currNode.Nodes.Add(child);
             }
         }
 
@@ -137,13 +128,13 @@ namespace abbTools.Windows
             panelContent.Dock = DockStyle.Fill;
         }
 
-        private void btnOK_Click(object sender, System.EventArgs e)
+        private void btnOK_Click(object sender, EventArgs e)
         {
-            selectedDir = "path";
+            selectedDir = treeRobotDirs.SelectedNode.FullPath;
             Close();
         }
 
-        private void btnCancel_Click(object sender, System.EventArgs e)
+        private void btnCancel_Click(object sender, EventArgs e)
         {
             selectedDir = "";
             Close();
@@ -152,6 +143,7 @@ namespace abbTools.Windows
         private void backThread_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             //get list of all files starting from the top
+            levels.Clear();
             currDir = abbController.GetEnvironmentVariable("SYSTEM");
             parentNode = null;
             //sync list of all folders structure 

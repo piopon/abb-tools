@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(appBackupManager));
             this.groupPCmaster = new System.Windows.Forms.GroupBox();
             this.groupBackupTime = new System.Windows.Forms.GroupBox();
             this.labelEveryTime = new System.Windows.Forms.Label();
@@ -67,6 +68,8 @@
             this.labelOutPathTitle = new System.Windows.Forms.Label();
             this.groupRobMaster = new System.Windows.Forms.GroupBox();
             this.groupDetails = new System.Windows.Forms.GroupBox();
+            this.labelBackupStatus = new System.Windows.Forms.Label();
+            this.imagesRobBackupStatus = new System.Windows.Forms.ImageList(this.components);
             this.labelRecentBackupROB = new System.Windows.Forms.Label();
             this.labelLastTimeROB = new System.Windows.Forms.Label();
             this.labelRobotSuffix = new System.Windows.Forms.Label();
@@ -77,6 +80,7 @@
             this.radioROBIncr = new System.Windows.Forms.RadioButton();
             this.groupRobotSettings = new System.Windows.Forms.GroupBox();
             this.labelRobBackupDir = new System.Windows.Forms.Label();
+            this.imagesRobotDIR = new System.Windows.Forms.ImageList(this.components);
             this.btnRobBackupDir = new System.Windows.Forms.Button();
             this.labelSigDoBackup = new System.Windows.Forms.Label();
             this.labelSigBackupInProg = new System.Windows.Forms.Label();
@@ -564,6 +568,7 @@
             // 
             // groupDetails
             // 
+            this.groupDetails.Controls.Add(this.labelBackupStatus);
             this.groupDetails.Controls.Add(this.labelRecentBackupROB);
             this.groupDetails.Controls.Add(this.labelLastTimeROB);
             this.groupDetails.Controls.Add(this.labelRobotSuffix);
@@ -575,6 +580,26 @@
             this.groupDetails.TabIndex = 14;
             this.groupDetails.TabStop = false;
             this.groupDetails.Text = "details";
+            // 
+            // labelBackupStatus
+            // 
+            this.labelBackupStatus.ImageList = this.imagesRobBackupStatus;
+            this.labelBackupStatus.Location = new System.Drawing.Point(139, 19);
+            this.labelBackupStatus.Name = "labelBackupStatus";
+            this.labelBackupStatus.Size = new System.Drawing.Size(20, 20);
+            this.labelBackupStatus.TabIndex = 6;
+            this.labelBackupStatus.MouseEnter += new System.EventHandler(this.labelBackupStatus_MouseEnter);
+            this.labelBackupStatus.MouseLeave += new System.EventHandler(this.labelBackupStatus_MouseLeave);
+            // 
+            // imagesRobBackupStatus
+            // 
+            this.imagesRobBackupStatus.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesRobBackupStatus.ImageStream")));
+            this.imagesRobBackupStatus.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesRobBackupStatus.Images.SetKeyName(0, "backupState_doing.png");
+            this.imagesRobBackupStatus.Images.SetKeyName(1, "backupState_wait.png");
+            this.imagesRobBackupStatus.Images.SetKeyName(2, "backupStatus_download.png");
+            this.imagesRobBackupStatus.Images.SetKeyName(3, "backupState_saved.png");
+            this.imagesRobBackupStatus.Images.SetKeyName(4, "backupStatus_error.png");
             // 
             // labelRecentBackupROB
             // 
@@ -589,7 +614,7 @@
             // labelLastTimeROB
             // 
             this.labelLastTimeROB.AutoSize = true;
-            this.labelLastTimeROB.Location = new System.Drawing.Point(23, 39);
+            this.labelLastTimeROB.Location = new System.Drawing.Point(23, 41);
             this.labelLastTimeROB.Name = "labelLastTimeROB";
             this.labelLastTimeROB.Size = new System.Drawing.Size(15, 17);
             this.labelLastTimeROB.TabIndex = 5;
@@ -613,7 +638,7 @@
             this.textRobotSuffix.Name = "textRobotSuffix";
             this.textRobotSuffix.Size = new System.Drawing.Size(134, 23);
             this.textRobotSuffix.TabIndex = 2;
-            this.textRobotSuffix.Text = "_dailyBackup";
+            this.textRobotSuffix.Text = "_robotBackup";
             this.textRobotSuffix.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.textRobotSuffix.TextChanged += new System.EventHandler(this.textBackupSuffix_TextChanged);
             // 
@@ -642,6 +667,7 @@
             this.radioROBTime.TabStop = true;
             this.radioROBTime.Text = "add time";
             this.radioROBTime.UseVisualStyleBackColor = true;
+            this.radioROBTime.CheckedChanged += new System.EventHandler(this.radioROBDuplicate_CheckChanges);
             // 
             // radioROBOverwrite
             // 
@@ -665,6 +691,7 @@
             this.radioROBIncr.TabIndex = 5;
             this.radioROBIncr.Text = "increment";
             this.radioROBIncr.UseVisualStyleBackColor = true;
+            this.radioROBIncr.CheckedChanged += new System.EventHandler(this.radioROBDuplicate_CheckChanges);
             // 
             // groupRobotSettings
             // 
@@ -686,11 +713,23 @@
             // 
             this.labelRobBackupDir.AutoSize = true;
             this.labelRobBackupDir.Font = new System.Drawing.Font("GOST Common", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelRobBackupDir.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelRobBackupDir.ImageIndex = 0;
+            this.labelRobBackupDir.ImageList = this.imagesRobotDIR;
             this.labelRobBackupDir.Location = new System.Drawing.Point(243, 22);
             this.labelRobBackupDir.Name = "labelRobBackupDir";
-            this.labelRobBackupDir.Size = new System.Drawing.Size(62, 15);
+            this.labelRobBackupDir.Size = new System.Drawing.Size(80, 15);
             this.labelRobBackupDir.TabIndex = 7;
-            this.labelRobBackupDir.Text = "backup dir:";
+            this.labelRobBackupDir.Text = "      backup dir:";
+            this.labelRobBackupDir.MouseEnter += new System.EventHandler(this.labelRobBackupDir_MouseEnter);
+            this.labelRobBackupDir.MouseLeave += new System.EventHandler(this.labelRobBackupDir_MouseLeave);
+            // 
+            // imagesRobotDIR
+            // 
+            this.imagesRobotDIR.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesRobotDIR.ImageStream")));
+            this.imagesRobotDIR.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesRobotDIR.Images.SetKeyName(0, "client_disconn.png");
+            this.imagesRobotDIR.Images.SetKeyName(1, "client_conn.png");
             // 
             // btnRobBackupDir
             // 
@@ -735,6 +774,7 @@
             this.textSigBackupProg.TabIndex = 3;
             this.textSigBackupProg.Text = "- select signal -";
             this.textSigBackupProg.Click += new System.EventHandler(this.textSigBackupProg_Click);
+            this.textSigBackupProg.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textSigBackupProg_KeyDown);
             // 
             // textSigDoBackup
             // 
@@ -747,6 +787,7 @@
             this.textSigDoBackup.TabIndex = 2;
             this.textSigDoBackup.Text = "- select signal -";
             this.textSigDoBackup.Click += new System.EventHandler(this.textSigDoBackup_Click);
+            this.textSigDoBackup.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textSigDoBackup_KeyDown);
             // 
             // checkRobActive
             // 
@@ -923,5 +964,8 @@
         private System.Windows.Forms.Label labelLastTimeROB;
         private System.Windows.Forms.Label labelRobBackupDir;
         private System.Windows.Forms.Button btnRobBackupDir;
+        private System.Windows.Forms.ImageList imagesRobotDIR;
+        private System.Windows.Forms.ImageList imagesRobBackupStatus;
+        private System.Windows.Forms.Label labelBackupStatus;
     }
 }

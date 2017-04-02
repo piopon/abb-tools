@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using abbTools.Windows;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.IOSystemDomain;
+using ABB.Robotics.Controllers.FileSystemDomain;
+using System.Linq;
 
 namespace abbTools.AppBackupManager
 {
@@ -21,7 +23,6 @@ namespace abbTools.AppBackupManager
         bool useROB;
         bool monitor;
         int clearDays;
-        string backupFolder;
         string outputPath;
         //current robot data - PC MASTER
         int backupMin;
@@ -34,12 +35,14 @@ namespace abbTools.AppBackupManager
         DateTime exactPCbackupTime;
         DateTime lastPCbackupTime;
         //current robot data - ROBOT MASTER
+        bool checkBackup;
         int duplicateMethodRob;
         int doBackupIndex;
         int diBackupIndex;
         string doBackupSigName;
         string diBackupSigName;
         string backupSuffixRobot;
+        string robotBackupDir;
         DateTime lastROBbackupTime;
         Signal sigBackupExe;
         Signal sigBackupInP;
@@ -152,6 +155,7 @@ namespace abbTools.AppBackupManager
             usePC = false;
             useROB = false;
             monitor = false;
+            checkBackup = false;
             //int
             clearDays = 0;
             backupMin = 0;
@@ -160,12 +164,12 @@ namespace abbTools.AppBackupManager
             duplicateMethodPC = (int)sameNameMethod.overwrite;
             duplicateMethodRob = (int)sameNameMethod.overwrite;
             //string
-            backupFolder = "";
             backupSuffixGUI = "";
             backupSuffixInterval = "";
             backupSuffixTime = "";
             backupSuffixRobot = "";
             outputPath = "";
+            robotBackupDir = "";
             //time
             exactPCbackupTime = emptyTime;
             lastPCbackupTime = emptyTime;
@@ -207,6 +211,12 @@ namespace abbTools.AppBackupManager
                 groupRobMaster.Enabled = true;
             } else {
                 groupRobMaster.Enabled = false;
+            }
+            //check if directory was selected
+            if (robotBackupDir != null) {
+                labelRobBackupDir.ImageIndex = robotBackupDir != "" ? 1 : 0;
+            } else {
+                labelRobBackupDir.ImageIndex = 0;
             }
             //fill independent data - TextBox suffixes
             textGuiSuffix.Text = backupSuffixGUI;
@@ -404,6 +414,17 @@ namespace abbTools.AppBackupManager
                 }
             }
             //==============================================================================  
+            //=== get backup from robot
+            if (checkBackup && lastROBbackupTime != emptyTime) {
+                //check time difference between current time and robot time (give robot at leas 1 minute timeout)
+                TimeSpan diff = now - lastROBbackupTime;
+                if (diff.Minutes >= 1) {
+                    robotGetBackup(abbController, robotBackupDir, outputPath, lastROBbackupTime);
+                    checkBackup = false;
+                }
+                //update xml file
+            }
+            //==============================================================================  
         }
 
         private void clearOutputDir(Controller cController, int daysOld, bool guiDemand=false)
@@ -449,6 +470,7 @@ namespace abbTools.AppBackupManager
         {
             //show tooltip with full path value (if its exceed label capacity)
             if (outputPath != null && outputPath != "" && labelOutPathVal.Text != outputPath + "\\") {
+                myToolTip.SetToolTip(labelRobBackupDir, robotBackupDir);
                 myToolTip.Show(outputPath + "\\", labelOutPathVal, 0, 18);
             }
         }
@@ -456,6 +478,7 @@ namespace abbTools.AppBackupManager
         private void labelOutPathVal_MouseLeave(object sender, EventArgs e)
         {
             //hide tooltip with full path value
+            myToolTip.RemoveAll();
             myToolTip.Hide(labelOutPathVal);
         }
 
@@ -471,46 +494,8 @@ namespace abbTools.AppBackupManager
                 if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - can't create backup! No outputh path defined...");
                 return;
             }
-            //create backup folder name and path
-            backupFolder = abbController.SystemName + "_BACKUP_" + DateTime.Now.ToShortDateString() + fileSuffix;
-            string backupPath = outPath + "\\" + backupFolder;
-            //check if current path is non-existent
-            if (Directory.Exists(backupPath)) {
-                //path exists - check what we want to do
-                if (duplicateMethodPC == (int)sameNameMethod.overwrite) {
-                    //we will overwrite backup - delete older one
-                    Directory.Delete(backupPath,true);
-                } else if (duplicateMethodPC == (int)sameNameMethod.increment) {
-                    //we will add second folder with increment number - check how many folder there is
-                    string[] folders = Directory.GetDirectories(outPath + "\\");
-                    int currFolder = 0;
-                    //find the newest file (it should be the one with last increment number
-                    for (int i = 0; i < folders.Length; i++) {
-                        if (folders[i].Contains(DateTime.Now.ToShortDateString())) {
-                            //we found the same folder 
-                            int incrPos = folders[i].LastIndexOf("_");
-                            string folderNo = folders[i].Substring(incrPos+1);
-                            //check if we have other incremented folder
-                            if (folderNo.Length <= 3) {
-                                //another incremented folder - check if its bigger then current
-                                int currNumber = int.Parse(folderNo);
-                                currFolder = currNumber>currFolder ? currNumber : currFolder;
-                            }
-                        }
-                    }
-                    //update suffix with next number
-                    backupFolder += "_"+ (++currFolder).ToString();
-                    //update backup path
-                    backupPath = outPath + "\\" + backupFolder;
-                } else if (duplicateMethodPC == (int)sameNameMethod.additTime) {
-                    //we will add second folder with current time
-                    backupFolder += "_" + DateTime.Now.ToLongTimeString();
-                    //replace time colon with dash
-                    backupFolder = backupFolder.Replace(":", ";");
-                    //update backup path
-                    backupPath = outPath + "\\" + backupFolder;
-                }
-            }
+            //create full backup path
+            string backupPath = createBackupPath(outPath, cController.SystemName, fileSuffix, duplicateMethodPC);
             //check if backup isnt currently in progress
             if (!cController.BackupInProgress) {
                 //hide info about updating time after backup ok (to check it in event on backup done)
@@ -528,6 +513,53 @@ namespace abbTools.AppBackupManager
                 if (abbLogger != null) abbLogger.writeLog(logType.info, "controller <b>" + cController.SystemName + "</b>: "+
                                                             "backup in progress! Wait for end and retry [" + DateTime.Now.ToShortTimeString() + "]...");
             }
+        }
+
+        private string createBackupPath(string outPath, string abbName, string backupSuffix, int desiredAction)
+        {
+            //create initial backup folder name
+            string backupFolder = abbName + "_BACKUP_" + DateTime.Now.ToShortDateString() + backupSuffix;
+            string result = outPath + "\\" + backupFolder;
+            //check if final directory exists
+            if (Directory.Exists(result)) {
+                //path exists - check what we want to do
+                if (desiredAction == (int)sameNameMethod.overwrite) {
+                    //we will overwrite backup - delete older one
+                    Directory.Delete(result, true);
+                } else if (desiredAction == (int)sameNameMethod.increment) {
+                    //we will add second folder with increment number - check how many folder there is
+                    string[] folders = Directory.GetDirectories(outPath + "\\");
+                    int currFolder = 0;
+                    //find the newest file (it should be the one with last increment number
+                    for (int i = 0; i < folders.Length; i++) {
+                        if (folders[i].Contains(DateTime.Now.ToShortDateString())) {
+                            //we found folder with the same date - find the same suffix
+                            if (folders[i].Contains(backupSuffix)) {
+                                int incrPos = folders[i].LastIndexOf("_");
+                                string folderNo = folders[i].Substring(incrPos + 1);
+                                //check if we have other incremented folder
+                                if (folderNo.Length <= 3 && folderNo.All(char.IsDigit)) {
+                                    //another incremented folder - check if its bigger then current
+                                    int currNumber = int.Parse(folderNo);
+                                    currFolder = currNumber > currFolder ? currNumber : currFolder;
+                                }
+                            }
+                        }
+                    }
+                    //update suffix with next number
+                    backupFolder += "_" + (++currFolder).ToString();
+                    //update backup path
+                    result = outPath + "\\" + backupFolder;
+                } else if (desiredAction == (int)sameNameMethod.additTime) {
+                    //we will add second folder with current time
+                    backupFolder += "_" + DateTime.Now.ToLongTimeString();
+                    //replace time colon with dash
+                    backupFolder = backupFolder.Replace(":", ";");
+                    //update backup path
+                    result = outPath + "\\" + backupFolder;
+                }
+            }
+            return result;
         }
 
         private void abbControllerBackupDoneEvent(object sender, BackupEventArgs e)
@@ -706,6 +738,8 @@ namespace abbTools.AppBackupManager
                     sigBackupInP.Changed += DiBackup_Changed;
                     abbLogger.writeLog(logType.info, "controller <b>"+ abbName + "</b>"+
                                                      " [BACKUP MASTER]:  backup in progress - waiting for end...");
+                    //update status icon (doing backup)
+                    labelBackupStatus.ImageIndex = 0;
                 } else {
                     abbLogger.writeLog(logType.error, "controller <b>" + abbName + "</b>"+
                                                      " [BACKUP MASTER]:  backup in progress - no signal defined!");
@@ -718,36 +752,110 @@ namespace abbTools.AppBackupManager
             if (sigBackupExe.Value == 0 && e.NewSignalState.Value == 0) {
                 string abbName = getControllerName((DigitalSignal)sender);
                 sigBackupInP.Changed -= DiBackup_Changed;
-                //check if output path is created
-                if (outputPath != null && outputPath != "") {
-                    abbLogger.writeLog(logType.info, "controller <b>" + abbName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup done - download start...");
-                    //backup created - get it from robot
-                    string abbDir = "docs";
-                    if (abbController.FileSystem.DirectoryExists(abbDir)) {
-                        backupFolder = abbController.SystemName + "_BACKUP_" + DateTime.Now.ToShortDateString() + backupSuffixRobot;
-                        string backupPath = outputPath + "\\" + backupFolder;
-                        //copy backup file
-                        IAsyncResult dirCopyRes = abbController.FileSystem.BeginGetDirectory(abbDir, backupPath, true, copyCallback, new object());
-                        //update robot backup time
+                //check if source path is inputted
+                if (robotBackupDir != null && robotBackupDir != "") {
+                    //check if output path is created
+                    if (outputPath != null && outputPath != "") {
+                        if (monitor) {
+                            abbLogger.writeLog(logType.info, "controller <b>" + abbName + "</b>" +
+                                                             " [BACKUP MASTER]:  backup done - download in queue...");
+                        } else {
+                            abbLogger.writeLog(logType.warning, "controller <b>" + abbName + "</b>" +
+                                                             " [BACKUP MASTER]:  backup done - turn timer ON to queue download!");
+                        }
+                        //backup created - set flag to get it from robot
+                        checkBackup = true;
                         lastROBbackupTime = DateTime.Now;
-                        labelLastTimeROB.Text = lastROBbackupTime.ToShortTimeString();
+                        //update status icon (waiting in queue)
+                        labelBackupStatus.ImageIndex = 1;
+                    } else {
+                        //now output path - error
+                        abbLogger.writeLog(logType.error, "controller <b>" + abbName + "</b>" +
+                                                          " [BACKUP MASTER]:  backup done - but no output directory selected!");
                     }
                 } else {
                     //now output path - error
                     abbLogger.writeLog(logType.error, "controller <b>" + abbName + "</b>" +
-                                                      " [BACKUP MASTER]:  backup done - no output directory!");
+                                                      " [BACKUP MASTER]:  backup done - but no source directory selected!");
                 }
-
             }
         }
 
-        void copyCallback(IAsyncResult res)
+        private void robotGetBackup(Controller currAbb, string srcDir, string outPath, DateTime approxTime)
         {
-            if (res.IsCompleted) {
-                abbController.FileSystem.EndCopyDirectory(res);
+            //set remote directory to most top
+            abbController.FileSystem.RemoteDirectory = abbController.GetEnvironmentVariable("SYSTEM");
+            //check if user-specified directory exist in controller
+            if (abbController.FileSystem.DirectoryExists(srcDir)) {
+                //find newest file
+                string newestFile = robotGetNewestFile(currAbb,srcDir);
+                if (newestFile == "") {
+                    abbLogger.writeLog(logType.error, "controller <b>" + currAbb.SystemName + "</b>" +
+                                                 " [BACKUP MASTER]:  backup done - but no controller file found!");
+                    return;
+                }
+                string backupSrc = srcDir + "/" + newestFile;
+                //check if current path is existent
+                string backupOut = createBackupPath(outPath, currAbb.SystemName, backupSuffixRobot, duplicateMethodRob);
+                //leave log for user
+                abbLogger.writeLog(logType.info, "controller <b>" + currAbb.SystemName + "</b>" +
+                                                 " [BACKUP MASTER]:  backup done - download copy in progress...");
+                //update robot backup time
+                lastROBbackupTime = DateTime.Now;
+                labelLastTimeROB.Text = lastROBbackupTime.ToString();
+                //update status icon (downloading)
+                labelBackupStatus.ImageIndex = 2;
+                //copy backup file
+                currAbb.FileSystem.RemoteDirectory = abbController.GetEnvironmentVariable("SYSTEM");
+                IAsyncResult dirCopyRes = currAbb.FileSystem.BeginGetDirectory(backupSrc, backupOut, true, robotGetBackupCallback, currAbb);
             }
-            
+        }
+
+        private void robotGetBackupCallback(IAsyncResult res)
+        {
+            try {
+                if (res.IsCompleted) {
+                    abbController.FileSystem.EndCopyDirectory(res);
+                    Controller curr = (Controller)res.AsyncState;
+                    abbLogger.writeLog(logType.info, "controller " + curr.SystemName + "" +
+                                                     " [BACKUP MASTER]:  backup done - download copy OK!");
+                    //update status icon (saved)
+                    labelBackupStatus.ImageIndex = 3;
+                }
+            } catch (Exception e){
+                //abb has internal problem in postprocess after copy instructions - check if its that case
+                if (e.TargetSite.Name == "PostProcessCmd" && res.IsCompleted) {
+                    Controller curr = (Controller)res.AsyncState;
+                    abbLogger.writeLog(logType.info, "controller " + curr.SystemName + "" +
+                                                     " [BACKUP MASTER]:  backup done - download copy OK!");
+                    //update status icon (saved)
+                    labelBackupStatus.ImageIndex = 3;
+                } else {
+                    abbLogger.writeLog(logType.error, "controller " + abbController.SystemName + "" +
+                                                         " [BACKUP MASTER]:  backup done - but exception thrown! " + e.Message);
+                    //update status icon (error)
+                    labelBackupStatus.ImageIndex = 4;
+                }
+            }
+        }
+
+        private string robotGetNewestFile(Controller abb, string robotDir)
+        {
+            string result = "";
+            DateTime youngest = new DateTime(1,1,1);
+
+            abb.FileSystem.RemoteDirectory = abbController.GetEnvironmentVariable("SYSTEM") + "/" + robotDir;
+            ControllerFileSystemInfo[] dirs = abb.FileSystem.GetFilesAndDirectories("*");
+            for (int i = 0; i < dirs.Length; i++) {
+                if (dirs[i].GetType() == typeof(ControllerDirectoryInfo)) {
+                    DateTime curr = abb.FileSystem.GetDirectoryCreationTime(dirs[i].Name);
+                    if (curr >= youngest) {
+                        result = dirs[i].Name;
+                        youngest = curr;
+                    }
+                }
+            }
+            return result;
         }
 
         private string getControllerName(DigitalSignal sig)
@@ -804,6 +912,73 @@ namespace abbTools.AppBackupManager
         private void btnRobBackupDir_Click(object sender, EventArgs e)
         {
             filesWindow.ShowDialog();
+            //check if directory was selected
+            robotBackupDir = filesWindow.selectedDir;
+            labelRobBackupDir.ImageIndex = robotBackupDir != "" ? 1 : 0;
+        }
+
+        private void labelRobBackupDir_MouseEnter(object sender, EventArgs e)
+        {
+            //show tooltip with full robot backu value
+            if (robotBackupDir != null && robotBackupDir != "") {
+                myToolTip.SetToolTip(labelRobBackupDir, robotBackupDir);
+                myToolTip.Show(robotBackupDir, labelRobBackupDir, 0, 18);
+            } else {
+                myToolTip.Show("no robot backup folder selected...", labelRobBackupDir, 0, 18);
+            }
+        }
+ 
+        private void labelRobBackupDir_MouseLeave(object sender, EventArgs e)
+        {
+            //hide tooltip with full path value
+            myToolTip.RemoveAll();
+            myToolTip.Hide(labelOutPathVal);
+        }
+
+        private void labelBackupStatus_MouseEnter(object sender, EventArgs e)
+        {
+            string info = "";
+            switch (labelBackupStatus.ImageIndex)
+            {
+                case 0:
+                    info = "robot backup in progress...";
+                    break;
+                case 1:
+                    info = "backup done - download in queue...";
+                    break;
+                case 2:
+                    info = "backup download in progress...";
+                    break;
+                case 3:
+                    info = "last backup saved OK!";
+                    break;
+                case 4:
+                    info = "last backup saved NOK...";
+                    break;
+                default:
+                    info = "unknown state...";
+                    return;
+            }
+            //show tooltip with full robot backu value
+            myToolTip.SetToolTip(labelBackupStatus, robotBackupDir);
+            myToolTip.Show(info, labelBackupStatus, 0, 18);
+        }
+
+        private void labelBackupStatus_MouseLeave(object sender, EventArgs e)
+        {
+            //hide tooltip with full path value
+            myToolTip.RemoveAll();
+            myToolTip.Hide(labelBackupStatus);
+        }
+
+        private void textSigDoBackup_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Return) textSigDoBackup_Click(sender, null);
+        }
+
+        private void textSigBackupProg_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Return) textSigBackupProg_Click(sender, null);
         }
     }
 }
