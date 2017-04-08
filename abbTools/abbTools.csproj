@@ -83,6 +83,8 @@
     <Compile Include="AppBackupManager\appBackupManager.Designer.cs">
       <DependentUpon>appBackupManager.cs</DependentUpon>
     </Compile>
+    <Compile Include="AppBackupManager\BackupManager.cs" />
+    <Compile Include="AppBackupManager\BackupMaster.cs" />
     <Compile Include="AppRemoteABB\appRemoteABB.cs">
       <SubType>UserControl</SubType>
     </Compile>
