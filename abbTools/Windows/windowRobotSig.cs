@@ -13,6 +13,11 @@ namespace abbTools.Windows
         public string selectedSignal;
         public int selectedIndex;
 
+        public windowRobotSig()
+        {
+            InitializeComponent();
+        }
+
         public windowRobotSig(Controller abb)
         {
             InitializeComponent();

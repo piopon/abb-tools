@@ -12,15 +12,14 @@ namespace abbTools.AppBackupManager
          ********************************************************/
 
         //data containers
-        Controller abbController = null;
+        BackupManagerCollection myCollection = null;
+        BackupManager currData = null;
         loggerABB abbLogger = null;
-        BackupManager myData = null;
-        //internal data
-        int doBackupIndex;
-        int diBackupIndex;
         //additional windows & settings
         public int parentHeight;
         public int parentWidth;
+        int doBackupIndex;
+        int diBackupIndex;
         windowRobotSig signalsWindow;
         windowRobotFiles filesWindow;
 
@@ -36,20 +35,19 @@ namespace abbTools.AppBackupManager
             //init all form components
             InitializeComponent();
             //init data containers
-            abbController = null;
             abbLogger = null;
-            myData = new BackupManager();
-            myData.PCBackupStateChanged += updatePCBackupState;
-            myData.RobotBackupStateChanged += updateRobotBackupState;
+            myCollection = new BackupManagerCollection();
+            myCollection.PCBackupStateChanged += updatePCBackupState;
+            myCollection.RobotBackupStateChanged += updateRobotBackupState;
             //init internal data
             doBackupIndex = -1;
             diBackupIndex = -1;
             //init internal signal window
-            signalsWindow = new windowRobotSig(abbController);
+            signalsWindow = new windowRobotSig();
             signalsWindow.StartPosition = FormStartPosition.CenterParent;
             signalsWindow.ShowInTaskbar = false;
             //init internal files window
-            filesWindow = new windowRobotFiles(abbController,true,true);
+            filesWindow = new windowRobotFiles();
             filesWindow.StartPosition = FormStartPosition.CenterParent;
             filesWindow.ShowInTaskbar = false;
             //clear robot data (no robots yet)
@@ -66,7 +64,7 @@ namespace abbTools.AppBackupManager
         {
             //update logging components address
             abbLogger = myLogger;
-            myData.logger = abbLogger;
+            myCollection.connectLogger(abbLogger);
         }
 
         /// <summary>
@@ -76,7 +74,7 @@ namespace abbTools.AppBackupManager
         {
             //clear controller logger
             abbLogger = null;
-            myData.logger = null;
+            myCollection.disconnectLogger();
         }
 
         /// <summary>
@@ -86,22 +84,9 @@ namespace abbTools.AppBackupManager
         public void syncController(Controller myController)
         {
             //update controller address
-            abbController = myController;
-            myData.controller = abbController;
-            //update signals in background
-            if (signalsWindow != null) {
-                signalsWindow.Height = parentHeight;
-                signalsWindow.Width = parentWidth;
-                signalsWindow.updateSignals(abbController);
-            }
-            //update file structure in background
-            if (filesWindow != null) {
-                filesWindow.Height = parentHeight;
-                filesWindow.Width = parentWidth;
-                filesWindow.updateFiles(abbController);
-            }
+            currData = myCollection.itemGet(myController);
             //get data from collection
-            getData(abbController);
+            updateData(currData.controller);
             //reset GUI
             resetGUI();
         }
@@ -111,138 +96,105 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public void desyncController()
         {
-            //reset controller address
-            abbController = null;
-            myData.controller = abbController;
+            currData.controller = null;
+            //disconnect all info about current controller
+            signalsWindow = null;
+            filesWindow = null;
             //reset GUI
             resetGUI();
         }
 
+        /// <summary>
+        /// Clear of ALL applciation data (ALL COLLECTION!!!)
+        /// </summary>
         void clearData()
         {
-            myData.clearData();
+            myCollection.clear();
         }
 
-        void getData(Controller cController)
+        /// <summary>
+        /// Function used to update GUI data from collection (or add new one) when ABB controller changes
+        /// </summary>
+        /// <param name="cController">New ABB controller object - parent of data to view</param>
+        void updateData(Controller cController)
         {
-
+            //update new controllers signals in background
+            if (signalsWindow != null) {
+                signalsWindow.Height = parentHeight;
+                signalsWindow.Width = parentWidth;
+                signalsWindow.updateSignals(currData.controller);
+            }
+            //update controllers file structure in background
+            if (filesWindow != null) {
+                filesWindow.Height = parentHeight;
+                filesWindow.Width = parentWidth;
+                filesWindow.updateFiles(currData.controller);
+            }
         }
 
         /********************************************************
          ***  APP BACKUP MANAGER - EVENT METHODS
          ********************************************************/
 
+        /// <summary>
+        /// Function used when BackupManager collection event triggered (change status of ROBOT BACKUP)
+        /// </summary>
+        /// <param name="newState">New state on doing backup when ROBOT is master</param>
         private void updateRobotBackupState(int newState)
         {
             labelBackupStatus.ImageIndex = newState;
-            if (newState == 2) labelLastTimeROB.Text = myData.robotLastBackupTime.ToString();
+            if (newState == 2) labelLastTimeROB.Text = currData.robotLastBackupTime.ToString();
         }
-
-        private void updatePCBackupState(int newState)
-        {
-            if (newState == 1) labelLastTimePC.Text = myData.pcLastBackupTime.ToString();
-        }
-
-        /********************************************************
-         ***  APP BACKUP MANAGER - GUI
-         ********************************************************/
 
         /// <summary>
-        /// Reset GUI components to initial state
+        /// Function used when BackupManager collection event triggered (change status of PC BACKUP)
         /// </summary>
-        public void resetGUI()
+        /// <param name="newState">New state on doing backup when PC is master</param>
+        private void updatePCBackupState(int newState)
         {
-            bool enablePC = false, enableROB = false;
-            //check if robot is connected
-            if(abbController != null) {
-                enablePC = checkPCactive.Checked;
-                enableROB = checkRobActive.Checked;
-                //fill robot data
-            } else {
-                //hide robot data
-            }
-            //do enable/disable PC group
-            if (enablePC) {
-                groupPCmaster.Enabled = true;
-                btnBackupExe.BackColor = System.Drawing.Color.Chartreuse;
-            } else {
-                groupPCmaster.Enabled = false;
-                btnBackupExe.BackColor = System.Drawing.Color.Silver;
-            }
-            //do enable/disable ROBOT group
-            if (enableROB) {
-                groupRobMaster.Enabled = true;
-            } else {
-                groupRobMaster.Enabled = false;
-            }
-            //check if directory was selected
-            if (myData.robotDirSrc != null) {
-                labelRobBackupDir.ImageIndex = myData.robotDirSrc != "" ? 1 : 0;
-            } else {
-                labelRobBackupDir.ImageIndex = 0;
-            }
-            //fill independent data - TextBox suffixes
-            textGuiSuffix.Text = myData.pcGUISuffix;
-            textIntervalSuffix.Text = myData.pcIntervalSuffix;
-            textDailySuffix.Text = myData.pcDailySuffix;
-            textRobotSuffix.Text = myData.robotDirSuffix;
-            //fill independent data - RadioButton duplicates PC
-            radioPCOverwrite.Checked = myData.duplicateMethodPC == (int)sameNameAction.overwrite;
-            radioPCIncr.Checked = myData.duplicateMethodPC == (int)sameNameAction.increment;
-            radioPCTime.Checked = myData.duplicateMethodPC == (int)sameNameAction.additTime;
-            //fill independent data - RadioButton duplicates PC
-            radioROBOverwrite.Checked = myData.duplicateMethodRobot == (int)sameNameAction.overwrite;
-            radioROBIncr.Checked = myData.duplicateMethodRobot == (int)sameNameAction.increment;
-            radioROBTime.Checked = myData.duplicateMethodRobot == (int)sameNameAction.additTime;
-            //do enable/disable COMMON group
-            if (abbController != null) {
-                groupCommonSettings.Enabled = true;
-                btnOutSelect.BackColor = System.Drawing.Color.DarkOrange;
-                btnOutShow.BackColor = System.Drawing.Color.DarkOrange;
-                btnCleanExe.BackColor = System.Drawing.Color.OrangeRed;
-                if (myData.watchdog) {
-                    btnWatchOn.Enabled = false;
-                    btnWatchOn.BackColor = System.Drawing.Color.Silver;
-                    btnWatchOff.Enabled = true;
-                    btnWatchOff.BackColor = System.Drawing.Color.Red;
-                } else {
-                    btnWatchOn.Enabled = true;
-                    btnWatchOn.BackColor = System.Drawing.Color.LimeGreen;
-                    btnWatchOff.Enabled = false;
-                    btnWatchOff.BackColor = System.Drawing.Color.Silver;
-                }
-            } else {
-                groupCommonSettings.Enabled = false;
-                btnOutSelect.BackColor = System.Drawing.Color.Silver;
-                btnOutShow.BackColor = System.Drawing.Color.Silver;
-                btnCleanExe.BackColor = System.Drawing.Color.Silver;
-                btnWatchOn.BackColor = System.Drawing.Color.Silver;
-                btnWatchOff.BackColor = System.Drawing.Color.Silver;
-            }
+            if (newState == 1) labelLastTimePC.Text = currData.pcLastBackupTime.ToString();
         }
 
         /********************************************************
          ***  APP BACKUP MANAGER - main window data management 
          ********************************************************/
-
+        
+        /// <summary>
+        /// Reset appBackupManager state (clear all stored data)
+        /// </summary>
         public void clearAppData()
         {
             clearData();
         }
 
+        /// <summary>
+        /// Save data to XML file
+        /// </summary>
+        /// <param name="saveXml">XML file (node) to save data to</param>
+        /// <param name="parent">ABB controller who is parent of current saving data</param>
+        /// <param name="parentName">Parent name (useful when controller was lost and some data is stored)</param>
         public void saveAppData(ref System.Xml.XmlWriter saveXml, Controller parent = null, string parentName = "")
         {
             //save current robot child node to XML document
             string saveName = parent != null ? parent.SystemName : parentName;
-            if (saveName.Length > 0) {
+            if (saveName.Length > 0)
+            {
                 //save backup manager data
                 MessageBox.Show("appBackupManager - loadAppData TODO");
                 return;
-            } else {
+            }
+            else
+            {
                 abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
             }
         }
 
+        /// <summary>
+        /// Load application data from XML file
+        /// </summary>
+        /// <param name="loadXml">File (node) to load data from</param>
+        /// <param name="parent">ABB controller parent who is parent of current data</param>
+        /// <param name="parentName">Parent name (important if its not visible during load)</param>
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
         {
             //reset GUI
@@ -272,28 +224,232 @@ namespace abbTools.AppBackupManager
             //resetGUI();
         }
 
+        /// <summary>
+        /// Action executed when some controller from saved group was found (showed-up in network) 
+        /// </summary>
+        /// <param name="found"></param>
         public void savedControllerFound(Controller found)
         {
             //update controllers data in collection
-            //it was saved but non-visible at start, but it showed up right now!
             if (found != null)
             {
 
             }
         }
 
+        /// <summary>
+        /// Action executed when some controller was lost (non-visible in network) during program execution
+        /// </summary>
+        /// <param name="lost">ABB controller object that was lost</param>
         public void savedControllerLost(Controller lost)
         {
             if (lost != null) {
-                if (abbController != null && lost.SystemName == abbController.SystemName) {
-                    //clear logger and client
-                    abbController = null;
+                if (currData.controller != null && lost.SystemName == currData.controller.SystemName) {
                     //reset GUI
                     resetGUI();
                 }
             }
         }
 
+        /********************************************************
+         ***  APP BACKUP MANAGER - GUI COMMON
+         ********************************************************/
+
+        /// <summary>
+        /// Reset GUI components to current state (initial or updated robot)
+        /// </summary>
+        public void resetGUI()
+        {
+            bool enablePC = false, enableROB = false;
+            //check if robot is connected
+            if (currData != null && currData.controller != null) {
+                enablePC = currData.pcMasterActive;
+                enableROB = currData.robotMasterActive;
+            } else {
+                //hide robot data
+                enablePC = false;
+                enableROB = false;
+            }
+            //do enable/disable PC group
+            if (enablePC) {
+                checkPCactive.Checked = true;
+                groupPCmaster.Enabled = true;
+                btnBackupExe.BackColor = System.Drawing.Color.Chartreuse;
+            } else {
+                checkPCactive.Checked = false;
+                groupPCmaster.Enabled = false;
+                btnBackupExe.BackColor = System.Drawing.Color.Silver;
+            }
+            //do enable/disable ROBOT group
+            if (enableROB) {
+                checkRobActive.Checked = true;
+                groupRobMaster.Enabled = true;
+            } else {
+                checkRobActive.Checked = false;
+                groupRobMaster.Enabled = false;
+            }
+            //check if directory was selected
+            if (currData != null && currData.robotDirSrc != null) {
+                labelRobBackupDir.ImageIndex = currData.robotDirSrc != "" ? 1 : 0;
+            } else {
+                labelRobBackupDir.ImageIndex = 0;
+            }
+            //fill independent data 
+            if (currData != null && currData.controller != null) {
+                //TextBox suffixes
+                textGuiSuffix.Text = currData.pcGUISuffix;
+                textIntervalSuffix.Text = currData.pcIntervalSuffix;
+                textDailySuffix.Text = currData.pcDailySuffix;
+                textRobotSuffix.Text = currData.robotDirSuffix;
+                //RadioButton duplicates PC
+                radioPCOverwrite.Checked = currData.duplicateMethodPC == (int)sameNameAction.overwrite;
+                radioPCIncr.Checked = currData.duplicateMethodPC == (int)sameNameAction.increment;
+                radioPCTime.Checked = currData.duplicateMethodPC == (int)sameNameAction.additTime;
+                //RadioButton duplicates ROBOT
+                radioROBOverwrite.Checked = currData.duplicateMethodRobot == (int)sameNameAction.overwrite;
+                radioROBIncr.Checked = currData.duplicateMethodRobot == (int)sameNameAction.increment;
+                radioROBTime.Checked = currData.duplicateMethodRobot == (int)sameNameAction.additTime;
+            } else {
+                //TextBox suffixes
+                textGuiSuffix.Text = "";
+                textIntervalSuffix.Text = "";
+                textDailySuffix.Text = "";
+                textRobotSuffix.Text = "";
+                //RadioButton duplicates PC
+                radioPCOverwrite.Checked = true;
+                radioPCIncr.Checked = false;
+                radioPCTime.Checked = false;
+                //RadioButton duplicates ROBOT
+                radioROBOverwrite.Checked = true;
+                radioROBIncr.Checked = false;
+                radioROBTime.Checked = false;
+            }
+            //do enable/disable COMMON group
+            if (currData != null && currData.controller != null) {
+                groupCommonSettings.Enabled = true;
+                btnOutSelect.BackColor = System.Drawing.Color.DarkOrange;
+                btnOutShow.BackColor = System.Drawing.Color.DarkOrange;
+                btnCleanExe.BackColor = System.Drawing.Color.OrangeRed;
+                if (currData.watchdog) {
+                    btnWatchOn.Enabled = false;
+                    btnWatchOn.BackColor = System.Drawing.Color.Silver;
+                    btnWatchOff.Enabled = true;
+                    btnWatchOff.BackColor = System.Drawing.Color.Red;
+                } else {
+                    btnWatchOn.Enabled = true;
+                    btnWatchOn.BackColor = System.Drawing.Color.LimeGreen;
+                    btnWatchOff.Enabled = false;
+                    btnWatchOff.BackColor = System.Drawing.Color.Silver;
+                }
+            } else {
+
+                groupCommonSettings.Enabled = false;
+                btnOutSelect.BackColor = System.Drawing.Color.Silver;
+                btnOutShow.BackColor = System.Drawing.Color.Silver;
+                btnCleanExe.BackColor = System.Drawing.Color.Silver;
+                btnWatchOn.BackColor = System.Drawing.Color.Silver;
+                btnWatchOff.BackColor = System.Drawing.Color.Silver;
+            }
+        }
+
+        /// <summary>
+        /// Event executed on every interval of timer (every 60s)
+        /// </summary>
+        /// <param name="sender">Timer that triggered event (timerCheckBackup)</param>
+        /// <param name="e">Event arguments</param>
+        private void timerCheckBackup_Tick(object sender, EventArgs e)
+        {
+            //get current time
+            DateTime now = DateTime.Now;
+            foreach (BackupManager item in myCollection) {           
+                //check if controller is existing in network
+                if (item.controller == null) {
+                    if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - watch action error! No controller found...");
+                    return;
+                }
+                //check if output path is defined
+                if (item.outputPath == null || item.outputPath == "") {
+                    if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - watch action error! No outputh path defined...");
+                    return;
+                }
+                //-------------------------
+                //--- clean output folder 
+                if (item.clearDays != 0) {
+                    item.clearOutputDir();
+                }
+                //-------------------------
+                //--- create backup from interval settings
+                if (item.pcIntervalCheck()) {
+                    //check interval (if reference time exist then its OK)
+                    if (item.timeExists(backupMaster.pc, timeType.last)) {
+                        //check time difference between current time and last time
+                        DateTime pcLastBackup = item.pcLastBackupTime;
+                        TimeSpan diff = now - pcLastBackup;
+                        //check if difference is bigger than desired interval
+                        if (diff.TotalMinutes >= item.pcIntervalInMins) {
+                            item.createBackup(backupSource.interval);
+                        }
+                    } else {
+                        //there is no backup done yet - no reference to count from... create it
+                        item.createBackup(backupSource.interval);
+                    }
+                    //update xml file
+                }
+                //-------------------------
+                //--- create backup from exact time
+                if (item.timeExists(backupMaster.pc, timeType.exact)) {
+                    DateTime pcDailyBackup = item.pcDailyTime;
+                    //check if its time for backup
+                    if (now.Hour == pcDailyBackup.Hour && now.Minute == pcDailyBackup.Minute) {
+                        item.createBackup(backupSource.daily, false);
+                    }
+                }
+                //-------------------------
+                //--- get backup from robot
+                if (item.robotWatchBackup && item.timeExists(backupMaster.robot, timeType.last)) {
+                    //check time difference between current time and robot time (give robot at leas 1 minute timeout)
+                    DateTime robLastBackup = item.robotLastBackupTime;
+                    TimeSpan diff = now - robLastBackup;
+                    if (diff.Minutes >= 1) {
+                        item.robotGetBackup();
+                        item.robotWatchBackup = false;
+                    }
+                    //update xml file
+                }
+                //-------------------------  
+            }
+        }
+
+        //=============================================================================================== ACTIVATE MASTER
+
+        /// <summary>
+        /// Update activate state of selected master in collection
+        /// </summary>
+        /// <param name="sender">CheckBox that triggered event</param>
+        /// <param name="e">Event arguments</param>
+        private void checkActive_CheckedChanged(object sender, EventArgs e)
+        {
+            if (currData != null && currData.controller != null) {
+                //check if any check box is checked
+                currData.activateMaster(checkPCactive.Checked, checkRobActive.Checked);
+                //check if any robot is connected
+                if (currData.controller == null) {
+                    if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
+                }
+            } else {
+                if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
+            }
+            //update GUI
+            resetGUI();
+        }
+
+        //=============================================================================================== OUTPUT PATH
+
+        /// <summary>
+        /// Show select output folder dialog after btnOutDir click
+        /// </summary>
+        /// <param name="sender">Button that triggered this event (btnOutDir)</param>
+        /// <param name="e">Event arguments</param>
         private void btnOutDir_Click(object sender, EventArgs e)
         {
             //show select folder dialog
@@ -301,9 +457,9 @@ namespace abbTools.AppBackupManager
             dialogOutDir.RootFolder = Environment.SpecialFolder.Desktop;
             if (dialogOutDir.ShowDialog() == DialogResult.OK) {
                 //remember current output path
-                myData.outputPath = dialogOutDir.SelectedPath;
+                currData.outputPath = dialogOutDir.SelectedPath;
                 //store it to local variable to show in label for user
-                string path = myData.outputPath;
+                string path = currData.outputPath;
                 if (dialogOutDir.SelectedPath.Length > 35) {
                     //directory is too long - get beginning and end of it
                     int slashF = path.IndexOf("\\"),
@@ -315,93 +471,40 @@ namespace abbTools.AppBackupManager
             }
         }
 
-        private void checkActive_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Show output folder in Windows Explorer after btnOutShow click
+        /// </summary>
+        /// <param name="sender">Button that triggered this event (btnOutShow)</param>
+        /// <param name="e">Event arguments</param>
+        private void btnOutShow_Click(object sender, EventArgs e)
         {
-            //check if any check box is checked
-            myData.activateMaster(checkPCactive.Checked, checkRobActive.Checked);
-            //check if any robot is connected
-            if (abbController == null) {
-                if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
+            if (currData.outputPath != null && currData.outputPath != "") {
+                //open windows explorer window with current path
+                System.Diagnostics.Process.Start("explorer.exe", currData.outputPath);
+            } else {
+                if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - cant show output path! Its not defined...");
             }
-            //update GUI
-            resetGUI();
         }
 
-        private void timerCheckBackup_Tick(object sender, EventArgs e)
-        {
-            //get current time
-            DateTime now = DateTime.Now;
-
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //TODO: scan all data collection
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            //check if controller is existing in network
-            if (abbController == null) {
-                if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - watch action error! No controller found...");
-                return;
-            }
-            //check if output path is defined
-            if (myData.outputPath == null || myData.outputPath == "") {
-                if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - watch action error! No outputh path defined...");
-                return;
-            }
-            //==============================================================================  
-            //=== clean output folder 
-            if (myData.clearDays != 0) {
-                myData.clearOutputDir();
-            }
-            //==============================================================================  
-            //=== create backup from interval settings
-            if (myData.pcIntervalCheck()) {
-                //check interval (if reference time exist then its OK)
-                if (myData.timeExists(backupMaster.pc,timeType.last)) {
-                    //check time difference between current time and last time
-                    DateTime pcLastBackup = myData.pcLastBackupTime;
-                    TimeSpan diff = now - pcLastBackup;
-                    //check if difference is bigger than desired interval
-                    if (diff.TotalMinutes >= myData.pcIntervalInMins) {
-                        myData.createBackup(backupSource.interval);
-                    }
-                } else {
-                    //there is no backup done yet - no reference to count from... create it
-                    myData.createBackup(backupSource.interval);
-                }
-                //update xml file
-            }
-            //==============================================================================  
-            //=== create backup from exact time
-            if (myData.timeExists(backupMaster.pc, timeType.exact)) {
-                DateTime pcDailyBackup = myData.pcDailyTime;
-                //check if its time for backup
-                if (now.Hour == pcDailyBackup.Hour && now.Minute == pcDailyBackup.Minute) {
-                    myData.createBackup(backupSource.daily, false);
-                }
-            }
-            //==============================================================================  
-            //=== get backup from robot
-            if (myData.robotWatchBackup && myData.timeExists(backupMaster.robot, timeType.last)) {
-                //check time difference between current time and robot time (give robot at leas 1 minute timeout)
-                DateTime robLastBackup = myData.robotLastBackupTime;
-                TimeSpan diff = now - robLastBackup;
-                if (diff.Minutes >= 1) {
-                    myData.robotGetBackup();
-                    myData.robotWatchBackup = false;
-                }
-                //update xml file
-            }
-            //==============================================================================  
-        }
-
+        /// <summary>
+        /// Show tool tip with full output path (if exceeds label capacity) after mouse enter
+        /// </summary>
+        /// <param name="sender">Label that triggered event (labelOutPathVal)</param>
+        /// <param name="e">Event arguments</param>
         private void labelOutPathVal_MouseEnter(object sender, EventArgs e)
         {
             //show tooltip with full path value (if its exceed label capacity)
-            if (myData.outputPath != null && myData.outputPath != "" && labelOutPathVal.Text != myData.outputPath + "\\") {
-                myToolTip.SetToolTip(labelRobBackupDir, myData.outputPath);
-                myToolTip.Show(myData.outputPath + "\\", labelOutPathVal, 0, 18);
+            if (currData.outputPath != null && currData.outputPath != "" && labelOutPathVal.Text != currData.outputPath + "\\") {
+                myToolTip.SetToolTip(labelRobBackupDir, currData.outputPath);
+                myToolTip.Show(currData.outputPath + "\\", labelOutPathVal, 0, 18);
             }
         }
 
+        /// <summary>
+        /// Hide tool tip after mouse leave
+        /// </summary>
+        /// <param name="sender">Label that triggered event (labelOutPathVal)</param>
+        /// <param name="e">Event arguments</param>
         private void labelOutPathVal_MouseLeave(object sender, EventArgs e)
         {
             //hide tooltip with full path value
@@ -409,24 +512,37 @@ namespace abbTools.AppBackupManager
             myToolTip.Hide(labelOutPathVal);
         }
 
+        //=============================================================================================== CLEAR DIRECTORY
+
+        /// <summary>
+        /// Update number of old days that should be cleared in collection
+        /// </summary>
+        /// <param name="sender">Num edit that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void numClearDays_ValueChanged(object sender, EventArgs e)
         {
             //update clear days internal data
-            myData.clearDays = (int)numClearDays.Value;
+            currData.clearDays = (int)numClearDays.Value;
         }
 
-        private void btnBackupExe_Click(object sender, EventArgs e)
-        {
-            //create backup on GUI demand
-            myData.createBackup(backupSource.gui);
-        }
-
+        /// <summary>
+        /// Execute clean output folder after btnCleanExe click
+        /// </summary>
+        /// <param name="sender">Button that triggered this event (btnCleanExe)</param>
+        /// <param name="e">Event arguments</param>
         private void btnCleanExe_Click(object sender, EventArgs e)
         {
             //clear output directory on GUI demand
-            myData.clearOutputDir(true);
+            currData.clearOutputDir(true);
         }
 
+        //=============================================================================================== WATCH TIMER
+
+        /// <summary>
+        /// Execute turn timer on after btnWatchOn click
+        /// </summary>
+        /// <param name="sender">Button that triggered this event (btnWatchOn)</param>
+        /// <param name="e">Event arguments</param>        
         private void btnWatchOn_Click(object sender, EventArgs e)
         {
             //turn on monitoring timer (if stopped)
@@ -435,6 +551,11 @@ namespace abbTools.AppBackupManager
             resetGUI();
         }
 
+        /// <summary>
+        /// Execute turn timer off after btnWatchOff click
+        /// </summary>
+        /// <param name="sender">Button that triggered this event (btnWatchOff)</param>
+        /// <param name="e">Event arguments</param>
         private void btnWatchOff_Click(object sender, EventArgs e)
         {
             //turn off monitoring timer
@@ -443,12 +564,17 @@ namespace abbTools.AppBackupManager
             resetGUI();
         }
 
+        /// <summary>
+        /// Function used to turn on or off watch timer (to do or download backups)
+        /// </summary>
+        /// <param name="on">TRUE if turn timer on, FALSE otherwise</param>
+        /// <param name="guiDemand">Is timer on/off is controlled via GUI</param>
         private void watchTimer(bool on, bool guiDemand = false)
         {
             //check action to do
             if (on) {
                 //TURN ON timer
-                myData.watchdog = true;
+                currData.watchdog = true;
                 if (!timerCheckBackup.Enabled) {
                     timerCheckBackup.Start();
                     //if timer on from GUI then inform user that its running
@@ -459,57 +585,86 @@ namespace abbTools.AppBackupManager
                 }
             } else {
                 //TURN OFF timer
-                myData.watchdog = true;
+                currData.watchdog = true;
                 timerCheckBackup.Stop();
                 //if timer on from GUI then inform user that its running
                 if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - watch timer turned OFF!");
             }
         }
 
+        //======================================================================================================
+
+        /********************************************************
+         ***  APP BACKUP MANAGER - PC MASTER
+         ********************************************************/
+
+        //=============================================================================================== GUI
+
+        /// <summary>
+        /// Do backup - GUI demand
+        /// </summary>
+        /// <param name="sender">Button that triggered this event (btnBackupExe)</param>
+        /// <param name="e">Event arguments</param>
+        private void btnBackupExe_Click(object sender, EventArgs e)
+        {
+            //create backup on GUI demand
+            currData.createBackup(backupSource.gui);
+        }
+
+        //=============================================================================================== INTERVAL
+
+        /// <summary>
+        /// Update interval time in BackupManager container
+        /// </summary>
+        /// <param name="sender">Num edit that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void numInterval_ValueChanged(object sender, EventArgs e)
         {
-            myData.pcIntervalSet((int)numIntervalMins.Value, (int)numIntervalHours.Value, (int)numIntervalDays.Value);
+            currData.pcIntervalSet((int)numIntervalMins.Value, (int)numIntervalHours.Value, (int)numIntervalDays.Value);
             //check if there was reference backup (to measure time from)
-            if (!myData.timeExists(backupMaster.pc, timeType.last)) {
+            if (!currData.timeExists(backupMaster.pc, timeType.last)) {
                 //no reference time - inform user to create backup
                 if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - create backup to get reference to count from...");
             } else {
                 //reference backup time present - check if timer is running
-                if (!myData.watchdog) {
+                if (!currData.watchdog) {
                     //timer is not running - inform user to run timer
                     if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
                 }
             }
         }
 
-        private void textBackupSuffix_TextChanged(object sender, EventArgs e)
-        {
-            TextBox textParent = (TextBox)sender;
-            if (textParent.Name.Contains("Gui")) myData.pcGUISuffix = textGuiSuffix.Text;
-            if (textParent.Name.Contains("Interval")) myData.pcIntervalSuffix = textIntervalSuffix.Text;
-            if (textParent.Name.Contains("Daily")) myData.pcDailySuffix = textDailySuffix.Text;
-            if (textParent.Name.Contains("Robot")) myData.robotDirSuffix = textRobotSuffix.Text;
-        }
+        //=============================================================================================== DAILY TIME
 
+        /// <summary>
+        /// Validate inputted time in daily backup
+        /// </summary>
+        /// <param name="sender">Text edit that triggered event (textEveryTime)</param>
+        /// <param name="e">Event arguments</param>
         private void textEveryTime_TypeValidationCompleted(object sender, TypeValidationEventArgs e)
         {
             if (textEveryTime.MaskCompleted) {
                 if (!e.IsValidInput) {
                     if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - wrong time inputted...");
                 } else {
-                    myData.pcDailyTime = DateTime.Parse(textEveryTime.Text);
+                    currData.pcDailyTime = DateTime.Parse(textEveryTime.Text);
                     //check if timer is running
-                    if (!myData.watchdog) {
+                    if (!currData.watchdog) {
                         //timer is not running - inform user to run timer
                         if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
                     } else {
                         //timer is running - inform user that setting is correct
-                        if (abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - backup will be done everyday at "+ myData.pcDailyTime.ToShortTimeString()+"!");
+                        if (abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - backup will be done everyday at " + currData.pcDailyTime.ToShortTimeString() + "!");
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Action during inputting daily backup time
+        /// </summary>
+        /// <param name="sender">Text edit that triggered event (textEveryTime)</param>
+        /// <param name="e">Event arguments</param>
         private void textEveryTime_KeyDown(object sender, KeyEventArgs e)
         {
             Keys currKey = e.KeyCode;
@@ -522,32 +677,74 @@ namespace abbTools.AppBackupManager
             e.Handled = true;
         }
 
+        //=============================================================================================== DUPLICATES
+
+        /// <summary>
+        /// Change PC duplicate action radio button
+        /// </summary>
+        /// <param name="sender">Which button triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void radioPCDuplicate_CheckChanges(object sender, EventArgs e)
         {
-            RadioButton curr = (RadioButton)sender;
-            if (curr.Checked) {
-                myData.duplicateMethodPC = curr.TabIndex - 4;
+            if (currData != null && currData.controller != null) {
+                RadioButton curr = (RadioButton)sender;
+                if (curr.Checked) {
+                    currData.duplicateMethodPC = curr.TabIndex - 4;
+                }
             }
         }
 
-        private void radioROBDuplicate_CheckChanges(object sender, EventArgs e)
+        //=============================================================================================== SUFFIXES
+
+        /// <summary>
+        /// Update suffix data in BackupManager container
+        /// </summary>
+        /// <param name="sender">Text edit that triggered this event</param>
+        /// <param name="e">Event arguments</param>
+        private void textBackupSuffix_TextChanged(object sender, EventArgs e)
         {
-            RadioButton curr = (RadioButton)sender;
-            if (curr.Checked) {
-                myData.duplicateMethodRobot = curr.TabIndex - 4;
+            TextBox textParent = (TextBox)sender;
+            if (currData != null && currData.controller != null) {
+                if (textParent.Name.Contains("Gui")) currData.pcGUISuffix = textGuiSuffix.Text;
+                if (textParent.Name.Contains("Interval")) currData.pcIntervalSuffix = textIntervalSuffix.Text;
+                if (textParent.Name.Contains("Daily")) currData.pcDailySuffix = textDailySuffix.Text;
+                if (textParent.Name.Contains("Robot")) currData.robotDirSuffix = textRobotSuffix.Text;
             }
         }
 
-        private void btnOutShow_Click(object sender, EventArgs e)
+        //======================================================================================================
+
+        /********************************************************
+         ***  APP BACKUP MANAGER - ROBOT MASTER
+         ********************************************************/
+
+        //=============================================================================================== SIGNALS
+
+        /// <summary>
+        /// Trigger robot signal window on ENTER press
+        /// </summary>
+        /// <param name="sender">Text edit that triggerted event (textSigDoBackup)</param>
+        /// <param name="e">Event arguments</param>
+        private void textSigDoBackup_KeyDown(object sender, KeyEventArgs e)
         {
-            if (myData.outputPath != null && myData.outputPath != "") {
-                //open windows explorer window with current path
-                System.Diagnostics.Process.Start("explorer.exe", myData.outputPath);
-            } else {
-                if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - cant show output path! Its not defined...");
-            }
+            if (e.KeyCode == Keys.Return) textSigDoBackup_Click(sender, null);
         }
 
+        /// <summary>
+        /// Trigger robot signal window on ENTER press
+        /// </summary>
+        /// <param name="sender">Text edit that triggerted event (textSigBackupProg)</param>
+        /// <param name="e">Event arguments</param>
+        private void textSigBackupProg_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Return) textSigBackupProg_Click(sender, null);
+        }
+
+        /// <summary>
+        /// Show window with robot signals to select execute backup signal
+        /// </summary>
+        /// <param name="sender">Text edit that triggerted event (textSigDoBackup)</param>
+        /// <param name="e">Event arguments</param>
         private void textSigDoBackup_Click(object sender, EventArgs e)
         {
             //select current signal and show it in signals window
@@ -560,9 +757,14 @@ namespace abbTools.AppBackupManager
             //update GUI 
             textSigDoBackup.Text = doBackupSigName != "" ? doBackupSigName : "- select signal -";
             //update signals
-            myData.updateRobotSignals(doBackupSigName, diBackupSigName);
+            currData.updateRobotSignals(doBackupSigName, diBackupSigName);
         }
 
+        /// <summary>
+        /// Show window with robot signals to select backup in progress signal
+        /// </summary>
+        /// <param name="sender">Text edit that triggerted event (textSigBackupProg)</param>
+        /// <param name="e">Event arguments</param>
         private void textSigBackupProg_Click(object sender, EventArgs e)
         {
             //select current signal and show it in signals window
@@ -575,28 +777,45 @@ namespace abbTools.AppBackupManager
             //update GUI
             textSigBackupProg.Text = diBackupSigName != "" ? diBackupSigName : "- select signal -";
             //update signals
-            myData.updateRobotSignals(doBackupSigName, diBackupSigName);
+            currData.updateRobotSignals(doBackupSigName, diBackupSigName);
         }
 
+        //=============================================================================================== SRC DIR
+
+        /// <summary>
+        /// Show window with robot file structure to select source dir
+        /// </summary>
+        /// <param name="sender">Button that triggered event (btnRobBackupDir)</param>
+        /// <param name="e">Event arguments</param>
         private void btnRobBackupDir_Click(object sender, EventArgs e)
         {
             filesWindow.ShowDialog();
             //check if directory was selected
-            myData.robotDirSrc = filesWindow.selectedDir;
-            labelRobBackupDir.ImageIndex = myData.robotDirSrc != "" ? 1 : 0;
+            currData.robotDirSrc = filesWindow.selectedDir;
+            labelRobBackupDir.ImageIndex = currData.robotDirSrc != "" ? 1 : 0;
         }
 
+        /// <summary>
+        /// Show tool tip with full robot src dir after mouse enter
+        /// </summary>
+        /// <param name="sender">Label that triggered event (labelRobBackupDir)</param>
+        /// <param name="e">Event arguments</param>
         private void labelRobBackupDir_MouseEnter(object sender, EventArgs e)
         {
             //show tooltip with full robot backu value
-            if (myData.robotDirSrc != null && myData.robotDirSrc != "") {
-                myToolTip.SetToolTip(labelRobBackupDir, myData.robotDirSrc);
-                myToolTip.Show(myData.robotDirSrc, labelRobBackupDir, 0, 18);
+            if (currData.robotDirSrc != null && currData.robotDirSrc != "") {
+                myToolTip.SetToolTip(labelRobBackupDir, currData.robotDirSrc);
+                myToolTip.Show(currData.robotDirSrc, labelRobBackupDir, 0, 18);
             } else {
                 myToolTip.Show("no robot backup folder selected...", labelRobBackupDir, 0, 18);
             }
         }
- 
+
+        /// <summary>
+        /// Hide tool tip with full robot src dir after mouse leave
+        /// </summary>
+        /// <param name="sender">Label that triggered event (labelRobBackupDir)</param>
+        /// <param name="e">Event arguments</param>
         private void labelRobBackupDir_MouseLeave(object sender, EventArgs e)
         {
             //hide tooltip with full path value
@@ -604,11 +823,17 @@ namespace abbTools.AppBackupManager
             myToolTip.Hide(labelOutPathVal);
         }
 
+        //=============================================================================================== STATUS
+
+        /// <summary>
+        /// Show tool tip with status description after mouse enter
+        /// </summary>
+        /// <param name="sender">Label that triggered event (labelBackupStatus)</param>
+        /// <param name="e">Event arguments</param>
         private void labelBackupStatus_MouseEnter(object sender, EventArgs e)
         {
             string info = "";
-            switch (labelBackupStatus.ImageIndex)
-            {
+            switch (labelBackupStatus.ImageIndex) {
                 case 0:
                     info = "robot backup in progress...";
                     break;
@@ -629,10 +854,15 @@ namespace abbTools.AppBackupManager
                     return;
             }
             //show tooltip with full robot backu value
-            myToolTip.SetToolTip(labelBackupStatus, myData.robotDirSrc);
+            myToolTip.SetToolTip(labelBackupStatus, currData.robotDirSrc);
             myToolTip.Show(info, labelBackupStatus, 0, 18);
         }
 
+        /// <summary>
+        /// Hide tool tip with status description after mouse leave
+        /// </summary>
+        /// <param name="sender">Label that triggered event (labelBackupStatus)</param>
+        /// <param name="e">Event arguments</param>
         private void labelBackupStatus_MouseLeave(object sender, EventArgs e)
         {
             //hide tooltip with full path value
@@ -640,14 +870,21 @@ namespace abbTools.AppBackupManager
             myToolTip.Hide(labelBackupStatus);
         }
 
-        private void textSigDoBackup_KeyDown(object sender, KeyEventArgs e)
+        //=============================================================================================== DUPLICATES
+
+        /// <summary>
+        /// Change robot duplicate action radio button
+        /// </summary>
+        /// <param name="sender">Which button triggered event</param>
+        /// <param name="e">Event arguments</param>
+        private void radioROBDuplicate_CheckChanges(object sender, EventArgs e)
         {
-            if (e.KeyCode == Keys.Return) textSigDoBackup_Click(sender, null);
+            if (currData != null && currData.controller != null) {
+                RadioButton curr = (RadioButton)sender;
+                if (curr.Checked) currData.duplicateMethodRobot = curr.TabIndex - 4;
+            }
         }
 
-        private void textSigBackupProg_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Return) textSigBackupProg_Click(sender, null);
-        }
+        //=========================================================================================================
     }
 }

@@ -21,6 +21,15 @@ namespace abbTools.Windows
         //private delegate to write from other thread
         private delegate void AddNodeToTreeThread(TreeNode child);
 
+        public windowRobotFiles()
+        {
+            InitializeComponent();
+            //update abbController object
+            showDirs = true;
+            showFile = true;
+            levels = new List<int>();
+        }
+
         public windowRobotFiles(Controller currAbb, bool dir, bool file)
         {
             InitializeComponent();
