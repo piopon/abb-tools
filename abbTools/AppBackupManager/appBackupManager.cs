@@ -96,7 +96,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public void desyncController()
         {
-            currData.controller = null;
+            currData = null;
             //disconnect all info about current controller
             signalsWindow = null;
             filesWindow = null;
@@ -231,8 +231,7 @@ namespace abbTools.AppBackupManager
         public void savedControllerFound(Controller found)
         {
             //update controllers data in collection
-            if (found != null)
-            {
+            if (found != null) {
 
             }
         }
@@ -274,19 +273,43 @@ namespace abbTools.AppBackupManager
             if (enablePC) {
                 checkPCactive.Checked = true;
                 groupPCmaster.Enabled = true;
+                if (currData.timeExists(backupMaster.pc, timeType.last)) {
+                    labelLastTimePC.Text = currData.pcLastBackupTime.ToString();
+                } else {
+                    labelLastTimePC.Text = "-";
+                }
                 btnBackupExe.BackColor = System.Drawing.Color.Chartreuse;
+                if (currData.timeExists(backupMaster.pc, timeType.exact)) {
+                    textEveryTime.Text = currData.pcDailyTime.ToShortTimeString();
+                } else {
+                    textEveryTime.Text = "";
+                }
+                numIntervalDays.Value = currData.pcIntervalGet(intervalElement.days);
+                numIntervalHours.Value = currData.pcIntervalGet(intervalElement.hours);
+                numIntervalMins.Value = currData.pcIntervalGet(intervalElement.mins);
             } else {
                 checkPCactive.Checked = false;
                 groupPCmaster.Enabled = false;
+                labelLastTimePC.Text = "-";
                 btnBackupExe.BackColor = System.Drawing.Color.Silver;
+                textEveryTime.Text = "";
+                numIntervalDays.Value = 0;
+                numIntervalHours.Value = 0;
+                numIntervalMins.Value = 0;
             }
             //do enable/disable ROBOT group
             if (enableROB) {
                 checkRobActive.Checked = true;
                 groupRobMaster.Enabled = true;
+                if (currData.timeExists(backupMaster.robot, timeType.last)) {
+                    labelLastTimeROB.Text = currData.robotLastBackupTime.ToString();
+                } else {
+                    labelLastTimeROB.Text = "";
+                }
             } else {
                 checkRobActive.Checked = false;
                 groupRobMaster.Enabled = false;
+                labelLastTimeROB.Text = "-";
             }
             //check if directory was selected
             if (currData != null && currData.robotDirSrc != null) {
@@ -327,6 +350,12 @@ namespace abbTools.AppBackupManager
             //do enable/disable COMMON group
             if (currData != null && currData.controller != null) {
                 groupCommonSettings.Enabled = true;
+                if (currData.outputPath != "") {
+                    labelOutPathVal.Text = currData.outputPath;
+                } else {
+                    labelOutPathVal.Text = "-";
+                }
+                numClearDays.Value = currData.clearDays;
                 btnOutSelect.BackColor = System.Drawing.Color.DarkOrange;
                 btnOutShow.BackColor = System.Drawing.Color.DarkOrange;
                 btnCleanExe.BackColor = System.Drawing.Color.OrangeRed;
@@ -342,8 +371,9 @@ namespace abbTools.AppBackupManager
                     btnWatchOff.BackColor = System.Drawing.Color.Silver;
                 }
             } else {
-
                 groupCommonSettings.Enabled = false;
+                labelOutPathVal.Text = "-";
+                numClearDays.Value = 0;
                 btnOutSelect.BackColor = System.Drawing.Color.Silver;
                 btnOutShow.BackColor = System.Drawing.Color.Silver;
                 btnCleanExe.BackColor = System.Drawing.Color.Silver;
@@ -522,7 +552,7 @@ namespace abbTools.AppBackupManager
         private void numClearDays_ValueChanged(object sender, EventArgs e)
         {
             //update clear days internal data
-            currData.clearDays = (int)numClearDays.Value;
+            if (currData != null && currData.controller != null) currData.clearDays = (int)numClearDays.Value;
         }
 
         /// <summary>
@@ -620,16 +650,21 @@ namespace abbTools.AppBackupManager
         /// <param name="e">Event arguments</param>
         private void numInterval_ValueChanged(object sender, EventArgs e)
         {
-            currData.pcIntervalSet((int)numIntervalMins.Value, (int)numIntervalHours.Value, (int)numIntervalDays.Value);
-            //check if there was reference backup (to measure time from)
-            if (!currData.timeExists(backupMaster.pc, timeType.last)) {
-                //no reference time - inform user to create backup
-                if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - create backup to get reference to count from...");
-            } else {
-                //reference backup time present - check if timer is running
-                if (!currData.watchdog) {
-                    //timer is not running - inform user to run timer
-                    if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
+            if (currData != null && currData.controller != null) {
+                NumericUpDown numParent = (NumericUpDown)sender;
+                if (numParent.Name.Contains("Mins")) currData.pcIntervalSet(intervalElement.mins, (int)numParent.Value);
+                if (numParent.Name.Contains("Hour")) currData.pcIntervalSet(intervalElement.hours, (int)numParent.Value);
+                if (numParent.Name.Contains("Days")) currData.pcIntervalSet(intervalElement.days, (int)numParent.Value);
+                //check if there was reference backup (to measure time from)
+                if (!currData.timeExists(backupMaster.pc, timeType.last)) {
+                    //no reference time - inform user to create backup
+                    if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - create backup to get reference to count from...");
+                } else {
+                    //reference backup time present - check if timer is running
+                    if (!currData.watchdog) {
+                        //timer is not running - inform user to run timer
+                        if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
+                    }
                 }
             }
         }

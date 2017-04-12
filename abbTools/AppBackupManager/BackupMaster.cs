@@ -131,16 +131,26 @@ namespace abbTools.AppBackupManager
         }
 
         /// <summary>
-        /// Method used to set interval time in current instance
+        /// Method used to set interval time element in current instance
         /// </summary>
-        /// <param name="mins">Interval minutes</param>
-        /// <param name="hours">Interval hours</param>
-        /// <param name="days">Interval days</param>
-        public void intervalSet(int mins, int hours, int days)
+        /// <param name="el">Interval element to set</param>
+        /// <param name="val">Interval element value</param>
+        public void intervalSet(intervalElement el, int val)
         {
-            offsMin = mins;
-            offsHour = hours;
-            offsDay = days;
+            switch (el)
+            {
+                case intervalElement.mins:
+                    offsMin = val;
+                    break;
+                case intervalElement.hours:
+                    offsHour = val;
+                    break;
+                case intervalElement.days:
+                    offsDay = val;
+                    break;
+                default:
+                    break;
+            }
         }
 
         /// <summary>

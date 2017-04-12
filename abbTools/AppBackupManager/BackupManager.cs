@@ -561,23 +561,32 @@ namespace abbTools.AppBackupManager
             //create full backup path
             string backupPath = createBackupPath(outputDir, myController.SystemName, backupPC.getSuffix(backupSrc), backupPC.duplicateMethod);
             //check if backup isnt currently in progress
-            if (!myController.BackupInProgress) {
-                //hide info about updating time after backup ok (to check it in event on backup done)
-                myController.UICulture.NumberFormat.PositiveSign += "_" + updateTime.ToString();
-                //subscribe to backup completed event
-                myController.BackupCompleted -= backupDoneEvent;
-                myController.BackupCompleted += backupDoneEvent;
-                //everything is ok - do backup
-                myController.Backup(backupPath);
-                //pc backup state changed = backup in progress - call event method
-                eventPCBackupState(0);
-                //show log info
-                if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>: " +
-                                                            "doing robot backup [" + DateTime.Now.ToShortTimeString() + "]!");
-            } else {
-                //backup in progress - inform user
-                if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>: " +
-                                                            "backup in progress! Wait for end and retry [" + DateTime.Now.ToShortTimeString() + "]...");
+            try {
+                //check if we are logged to controller
+                if (!myController.Connected) myController.Logon(UserInfo.DefaultUser);
+                //check if backup is already in progress
+                if (!myController.BackupInProgress) {
+                    //hide info about updating time after backup ok (to check it in event on backup done)
+                    myController.UICulture.NumberFormat.PositiveSign += "_" + updateTime.ToString();
+                    //subscribe to backup completed event
+                    myController.BackupCompleted -= backupDoneEvent;
+                    myController.BackupCompleted += backupDoneEvent;
+                    //everything is ok - do backup
+                    myController.Backup(backupPath);
+                    //pc backup state changed = backup in progress - call event method
+                    eventPCBackupState(0);
+                    //show log info
+                    if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>: " +
+                                                                "doing robot backup [" + DateTime.Now.ToShortTimeString() + "]!");
+                } else {
+                    //backup in progress - inform user
+                    if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>: " +
+                                                                "backup in progress! Wait for end and retry [" + DateTime.Now.ToShortTimeString() + "]...");
+                }
+                //at end check if we werent connected - if yes then disconnect
+
+            } catch (Exception e) {
+                if (myLogger != null) myLogger.writeLog(logType.error, "controller <b>" + myController.SystemName + "</b>: backup exception! " + e.Message);
             }
         }
 
@@ -659,12 +668,21 @@ namespace abbTools.AppBackupManager
         /// <summary>
         /// Method used to set new interval time (time offset to do next backup)
         /// </summary>
-        /// <param name="mins">Interval minutes</param>
-        /// <param name="hours">Interval hours</param>
-        /// <param name="days">Interval days</param>
-        public void pcIntervalSet(int mins, int hours, int days)
+        /// <param name="element">Interval element to set (min, hour or day)</param>
+        /// <param name="value">Interval element value</param>
+        public void pcIntervalSet(intervalElement element, int value)
         {
-            backupPC.intervalSet(mins, hours, days);
+            backupPC.intervalSet(element, value);
+        }
+
+        /// <summary>
+        /// Method used to get interval element time (minutes, hours OR days)
+        /// </summary>
+        /// <param name="element">Interval element to get (mins, hours or days)</param>
+        /// <returns>Interval element time</returns>
+        public int pcIntervalGet(intervalElement element)
+        {
+            return backupPC.intervalGet(element);
         }
 
         /// <summary>
