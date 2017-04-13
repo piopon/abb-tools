@@ -203,16 +203,18 @@ namespace abbTools.AppBackupManager
                     int currFolder = 0;
                     //find the newest file (it should be the one with last increment number
                     for (int i = 0; i < folders.Length; i++) {
-                        if (folders[i].Contains(DateTime.Now.ToShortDateString())) {
-                            //we found folder with the same date - find the same suffix
-                            if (folders[i].Contains(backupSuffix)) {
-                                int incrPos = folders[i].LastIndexOf("_");
-                                string folderNo = folders[i].Substring(incrPos + 1);
-                                //check if we have other incremented folder
-                                if (folderNo.Length <= 3 && folderNo.All(char.IsDigit)) {
-                                    //another incremented folder - check if its bigger then current
-                                    int currNumber = int.Parse(folderNo);
-                                    currFolder = currNumber > currFolder ? currNumber : currFolder;
+                        if (folders[i].Contains(abbName)) {
+                            if (folders[i].Contains(DateTime.Now.ToShortDateString())) {
+                                //we found folder with the same date - find the same suffix
+                                if (folders[i].Contains(backupSuffix)) {
+                                    int incrPos = folders[i].LastIndexOf("_");
+                                    string folderNo = folders[i].Substring(incrPos + 1);
+                                    //check if we have other incremented folder
+                                    if (folderNo.Length <= 3 && folderNo.All(char.IsDigit)) {
+                                        //another incremented folder - check if its bigger then current
+                                        int currNumber = int.Parse(folderNo);
+                                        currFolder = currNumber > currFolder ? currNumber : currFolder;
+                                    }
                                 }
                             }
                         }
@@ -494,6 +496,22 @@ namespace abbTools.AppBackupManager
         }
 
         /// <summary>
+        /// GET robot signal - do backup execute
+        /// </summary>
+        public string robotSignalExe
+        {
+            get { return backupRobot.sigExecute; }
+        }
+
+        /// <summary>
+        /// GET robot signal - backup in progress
+        /// </summary>
+        public string robotSignalInP
+        {
+            get { return backupRobot.sigInProgress; }
+        }
+
+        /// <summary>
         /// GET last robot backup time
         /// </summary>
         public DateTime robotLastBackupTime
@@ -562,8 +580,9 @@ namespace abbTools.AppBackupManager
             string backupPath = createBackupPath(outputDir, myController.SystemName, backupPC.getSuffix(backupSrc), backupPC.duplicateMethod);
             //check if backup isnt currently in progress
             try {
+                bool wasConnected = myController.CurrentUser != null;
                 //check if we are logged to controller
-                if (!myController.Connected) myController.Logon(UserInfo.DefaultUser);
+                if (!wasConnected) myController.Logon(UserInfo.DefaultUser);
                 //check if backup is already in progress
                 if (!myController.BackupInProgress) {
                     //hide info about updating time after backup ok (to check it in event on backup done)
@@ -584,7 +603,7 @@ namespace abbTools.AppBackupManager
                                                                 "backup in progress! Wait for end and retry [" + DateTime.Now.ToShortTimeString() + "]...");
                 }
                 //at end check if we werent connected - if yes then disconnect
-
+                if (!wasConnected) myController.Logoff();
             } catch (Exception e) {
                 if (myLogger != null) myLogger.writeLog(logType.error, "controller <b>" + myController.SystemName + "</b>: backup exception! " + e.Message);
             }
@@ -612,6 +631,7 @@ namespace abbTools.AppBackupManager
                 }
                 //restore controller application variable
                 temp.UICulture.NumberFormat.PositiveSign = temp.UICulture.NumberFormat.PositiveSign.Substring(0, checkPos);
+                temp.BackupCompleted -= backupDoneEvent;
                 //show log info
                 if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + temp.SystemName + "</b>: " +
                                                             "backup done [" + DateTime.Now.ToShortTimeString() + "]!");
@@ -788,6 +808,19 @@ namespace abbTools.AppBackupManager
         /********************************************************
          ***  BACKUP MANAGER COLLECTION - collection management
          ********************************************************/
+
+        public int itemWatchedNo()
+        {
+            int result = 0;
+            //scan all collection
+            foreach (BackupManager item in this) {
+                //check what to search
+                if (item.watchdog) {
+                    result++;
+                }
+            }
+            return result;
+        }
 
         /// <summary>
         /// Get index of inputted item in whole collection
