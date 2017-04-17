@@ -28,10 +28,10 @@ namespace abbTools.AppBackupManager
         //inner data
         DateTime emptyTime;
         //events
-        public event robotBackupState RobotBackupStateChanged;
-        public event pcBackupState PCBackupStateChanged;
         public delegate void robotBackupState(int newState);
         public delegate void pcBackupState(int newState);
+        public event robotBackupState RobotBackupStateChanged;
+        public event pcBackupState PCBackupStateChanged;
 
         /********************************************************
          ***  BACKUP MANAGER - BASE 
@@ -46,6 +46,8 @@ namespace abbTools.AppBackupManager
             outputDir = "";
             controllerName = "";
             myController = null;
+            mySigExe = null;
+            mySigInP = null;
             myLogger = null;
             backupPC = new BackupMasterPC();
             backupRobot = new BackupMasterRobot();
@@ -63,6 +65,8 @@ namespace abbTools.AppBackupManager
             outputDir = outPath;
             controllerName = "";
             myController = null;
+            mySigExe = null;
+            mySigInP = null;
             myLogger = null;
             backupPC = new BackupMasterPC();
         }
@@ -75,6 +79,18 @@ namespace abbTools.AppBackupManager
             timerStart = false;
             daysClear = 0;
             outputDir = "";
+            //clear controller data
+            myController.BackupCompleted -= backupDoneEvent;
+            myController = null;
+            //clear signals data
+            if (mySigExe != null) {
+                mySigExe.Changed -= DoBackup_Changed;
+                mySigExe = null;
+            }
+            if (mySigInP != null) {
+                mySigInP.Changed -= DiBackup_Changed;
+                mySigInP = null;
+            }
             backupPC.clearData();
             backupRobot.clearData();
         }
@@ -93,9 +109,13 @@ namespace abbTools.AppBackupManager
             }
         }
 
+        /// <summary>
+        /// GET and SET controller name in current instance
+        /// </summary>
         public string abbName
         {
             get { return controllerName; }
+            set { controllerName = value; }
         }
 
         /// <summary>
@@ -105,6 +125,30 @@ namespace abbTools.AppBackupManager
         {
             get { return myLogger; }
             set { myLogger = value; }
+        }
+
+        /// <summary>
+        /// Save backup masters data
+        /// </summary>
+        /// <param name="xmlSubnode">Subnode to save data to</param>
+        public void saveMaterData(ref System.Xml.XmlWriter xmlSubnode)
+        {
+            //save robot master data
+            backupRobot.saveData(ref xmlSubnode);
+            //save pc master data
+            backupPC.saveData(ref xmlSubnode);
+        }
+
+        /// <summary>
+        /// Load backup masters data
+        /// </summary>
+        /// <param name="xmlSubnode">Subnode to load data from</param>
+        public void loadMasterData(ref System.Xml.XmlReader xmlSubnode)
+        {
+            //save robot master data
+            backupRobot.loadData(ref xmlSubnode);
+            //save pc master data
+            backupPC.loadData(ref xmlSubnode);
         }
 
         /********************************************************
@@ -586,7 +630,9 @@ namespace abbTools.AppBackupManager
                 //check if backup is already in progress
                 if (!myController.BackupInProgress) {
                     //hide info about updating time after backup ok (to check it in event on backup done)
-                    myController.UICulture.NumberFormat.PositiveSign += "_" + updateTime.ToString();
+                    if (myController.UICulture.NumberFormat.PositiveSign.IndexOf("_") == -1) {
+                        myController.UICulture.NumberFormat.PositiveSign += "_" + updateTime.ToString();
+                    }
                     //subscribe to backup completed event
                     myController.BackupCompleted -= backupDoneEvent;
                     myController.BackupCompleted += backupDoneEvent;
@@ -621,10 +667,11 @@ namespace abbTools.AppBackupManager
             //check if there is recent backup time (if not then update it)
             if (e.Succeeded) {
                 //get info about update time (hidden in controller data)
+                bool updateTime = true;
                 int checkPos = temp.UICulture.NumberFormat.PositiveSign.IndexOf("_");
                 string update = temp.UICulture.NumberFormat.PositiveSign.Substring(checkPos + 1);
                 //check if we want to update time 
-                if (Boolean.Parse(update)) {
+                if (Boolean.TryParse(update,out updateTime) && updateTime) {
                     backupPC.lastBackupTime = DateTime.Now;
                     //pc backup state changed = backup done - call event method
                     eventPCBackupState(1);
@@ -830,17 +877,22 @@ namespace abbTools.AppBackupManager
         private int itemIndex(Controller cItem)
         {
             int result = 0;
-            //scan all collection
-            foreach (BackupManager item in this) {
-                //check what to search
-                if (item.abbName == cItem.SystemName) {
-                    break;
-                } else {
-                    result++;
+            //check if inputted item exists
+            if (cItem != null) {
+                //scan all collection
+                foreach (BackupManager item in this) {
+                    //check what to search
+                    if (item.abbName == cItem.SystemName) {
+                        break;
+                    } else {
+                        result++;
+                    }
                 }
+                //check if something was found
+                if (result >= Count) result = -1;
+            } else {
+                result = -1;
             }
-            //check if something was found
-            if (result >= Count) result = -1;
             //exit 
             return result;
         }
@@ -882,7 +934,7 @@ namespace abbTools.AppBackupManager
         /// Add inputted item to collection (internally checking no duplicates)
         /// </summary>
         /// <param name="cItem">Item to add to collection (checking no duplicates)</param>
-        public BackupManager itemGet(Controller cItem)
+        public BackupManager itemGet(Controller cItem, string cItemName="")
         {
             BackupManager result = null;
             //check if current element exist in collection
@@ -892,7 +944,11 @@ namespace abbTools.AppBackupManager
             } else {
                 //item not existent - create new one
                 result = new BackupManager();
-                result.controller = cItem;
+                if (cItem == null) {
+                    result.abbName = cItemName;
+                } else {
+                    result.controller = cItem;
+                }
                 result.logger = defaultLogger;
                 //subscribe to its events
                 result.PCBackupStateChanged += itemPCBackupStateChanged;
@@ -913,6 +969,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public void clear()
         {
+            //scan all collection
             foreach (BackupManager cData in this) {
                 //clear all messages
                 cData.clearData();
@@ -935,7 +992,27 @@ namespace abbTools.AppBackupManager
             //we should get xml subtree with robot name as parent node
             while (xmlSubnode.Read()) {
                 if (xmlSubnode.Name.StartsWith("backupManager")) {
-
+                    //create new object in collection (pass string arg if controller not visible [null])
+                    BackupManager loadItem = itemGet(parent,parentName);
+                    if (loadItem != null) {
+                        //get backup manager item data
+                        while (xmlSubnode.Read()) {
+                            bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                                 outputData = xmlSubnode.Name.StartsWith("output");
+                            //if we are starting to read client data then get it
+                            if (start && outputData) {
+                                loadItem.outputPath = xmlSubnode.GetAttribute("dir");
+                                loadItem.clearDays = int.Parse(xmlSubnode.GetAttribute("clr"));
+                                loadItem.watchdog = bool.Parse(xmlSubnode.GetAttribute("watch"));
+                                //break from WHILE loop - now will be masters data
+                                break;
+                            }
+                        }
+                        //check if there is something to read
+                        if (!xmlSubnode.EOF) loadItem.loadMasterData(ref xmlSubnode);
+                        //update current element signals
+                        loadItem.updateRobotSignals(loadItem.robotSignalExe, loadItem.robotSignalInP);
+                    }
                 }
             }
         }
@@ -951,10 +1028,19 @@ namespace abbTools.AppBackupManager
             //check if current controller is on our list
             int cIndex = itemIndex(nodeParentRobName);
             if (cIndex >= 0) {
-                //controller is on list - save common information
-                xmlSubnode.WriteStartElement("common");
+                //controller is on list - save backup manager data
+                xmlSubnode.WriteStartElement("output");
+                //output directory
+                xmlSubnode.WriteAttributeString("dir", this[cIndex].outputPath);
+                //clear output days number
+                xmlSubnode.WriteAttributeString("clr", this[cIndex].clearDays.ToString());
+                //watchdog activated
+                xmlSubnode.WriteAttributeString("watch", this[cIndex].watchdog.ToString());
                 //end client node
                 xmlSubnode.WriteEndElement();
+                //save all messages in collection
+                this[cIndex].saveMaterData(ref xmlSubnode);
+                
             }
             xmlSubnode.WriteEndElement();
         }
@@ -969,14 +1055,22 @@ namespace abbTools.AppBackupManager
         {
             //check input data
             if (newController == null && storeControllerName == "") return false;
-            //input data OK - add controller to collection
+            //input data OK - get controller in collection
             try {
-                
+                int foundIndex = -1;
+                if (newController != null) {
+                    foundIndex = itemIndex(newController);
+                    //update controller address of selected controller
+                    this[foundIndex].controller = newController;
+                }
+                else {
+                    foundIndex = itemIndex(storeControllerName);
+                    //update controller address of selected controller
+                    this[foundIndex].controller = null;
+                }
                 //all ok - return true
                 return true;
-            }
-            catch
-            {
+            } catch {
                 //exception occured - return false
                 return false;
             }

@@ -61,6 +61,8 @@ namespace abbTools.AppBackupManager
 
         abstract public void clearData();
         abstract public string getSuffix(backupSource src);
+        abstract public void saveData(ref System.Xml.XmlWriter xmlSubnode);
+        abstract public void loadData(ref System.Xml.XmlReader xmlSubnode);
     }
 
     //================================================================================================================================
@@ -128,6 +130,94 @@ namespace abbTools.AppBackupManager
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Method used to save master data
+        /// </summary>
+        /// <param name="xmlSubnode">Subnode to save data to</param>
+        override public void saveData(ref System.Xml.XmlWriter xmlSubnode)
+        {
+            //controller is on list - save backup pc master data
+            xmlSubnode.WriteStartElement("pcMaster");
+                //master active
+                xmlSubnode.WriteAttributeString("active", activated.ToString());
+                //last backup time
+                xmlSubnode.WriteAttributeString("last", lastBackupTime.ToString());
+                //duplicate method
+                xmlSubnode.WriteAttributeString("same", duplicateMethod.ToString());
+                //daily backup time
+                xmlSubnode.WriteAttributeString("daily", exactTime.ToString());
+                //save interval offset
+                xmlSubnode.WriteStartElement("interval");
+                    //master active
+                    xmlSubnode.WriteAttributeString("days", offsDay.ToString());
+                    //last backup time
+                    xmlSubnode.WriteAttributeString("hours", offsHour.ToString());
+                    //duplicate method
+                    xmlSubnode.WriteAttributeString("mins", offsMin.ToString());
+                //end client node (interval)
+                xmlSubnode.WriteEndElement();
+                //save interval offset
+                xmlSubnode.WriteStartElement("suffix");
+                    //master active
+                    xmlSubnode.WriteAttributeString("gui", suffixGUI);
+                    //last backup time
+                    xmlSubnode.WriteAttributeString("interval", suffixInterval);
+                    //duplicate method
+                    xmlSubnode.WriteAttributeString("exact", suffixTime);
+                //end client node (suffix)
+                xmlSubnode.WriteEndElement();
+            //end client node (pcMaster)
+            xmlSubnode.WriteEndElement();
+        }
+
+        /// <summary>
+        /// Method used to load master data
+        /// </summary>
+        /// <param name="xmlSubnode">Subnode to load data from</param>
+        override public void loadData(ref System.Xml.XmlReader xmlSubnode)
+        {
+            //get robot master main data
+            while (xmlSubnode.Read()) {
+                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                     pcMaster = xmlSubnode.Name.StartsWith("pcMaster");
+                //if we are starting to read client data then get it
+                if (start && pcMaster) {
+                    activated = bool.Parse(xmlSubnode.GetAttribute("active"));
+                    lastBackupTime = DateTime.Parse(xmlSubnode.GetAttribute("last"));
+                    duplicateMethod = int.Parse(xmlSubnode.GetAttribute("same"));
+                    exactTime = DateTime.Parse(xmlSubnode.GetAttribute("daily"));
+                    //break from WHILE loop - now will be masters data
+                    break;
+                }
+            }
+            //get robot master backup data
+            while (xmlSubnode.Read()) {
+                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                     pcInterval = xmlSubnode.Name.StartsWith("interval");
+                //if we are starting to read client data then get it
+                if (start && pcInterval) {
+                    offsDay = int.Parse(xmlSubnode.GetAttribute("days"));
+                    offsHour = int.Parse(xmlSubnode.GetAttribute("hours"));
+                    offsMin = int.Parse(xmlSubnode.GetAttribute("mins"));
+                    //break from WHILE loop - now will be masters data
+                    break;
+                }
+            }
+            //get robot master signal data
+            while (xmlSubnode.Read()) {
+                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                     pcSuffix = xmlSubnode.Name.StartsWith("suffix");
+                //if we are starting to read client data then get it
+                if (start && pcSuffix) {
+                    suffixGUI = xmlSubnode.GetAttribute("gui");
+                    suffixInterval = xmlSubnode.GetAttribute("interval");
+                    suffixTime = xmlSubnode.GetAttribute("exact");
+                    //break from WHILE loop - now will be masters data
+                    break;
+                }
+            }
         }
 
         /// <summary>
@@ -281,6 +371,85 @@ namespace abbTools.AppBackupManager
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Method used to save master data
+        /// </summary>
+        /// <param name="xmlSubnode">Subnode to save data to</param>
+        override public void saveData(ref System.Xml.XmlWriter xmlSubnode)
+        {
+            //controller is on list - save backup pc master data
+            xmlSubnode.WriteStartElement("robotMaster");
+            //master active
+            xmlSubnode.WriteAttributeString("active", activated.ToString());
+            //last backup time
+            xmlSubnode.WriteAttributeString("last", lastBackupTime.ToString());
+            //duplicate method
+            xmlSubnode.WriteAttributeString("same", duplicateMethod.ToString());
+            //save interval offset
+            xmlSubnode.WriteStartElement("backup");
+                //master active
+                xmlSubnode.WriteAttributeString("src",sourceDir);
+                //last backup time
+                xmlSubnode.WriteAttributeString("suffix", suffixRobot);
+            //end client node (interval)
+            xmlSubnode.WriteEndElement();
+            //save interval offset
+            xmlSubnode.WriteStartElement("signals");
+                //master active
+                xmlSubnode.WriteAttributeString("exe", sigBackupExe);
+                //last backup time
+                xmlSubnode.WriteAttributeString("doing", sigBackupInP);
+            //end client node (suffix)
+            xmlSubnode.WriteEndElement();
+            //end client node (pcMaster)
+            xmlSubnode.WriteEndElement();
+        }
+
+        /// <summary>
+        /// Method used to load master data
+        /// </summary>
+        /// <param name="xmlSubnode">Subnode to load data from</param>
+        override public void loadData(ref System.Xml.XmlReader xmlSubnode)
+        {
+            //get robot master main data
+            while (xmlSubnode.Read()) {
+                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                     robotMaster = xmlSubnode.Name.StartsWith("robotMaster");
+                //if we are starting to read client data then get it
+                if (start && robotMaster) {
+                    activated = bool.Parse(xmlSubnode.GetAttribute("active"));
+                    lastBackupTime = DateTime.Parse(xmlSubnode.GetAttribute("last"));
+                    duplicateMethod = int.Parse(xmlSubnode.GetAttribute("same"));
+                    //break from WHILE loop - now will be masters data
+                    break;
+                }
+            }
+            //get robot master backup data
+            while (xmlSubnode.Read()) {
+                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                     robotBackup = xmlSubnode.Name.StartsWith("backup");
+                //if we are starting to read client data then get it
+                if (start && robotBackup) {
+                    sourceDir = xmlSubnode.GetAttribute("src");
+                    suffixRobot = xmlSubnode.GetAttribute("suffix");
+                    //break from WHILE loop - now will be masters data
+                    break;
+                }
+            }
+            //get robot master signal data
+            while (xmlSubnode.Read()) {
+                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                     robotSignals = xmlSubnode.Name.StartsWith("signals");
+                //if we are starting to read client data then get it
+                if (start && robotSignals) {
+                    sigBackupExe = xmlSubnode.GetAttribute("exe");
+                    sigBackupInP = xmlSubnode.GetAttribute("doing");
+                    //break from WHILE loop - now will be masters data
+                    break;
+                }
+            }
         }
 
         /// <summary>

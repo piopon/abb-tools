@@ -22,6 +22,9 @@ namespace abbTools.AppBackupManager
         int diBackupIndex;
         windowRobotSig signalsWindow;
         windowRobotFiles filesWindow;
+        //event
+        public delegate void updateXMLFile();
+        public event updateXMLFile UpdateBackupTimeInXML;
 
         /********************************************************
          ***  APP IPC - manage connection data containers
@@ -44,6 +47,8 @@ namespace abbTools.AppBackupManager
             diBackupIndex = -1;
             //clear robot data (no robots yet)
             clearData();
+            //stop timer
+            timerCheckBackup.Stop();
             //reset GUI
             resetGUI();
         }
@@ -155,10 +160,19 @@ namespace abbTools.AppBackupManager
             if (currData != null && newState == 1) labelLastTimePC.Text = currData.pcLastBackupTime.ToString();
         }
 
+        /// <summary>
+        /// Event triggered at update last backup time in xml file
+        /// </summary>
+        protected void updateBackupTime()
+        {
+            // SIMPLIFIED { if (OnWaiting != null) OnWaiting(this, e); }
+            UpdateBackupTimeInXML?.Invoke();
+        }
+
         /********************************************************
          ***  APP BACKUP MANAGER - main window data management 
          ********************************************************/
-        
+
         /// <summary>
         /// Reset appBackupManager state (clear all stored data)
         /// </summary>
@@ -177,14 +191,10 @@ namespace abbTools.AppBackupManager
         {
             //save current robot child node to XML document
             string saveName = parent != null ? parent.SystemName : parentName;
-            if (saveName.Length > 0)
-            {
+            if (saveName.Length > 0) {
                 //save backup manager data
-                MessageBox.Show("appBackupManager - loadAppData TODO");
-                return;
-            }
-            else
-            {
+                myCollection.saveToXml(ref saveXml, saveName);
+            } else {
                 abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
             }
         }
@@ -197,31 +207,28 @@ namespace abbTools.AppBackupManager
         /// <param name="parentName">Parent name (important if its not visible during load)</param>
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
         {
+            //read XML untill current app settings node appears
+            while (loadXml.Read()) {
+                bool start = loadXml.NodeType == System.Xml.XmlNodeType.Element,
+                     backupManager = loadXml.Name.StartsWith("backupManager");
+                //if we are starting to read windowsIPC app setting then break from WHILE loop
+                if (start && backupManager) {
+                    //if current element is empty then return
+                    if (loadXml.IsEmptyElement) return;
+                    //if element not empty then load its data
+                    break;
+                }
+                //if we are at end of current robot then dont read anythig
+                if (loadXml.Name.StartsWith("robot_") && loadXml.NodeType == System.Xml.XmlNodeType.EndElement) return;
+            }
+            //read next element (this one will be with robot info
+            System.Xml.XmlReader nodeCurrRobot = loadXml.ReadSubtree();
+            //read every child node from XML document (stopped at reading robot)
+            myCollection.loadFromXml(ref nodeCurrRobot, parent, parentName);
+            //start timer - if at least one controller has to be watched
+            if (myCollection.itemWatchedNo() > 0) timerCheckBackup.Start();
             //reset GUI
             resetGUI();
-            MessageBox.Show("appBackupManager - loadAppData TODO");
-            return;
-            ////read XML untill current app settings node appears
-            //while (loadXml.Read())
-            //{
-            //    bool start = loadXml.NodeType == System.Xml.XmlNodeType.Element,
-            //         backupManager = loadXml.Name.StartsWith("backupManager");
-            //    //if we are starting to read windowsIPC app setting then break from WHILE loop
-            //    if (start && backupManager) {
-            //        //if current element is empty then return
-            //        if (loadXml.IsEmptyElement) return;
-            //        //if element not empty then load its data
-            //        break;
-            //    }
-            //    //if we are at end of current robot then dont read anythig
-            //    if (loadXml.Name.StartsWith("robot_") && loadXml.NodeType == System.Xml.XmlNodeType.EndElement) return;
-            //}
-            ////read next element (this one will be with robot info
-            //System.Xml.XmlReader nodeCurrRobot = loadXml.ReadSubtree();
-            ////read every child node from XML document (stopped at reading robot)
-
-            ////reset GUI
-            //resetGUI();
         }
 
         /// <summary>
@@ -232,7 +239,7 @@ namespace abbTools.AppBackupManager
         {
             //update controllers data in collection
             if (found != null) {
-
+                myCollection.controllerUpdate(found, found.SystemName);
             }
         }
 
@@ -244,6 +251,7 @@ namespace abbTools.AppBackupManager
         {
             if (lost != null) {
                 if (currData.controller != null && lost.SystemName == currData.controller.SystemName) {
+                    myCollection.controllerClear(lost);
                     //reset GUI
                     resetGUI();
                 }
@@ -326,6 +334,7 @@ namespace abbTools.AppBackupManager
             } else {
                 checkRobActive.Checked = false;
                 groupRobMaster.Enabled = false;
+                labelBackupStatus.ImageIndex = -1;
                 labelLastTimeROB.Text = "-";
                 labelRobBackupDir.ImageIndex = 0;
                 textSigDoBackup.Text = "- select signal -";
@@ -445,7 +454,8 @@ namespace abbTools.AppBackupManager
                             //there is no backup done yet - no reference to count from... create it
                             item.createBackup(backupSource.interval);
                         }
-                        //update xml file
+                        //call event to update xml file (new last backup time)
+                        updateBackupTime();
                     }
                     //-------------------------
                     //--- create backup from exact time
@@ -466,7 +476,8 @@ namespace abbTools.AppBackupManager
                             item.robotGetBackup();
                             item.robotWatchBackup = false;
                         }
-                        //update xml file
+                        //call event to update xml file (new last backup time)
+                        updateBackupTime();
                     }
                     //-------------------------
                 }  
@@ -956,7 +967,6 @@ namespace abbTools.AppBackupManager
                 if (curr.Checked) currData.duplicateMethodRobot = curr.TabIndex - 4;
             }
         }
-
         //=========================================================================================================
     }
 }
