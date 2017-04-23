@@ -12,9 +12,9 @@ namespace abbTools.AppBackupManager
          ********************************************************/
 
         //data containers
-        BackupManagerCollection myCollection = null;
-        BackupManager currData = null;
-        loggerABB abbLogger = null;
+        private BackupManagerCollection myCollection = null;
+        private BackupManager currData = null;
+        private loggerABB abbLogger = null;
         //additional windows & settings
         public int parentHeight;
         public int parentWidth;

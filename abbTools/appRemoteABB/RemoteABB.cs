@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.IOSystemDomain;
 
-namespace appRemoteABB
+namespace abbTools.AppRemoteABB
 {
     class RemoteABB
     {
@@ -461,15 +461,22 @@ namespace appRemoteABB
             //we should get xml subtree with remotePC as parent node
             while (xmlSubnode.Read()) {
                 if (xmlSubnode.Name.StartsWith("remotePC")) {
-                    //create new object in collection (pass string arg if controller not visible [null])
-                    if(addController(parent, parentName)) {
-                        currentData.signals.loadSignals(ref xmlSubnode, currentData.controller);
-                        //if controller is visible then we can add signal watcher to its signals
-                        if (currentData.controller != null) {
-                            foreach (RemoteSignal cSig in currentData.signals) {
-                                cSig.signal.Changed += signalWatcher;
+                    if (xmlSubnode.IsStartElement() && !xmlSubnode.IsEmptyElement) {
+                        //create new object in collection (pass string arg if controller not visible [null])
+                        if (addController(parent, parentName)) {
+                            currentData.signals.loadSignals(ref xmlSubnode, currentData.controller);
+                            //if controller is visible then we can add signal watcher to its signals
+                            if (currentData.controller != null) {
+                                foreach (RemoteSignal cSig in currentData.signals) {
+                                    cSig.signal.Changed += signalWatcher;
+                                }
                             }
+                            //got all data from current robot - break from while loop
+                            break;
                         }
+                    } else {
+                        //no data for current robot - break from while loop
+                        break;
                     }
                 }
             }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.IOSystemDomain;
 
-namespace appRemoteABB
+namespace abbTools.AppRemoteABB
 {
     /// <summary>
     /// Definition of ABB signal with related: actor, resultant and PC application
@@ -214,12 +214,15 @@ namespace appRemoteABB
         {
             //load every element in delivered XML (faster if only interesting xmlSubtree)
             while (xmlSubtree.Read()) {
-                if (xmlSubtree.NodeType == XmlNodeType.Element && xmlSubtree.Name.StartsWith("signal_")) {
-                    //add new element to collection and fill its data 
-                    RemoteSignal loadSig = new RemoteSignal();
-                    loadSig.loadFromXML(xmlSubtree,parent);
-                    Add(loadSig);
+                if (xmlSubtree.Name.StartsWith("signal_")) {
+                    if (xmlSubtree.IsStartElement() && !xmlSubtree.IsEmptyElement) {
+                        //add new element to collection and fill its data 
+                        RemoteSignal loadSig = new RemoteSignal();
+                        loadSig.loadFromXML(xmlSubtree, parent);
+                        Add(loadSig);
+                    } 
                 }
+                if (xmlSubtree.Name.StartsWith("remotePC") && (xmlSubtree.NodeType == XmlNodeType.EndElement)) break;
             }
         }
 

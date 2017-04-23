@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<myRobots>
+  <robot_0 name="robSpawR" IP="127.0.0.1" type="5">
+    <remotePC>
+      <signal_0 name="czujnik_H" act="0">
+        <action res="1" mod="-" app="C:\powershell_ise.exe" />
+      </signal_0>
+      <signal_1 name="spawanie" act="1">
+        <action res="0" mod="TEST" app="C:\Windows\notepad.exe" />
+      </signal_1>
+    </remotePC>
+    <backupManager>
+      <output dir="C:\Users\pponikowski\Desktop\test" clr="30" watch="True" />
+      <robotMaster active="True" last="2017-04-17 16:53:04" same="3">
+        <backup src="BACKUP" suffix="_robot" />
+        <signals exe="camPower" doing="camTrigger" />
+      </robotMaster>
+      <pcMaster active="True" last="2017-04-17 19:25:46" same="1" daily="2017-04-17 16:54:00">
+        <interval days="1" hours="3" mins="1" />
+        <suffix gui="_gui" interval="_autoBackup" exact="_dailyBackup" />
+      </pcMaster>
+    </backupManager>
+    <windowsIPC>
+      <clientIPC server="abc" recon="True" open="False">
+        <msg_0 message="START" signal="RRM_airPresent" value="1" />
+        <msg_1 message="STOP" signal="RRM_airPresent2" value="0" />
+      </clientIPC>
+    </windowsIPC>
+  </robot_0>
+</myRobots>

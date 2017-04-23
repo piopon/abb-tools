@@ -1,8 +1,8 @@
-﻿using System.Windows.Forms;
-using System.Collections.Generic;
-using ABB.Robotics.Controllers;
+﻿using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.IOSystemDomain;
 using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace abbTools.AppWindowsIPC
 {
@@ -747,7 +747,7 @@ namespace abbTools.AppWindowsIPC
                         //no client defined yet = first run or loading collection from file
                         Add(cItem);
                         //log success data
-                        defaultLogger.writeLog(logType.info, "Added controller to data collection!");
+                        if (defaultLogger != null) defaultLogger.writeLog(logType.info, "Added controller to data collection!");
                     } else {
                         //client defined - create new instance = modifing collection from GUI 
                         WindowsIPC newInstance = new WindowsIPC(cItem.controller, cItem.client.serverName, 
@@ -758,7 +758,7 @@ namespace abbTools.AppWindowsIPC
                         //add new instance to collection
                         Add(newInstance);
                         //log success data
-                        defaultLogger.writeLog(logType.info, "Added controller to data collection and message to watch list!");
+                        if (defaultLogger != null) defaultLogger.writeLog(logType.info, "Added controller to data collection and message to watch list!");
                     }
                     //update current data object
                     currentData = cItem;
@@ -773,7 +773,7 @@ namespace abbTools.AppWindowsIPC
                         WindowsIPCMessages cMessageAction = cItem.getMessageAction(0);
                         this[cController].messageAdd(cMessageAction);
                         //log success data
-                        defaultLogger.writeLog(logType.info, "Updated IPC client and added message to watch list!");
+                        if (defaultLogger != null) defaultLogger.writeLog(logType.info, "Updated IPC client and added message to watch list!");
                         //update current data object
                         currentData = this[cController];
                         //check if we want to auto run client comm thread
@@ -797,13 +797,13 @@ namespace abbTools.AppWindowsIPC
                                     //add message to current item
                                     this[cController].messageAdd(cMessageAction);
                                     //log success data
-                                    defaultLogger.writeLog(logType.info, "Added message to watch list!");
+                                    if (defaultLogger != null) defaultLogger.writeLog(logType.info, "Added message to watch list!");
                                 } else {
                                     //message exists - no duplicates
-                                    defaultLogger.writeLog(logType.warning, "Current message exists!");
+                                    if (defaultLogger != null) defaultLogger.writeLog(logType.warning, "Current message exists!");
                                 }
                             } else {
-                                defaultLogger.writeLog(logType.error, "Different server name! Each robot must have only one client!");
+                                if (defaultLogger != null) defaultLogger.writeLog(logType.error, "Different server name! Each robot must have only one client!");
                             }
                             //update current data object
                             currentData = this[cController];
@@ -818,7 +818,7 @@ namespace abbTools.AppWindowsIPC
                     }
                 }
             } else {
-                defaultLogger.writeLog(logType.warning, "Current element exists in collection!");
+                if (defaultLogger != null) defaultLogger.writeLog(logType.warning, "Current element exists in collection!");
             }
         }
 
@@ -1026,30 +1026,34 @@ namespace abbTools.AppWindowsIPC
             //we should get xml subtree with robot name as parent node
             while (xmlSubnode.Read()) {
                 if (xmlSubnode.Name.StartsWith("windowsIPC")) {
-                    //create new object in collection (pass string arg if controller not visible [null])
-                    if (controllerUpdate(parent, parentName)) {
-                        //get named-pipe client settings data
-                        while (xmlSubnode.Read()) {
-                            bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
-                                 clientData = xmlSubnode.Name.StartsWith("clientIPC");
-                            //if we are starting to read client data then get it
-                            if (start && clientData) {
-                                string serverName = xmlSubnode.GetAttribute("server");
-                                bool reconnActive = bool.Parse(xmlSubnode.GetAttribute("recon")), 
-                                     openActive = bool.Parse(xmlSubnode.GetAttribute("open"));
-                                //update client object with data
-                                currentData.ipcClientUpdate(serverName, reconnActive, openActive);
-                                //break from WHILE loop - now will be message data
-                                break;
+                    if (xmlSubnode.IsStartElement() && !xmlSubnode.IsEmptyElement) {
+                        //create new object in collection (pass string arg if controller not visible [null])
+                        if (controllerUpdate(parent, parentName)) {
+                            //get named-pipe client settings data
+                            while (xmlSubnode.Read()) {
+                                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                                     clientData = xmlSubnode.Name.StartsWith("clientIPC");
+                                //if we are starting to read client data then get it
+                                if (start && clientData) {
+                                    string serverName = xmlSubnode.GetAttribute("server");
+                                    bool reconnActive = bool.Parse(xmlSubnode.GetAttribute("recon")),
+                                         openActive = bool.Parse(xmlSubnode.GetAttribute("open"));
+                                    //update client object with data
+                                    currentData.ipcClientUpdate(serverName, reconnActive, openActive);
+                                    //break from WHILE loop - now will be message data
+                                    break;
+                                }
+                            }
+                            //check if there is something to read
+                            if (!xmlSubnode.EOF) {
+                                //load all messages to collection
+                                currentData.loadMessages(ref xmlSubnode, currentData.controller);
+                                //if user wants to open client and parent controller is visible then do it now
+                                if (currentData.client.autoStart && parent != null) currentData.ipcClientOpen();
                             }
                         }
-                        //check if there is something to read
-                        if (!xmlSubnode.EOF) {
-                            //load all messages to collection
-                            currentData.loadMessages(ref xmlSubnode, currentData.controller);
-                            //if user wants to open client and parent controller is visible then do it now
-                            if (currentData.client.autoStart && parent != null) currentData.ipcClientOpen();
-                        }
+                    } else {
+                        break;
                     }
                 }
             }

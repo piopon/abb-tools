@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace appRemoteABB
+namespace abbTools.AppRemoteABB
 {
     class RemoteAction
     {

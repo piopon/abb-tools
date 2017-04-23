@@ -80,8 +80,10 @@ namespace abbTools.AppBackupManager
             daysClear = 0;
             outputDir = "";
             //clear controller data
-            myController.BackupCompleted -= backupDoneEvent;
-            myController = null;
+            if (myController != null) {
+                myController.BackupCompleted -= backupDoneEvent;
+                myController = null;
+            }
             //clear signals data
             if (mySigExe != null) {
                 mySigExe.Changed -= DoBackup_Changed;
@@ -196,27 +198,29 @@ namespace abbTools.AppBackupManager
                 return;
             }
             //get all directories in output dir
-            string[] folders = Directory.GetDirectories(outputDir + "\\");
-            //compare every folder creation date with current date
-            int foldersDeleted = 0;
-            for (int i = 0; i < folders.Length; i++) {
-                //delete only backup files (contains _BACKUP_ string)
-                if (folders[i].Contains("_BACKUP_")) {
-                    DateTime createdTime = Directory.GetCreationTime(folders[i]);
-                    TimeSpan timeDiff = DateTime.Now - createdTime;
-                    if (daysClear > 0 && timeDiff.TotalDays > daysClear) {
-                        Directory.Delete(folders[i], true);
-                        foldersDeleted++;
+            if (Directory.Exists(outputDir + "\\")) {
+                string[] folders = Directory.GetDirectories(outputDir + "\\");
+                //compare every folder creation date with current date
+                int foldersDeleted = 0;
+                for (int i = 0; i < folders.Length; i++) {
+                    //delete only backup files (contains _BACKUP_ string)
+                    if (folders[i].Contains("_BACKUP_")) {
+                        DateTime createdTime = Directory.GetCreationTime(folders[i]);
+                        TimeSpan timeDiff = DateTime.Now - createdTime;
+                        if (daysClear > 0 && timeDiff.TotalDays > daysClear) {
+                            Directory.Delete(folders[i], true);
+                            foldersDeleted++;
+                        }
                     }
                 }
-            }
-            //show log if some folders were deleted
-            if (myLogger != null) {
-                if (foldersDeleted > 0) {
-                    myLogger.writeLog(logType.warning, "controller <b>" + myController.SystemName + "</b> cleaned " + foldersDeleted.ToString() + " folders!");
-                } else {
-                    if (guiDemand) {
-                        myLogger.writeLog(logType.warning, "controller <b>" + myController.SystemName + "</b> no folders to clean!");
+                //show log if some folders were deleted
+                if (myLogger != null) {
+                    if (foldersDeleted > 0) {
+                        myLogger.writeLog(logType.warning, "controller <b>" + myController.SystemName + "</b> cleaned " + foldersDeleted.ToString() + " folders!");
+                    } else {
+                        if (guiDemand) {
+                            myLogger.writeLog(logType.warning, "controller <b>" + myController.SystemName + "</b> no folders to clean!");
+                        }
                     }
                 }
             }
@@ -925,9 +929,15 @@ namespace abbTools.AppBackupManager
         /// </summary>
         /// <param name="cItem">Item to check</param>
         /// <returns>TRUE if item exists (FALSE otherwise)</returns>
-        public bool itemExists(Controller cItem)
+        public bool itemExists(Controller cItem, string cItemName= "")
         {
-            return itemIndex(cItem) != -1;
+            bool result = false;
+            if (cItem != null) {
+                result = itemIndex(cItem) != -1;
+            } else {
+                result = itemIndex(cItemName) != -1;
+            }
+            return result;
         }
 
         /// <summary>
@@ -938,8 +948,8 @@ namespace abbTools.AppBackupManager
         {
             BackupManager result = null;
             //check if current element exist in collection
-            if (itemExists(cItem)) {
-                result = this[itemIndex(cItem)];
+            if (itemExists(cItem, cItemName)) {
+                result = (cItem != null) ? this[itemIndex(cItem)] : this[itemIndex(cItemName)];
                 result.controller = cItem;
             } else {
                 //item not existent - create new one
@@ -992,26 +1002,30 @@ namespace abbTools.AppBackupManager
             //we should get xml subtree with robot name as parent node
             while (xmlSubnode.Read()) {
                 if (xmlSubnode.Name.StartsWith("backupManager")) {
-                    //create new object in collection (pass string arg if controller not visible [null])
-                    BackupManager loadItem = itemGet(parent,parentName);
-                    if (loadItem != null) {
-                        //get backup manager item data
-                        while (xmlSubnode.Read()) {
-                            bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
-                                 outputData = xmlSubnode.Name.StartsWith("output");
-                            //if we are starting to read client data then get it
-                            if (start && outputData) {
-                                loadItem.outputPath = xmlSubnode.GetAttribute("dir");
-                                loadItem.clearDays = int.Parse(xmlSubnode.GetAttribute("clr"));
-                                loadItem.watchdog = bool.Parse(xmlSubnode.GetAttribute("watch"));
-                                //break from WHILE loop - now will be masters data
-                                break;
+                    if (xmlSubnode.IsStartElement() && !xmlSubnode.IsEmptyElement) {
+                        //create new object in collection (pass string arg if controller not visible [null])
+                        BackupManager loadItem = itemGet(parent,parentName);
+                        if (loadItem != null) {
+                            //get backup manager item data
+                            while (xmlSubnode.Read()) {
+                                bool start = xmlSubnode.NodeType == System.Xml.XmlNodeType.Element,
+                                     outputData = xmlSubnode.Name.StartsWith("output");
+                                //if we are starting to read client data then get it
+                                if (start && outputData){
+                                    loadItem.outputPath = xmlSubnode.GetAttribute("dir");
+                                    loadItem.clearDays = int.Parse(xmlSubnode.GetAttribute("clr"));
+                                    loadItem.watchdog = bool.Parse(xmlSubnode.GetAttribute("watch"));
+                                    //break from WHILE loop - now will be masters data
+                                    break;
+                                }
                             }
+                            //check if there is something to read
+                            if (!xmlSubnode.EOF) loadItem.loadMasterData(ref xmlSubnode);
+                            //update current element signals
+                            loadItem.updateRobotSignals(loadItem.robotSignalExe, loadItem.robotSignalInP);
                         }
-                        //check if there is something to read
-                        if (!xmlSubnode.EOF) loadItem.loadMasterData(ref xmlSubnode);
-                        //update current element signals
-                        loadItem.updateRobotSignals(loadItem.robotSignalExe, loadItem.robotSignalInP);
+                    } else {
+                        break;
                     }
                 }
             }

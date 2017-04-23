@@ -160,6 +160,8 @@ namespace abbTools.AppWindowsIPC
                     loadMsg.loadFromXML(xmlSubtree);
                     Add(loadMsg);
                 }
+                //break from while loop if we are at end element of clientIPC
+                if (xmlSubtree.NodeType == XmlNodeType.EndElement && xmlSubtree.Name.StartsWith("clientIPC")) break;
             }
         }
     }
