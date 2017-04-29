@@ -10,7 +10,7 @@ namespace abbTools
     public partial class appRemoteABB : UserControl
     {
         /********************************************************
-         ***  APP REMOTE - variables
+         ***  APP REMOTE - data 
          ********************************************************/
 
         //private class members - controller address and enable buttons logic vars
@@ -30,9 +30,12 @@ namespace abbTools
         private string actorModifiers = "";
         
         /********************************************************
-         ***  APP REMOTE - main operations
+         ***  APP REMOTE - constructors
          ********************************************************/
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public appRemoteABB()
         {
             InitializeComponent();
@@ -42,6 +45,10 @@ namespace abbTools
             abbSignals = new SignalCollection();
         }
 
+        /// <summary>
+        /// Constructor with logger object update
+        /// </summary>
+        /// <param name="newLogger">New logger object</param>
         public appRemoteABB(loggerABB newLogger)
         {
             InitializeComponent();
@@ -51,37 +58,48 @@ namespace abbTools
             abbSignals = new SignalCollection();
         }
 
-        public void appRemoteClear()
-        {
-            //clear all data (robot and reset GUI)
-            desyncController();
-            desyncLogger();
-        }
+        /********************************************************
+         ***  APP REMOTE - internal elements sync and desync
+         ********************************************************/
 
+        /// <summary>
+        /// Method used to synchronize logger with RemoteABB app
+        /// </summary>
+        /// <param name="myLogger">Logger object to sync with</param>
         public void syncLogger(loggerABB myLogger)
         {
             //update controller logger
             abbLogger = myLogger;
-            remoteABB.syncLogger(myLogger);
+            remoteABB.logger = myLogger;
         }
 
+        /// <summary>
+        /// Method used to desynchronize current logger with RemoteABB app
+        /// </summary>
         public void desyncLogger()
         {
             //clear controller logger
-            remoteABB.desyncLogger();
+            remoteABB.logger = null;
             abbLogger = null;
         }
 
+        /// <summary>
+        /// Method used to synchronize ABB controller with RemoteABB app
+        /// </summary>
+        /// <param name="myLogger">ABB controller object to sync with</param>
         public void syncController(Controller myController)
         {
             //update controller address
             abbController = myController;
             //add controller to remote collection
-            remoteABB.addController(abbController);
+            remoteABB.controllerAdd(abbController);
             listActionsWatch.BackColor = Color.White;
             remoteABB.fillWinFormControl(ref listActionsWatch);
         }
 
+        /// <summary>
+        /// Method used to desynchronize ABB controller with RemoteABB app
+        /// </summary>
         public void desyncController()
         {
             //reset controller address
@@ -95,10 +113,25 @@ namespace abbTools
             resetGUI();
         }
 
+        /// <summary>
+        /// Method used to clear (desync) controller and logger data in app
+        /// </summary>
+        public void appRemoteClear()
+        {
+            //clear all data (robot and reset GUI)
+            desyncController();
+            desyncLogger();
+        }
+
         /********************************************************
          ***  APP REMOTE - update signals (BACKGROUND TASK)
          ********************************************************/
 
+        /// <summary>
+        /// Method used to get all signals from ABB controller using Background Thread
+        /// </summary>
+        /// <param name="sender">Button that triggered current method</param>
+        /// <param name="e">Event arguments</param>
         private void buttonUpdateSignals_Click(object sender, EventArgs e)
         {
             if (abbController != null) {
@@ -124,6 +157,11 @@ namespace abbTools
             panelLoading.Visible = true;
         }
 
+        /// <summary>
+        /// Method triggered when running background thread
+        /// </summary>
+        /// <param name="sender">Which thread triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             //get all signals and report to main thread when finished
@@ -134,6 +172,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method triggered when background thread finished its task
+        /// </summary>
+        /// <param name="sender">Which thread triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             //check if in mean time disconnection occured
@@ -151,6 +194,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method triggered when background thread work progress changed
+        /// </summary>
+        /// <param name="sender">Which thread triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             //update list if controller is connected
@@ -163,6 +211,11 @@ namespace abbTools
          ***  APP REMOTE - gui
          ********************************************************/
 
+        /// <summary>
+        /// Method used to select PC application directory
+        /// </summary>
+        /// <param name="sender">Button that triggered current method</param>
+        /// <param name="e">Event arguments</param>
         private void buttonPCAppSel_Click(object sender, EventArgs e)
         {
             //show file selection dialog
@@ -173,6 +226,11 @@ namespace abbTools
             checkEnableButtons();
         }
 
+        /// <summary>
+        /// Method used to change selected item of ABB signals
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">Event arguments</param>
         private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             //uncheck other elements
@@ -187,6 +245,11 @@ namespace abbTools
             checkEnableButtons();
         }
 
+        /// <summary>
+        /// Method used to change selection of item in watched remote signals
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">Event arguments</param>
         private void listActionsWatch_ItemChecked(object sender, ItemCheckedEventArgs e)
         {
             //update logic condition for enabling buttons
@@ -194,18 +257,28 @@ namespace abbTools
             checkEnableButtons();
         }
 
+        /// <summary>
+        /// Method used to change action modifier
+        /// </summary>
+        /// <param name="sender">Button that triggered current method</param>
+        /// <param name="e">Event arguments</param>
         private void buttonEditModifier_Click(object sender, EventArgs e)
         {
             actorModifiers = showInputWindow(comboResultant.SelectedIndex);
         }
 
+        /// <summary>
+        /// Method used to change selected resultant in combo item
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">Event arguments</param>
         private void comboResultant_SelectedIndexChanged(object sender, EventArgs e)
         {
             //update logic condition for enabling buttons
             resultCondition = comboResultant.SelectedIndex != -1;
             checkEnableButtons();
             //show user window to specify details
-            if (comboResultant.SelectedIndex >= (int)RemoteAction.type.appMouse) {
+            if (comboResultant.SelectedIndex >= (int)RemoteResultant.type.appMouse) {
                 //show window only if index was changed
                 if (comboResultant.SelectedIndex != selectedRes) {
                     actorModifiers = "";
@@ -243,6 +316,11 @@ namespace abbTools
             buttonActionsRemove.BackColor = deleteCondition ? Color.Red : Color.Silver;
         }
 
+        /// <summary>
+        /// Function used to show mouse or keybard action input screen
+        /// </summary>
+        /// <param name="resultantSelected">Which action resultant is showing this window</param>
+        /// <returns>Keyboard or mouse action modifier as string</returns>
         private string showInputWindow(int resultantSelected)
         {
             string result = "", header, message;
@@ -250,13 +328,13 @@ namespace abbTools
 
             //get window title and message
             switch (resultantSelected) {
-                case (int)RemoteAction.type.appMouse:
+                case (int)RemoteResultant.type.appMouse:
                     header = "app mouse click resultant";
                     message = "input mouse position and button to be sim-clicked." + Environment.NewLine +
                               "FORMAT: [posX;posY]L/M/R";
                     autoMouse = true;
                     break;
-                case (int)RemoteAction.type.appKey:
+                case (int)RemoteResultant.type.appKey:
                     header = "app keyboard click resultant";
                     message = "input keyboard button to be sim-clicked." + Environment.NewLine +
                               "FORMAT: keyName";
@@ -287,6 +365,9 @@ namespace abbTools
             return result;
         }
 
+        /// <summary>
+        /// Method used to reset GUI to its initial state (all empty and blanks)
+        /// </summary>
         private void resetGUI()
         {
             //clear signals list and show info panel
@@ -308,6 +389,11 @@ namespace abbTools
          ***  APP REMOTE - watch signal management
          ********************************************************/
 
+        /// <summary>
+        /// Method used to add new action to collection
+        /// </summary>
+        /// <param name="sender">Button that triggered current method</param>
+        /// <param name="e">Event arguments</param>
         private void buttonActionsNew_Click(object sender, EventArgs e)
         {
             //add signal to data object
@@ -321,6 +407,11 @@ namespace abbTools
             checkEnableButtons();
         }
 
+        /// <summary>
+        /// Method used to modify selected action in collection
+        /// </summary>
+        /// <param name="sender">Button that triggered current method</param>
+        /// <param name="e">Event arguments</param>
         private void buttonActionsModify_Click(object sender, EventArgs e)
         {
             //only one element can be checked to modification
@@ -339,6 +430,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method used to remove selected action in collection
+        /// </summary>
+        /// <param name="sender">Button that triggered current method</param>
+        /// <param name="e">Event arguments</param>
         private void buttonActionsRemove_Click(object sender, EventArgs e)
         {
             //remove all checked elements
@@ -358,12 +454,21 @@ namespace abbTools
          ***  APP REMOTE - data management from main window
          ********************************************************/
 
+        /// <summary>
+        /// Method used to clear all application data elements
+        /// </summary>
         public void clearAppData()
         {
             //clear collections 
             remoteABB.clear();
         }
 
+        /// <summary>
+        /// Method used to save all RemoteABB application data in XML file
+        /// </summary>
+        /// <param name="saveXml">XML file to save data to</param>
+        /// <param name="parent">ABB controller parent of current data</param>
+        /// <param name="parentName">ABB name to use if controller is not visible in network</param>
         public void saveAppData(ref System.Xml.XmlWriter saveXml, Controller parent = null, string parentName = "")
         {
             //save current robot child node to XML document
@@ -375,6 +480,12 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method used to load RemoteABB application data from XML file
+        /// </summary>
+        /// <param name="loadXml">XML file to load data from</param>
+        /// <param name="parent">ABB controller parent of loaded data</param>
+        /// <param name="parentName">ABB name to use when controller isnt visible in network</param>
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
         {
             //reset GUI
@@ -399,17 +510,25 @@ namespace abbTools
             remoteABB.loadFromXml(ref nodeCurrRobot, parent, parentName);
         }
 
+        /// <summary>
+        /// Method triggered when saved ABB controller was found (showed up in network)
+        /// </summary>
+        /// <param name="found">ABB controller that showed up</param>
         public void controllerFound(Controller found)
         {
             if (found != null) {
-                remoteABB.addController(found);
+                remoteABB.controllerAdd(found);
             }
         }
 
+        /// <summary>
+        /// Method triggered when saved ABB controller was lost (dissapeared in network)
+        /// </summary>
+        /// <param name="lost">ABB controller that was lost</param>
         public void controllerLost(Controller lost)
         {
             if (lost != null) {
-                remoteABB.clearController(lost);
+                remoteABB.controllerLost(lost);
                 //reset GUI
                 if(abbController != null && lost.SystemName == abbController.SystemName) resetGUI();
             }

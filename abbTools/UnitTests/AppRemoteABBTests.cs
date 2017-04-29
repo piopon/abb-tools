@@ -48,8 +48,8 @@ namespace abbTools.UnitTests
         {
             _remoteABBCollection.loadFromXml(ref myFile, null, srcRobot);
             RemoteSignalCollection mySignals = _remoteABBCollection.getCurrSignals();
-            Assert.Equal("czujnik_H", mySignals[0].storedSig);
-            Assert.Equal("spawanie", mySignals[1].storedSig);
+            Assert.Equal("czujnik_H", mySignals[0].signalStoreName);
+            Assert.Equal("spawanie", mySignals[1].signalStoreName);
         }
 
         [Fact]
@@ -57,9 +57,9 @@ namespace abbTools.UnitTests
         {
             _remoteABBCollection.loadFromXml(ref myFile, null, srcRobot);
             RemoteSignalCollection mySignals = _remoteABBCollection.getCurrSignals();
-            Assert.Equal("czujnik_H", mySignals[0].storedSig);
-            mySignals[0].storedSig = "czujnik_H2O";
-            Assert.Equal("czujnik_H2O", mySignals[0].storedSig);
+            Assert.Equal("czujnik_H", mySignals[0].signalStoreName);
+            mySignals[0].signalStoreName = "czujnik_H2O";
+            Assert.Equal("czujnik_H2O", mySignals[0].signalStoreName);
         }
 
         [Fact]
@@ -76,8 +76,8 @@ namespace abbTools.UnitTests
         {
             _remoteABBCollection.loadFromXml(ref myFile, null, srcRobot);
             RemoteSignalCollection mySignals = _remoteABBCollection.getCurrSignals();
-            Assert.Equal(0, mySignals[0].trigger);
-            Assert.Equal(1, mySignals[1].trigger);
+            Assert.Equal(0, mySignals[0].triggerValue);
+            Assert.Equal(1, mySignals[1].triggerValue);
         }
 
         [Fact]

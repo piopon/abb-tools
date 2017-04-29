@@ -115,6 +115,10 @@
     </Compile>
     <Compile Include="AppRemoteABB\RemoteABB.cs" />
     <Compile Include="AppRemoteABB\RemoteAction.cs" />
+    <Compile Include="AppRemoteABB\RemoteResultant.cs" />
+    <Compile Include="AppRemoteABB\RemoteKeyboard.cs" />
+    <Compile Include="AppRemoteABB\RemoteMouse.cs" />
+    <Compile Include="AppRemoteABB\RemoteProcess.cs" />
     <Compile Include="AppRemoteABB\RemoteSignal.cs" />
     <Compile Include="AppWindowsIPC\appWindowsIPC.cs">
       <SubType>UserControl</SubType>

@@ -249,7 +249,7 @@ namespace abbTools.AppBackupManager
         /// <param name="lost">ABB controller object that was lost</param>
         public void savedControllerLost(Controller lost)
         {
-            if (lost != null) {
+            if (lost != null && currData != null) {
                 if (currData.controller != null && lost.SystemName == currData.controller.SystemName) {
                     myCollection.controllerClear(lost);
                     //reset GUI
