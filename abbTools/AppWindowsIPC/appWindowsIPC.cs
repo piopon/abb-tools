@@ -95,10 +95,10 @@ namespace abbTools.AppWindowsIPC
             ipcData.controllerUpdate(abbController);
             //update item options
             syncIndex = ipcData.controllerIndex(myController.SystemName);
-            ipcData[syncIndex].connected = true;
-            myClient = ipcData[syncIndex].client;
+            ipcData[syncIndex].controllerConnected = true;
+            myClient = ipcData[syncIndex].ipcClient;
             if (myClient != null) {
-                clientControlButtons(!myClient.isRunning());
+                clientControlButtons(!myClient.running);
             } else {
                 myClient = testClient;
             }
@@ -122,7 +122,7 @@ namespace abbTools.AppWindowsIPC
             //reset controller address
             abbController = null;
             myClient = testClient;
-            ipcData[syncIndex].connected = false;
+            ipcData[syncIndex].controllerConnected = false;
             syncIndex = -1;
             //reset GUI
             resetGUI();
@@ -136,7 +136,7 @@ namespace abbTools.AppWindowsIPC
             //check if client exists
             if (myClient != null) {
                 //subscribe events
-                if (!myClient.events) {
+                if (!myClient.eventsConn) {
                     myClient.OnConnect += clientStatusEvent;
                     myClient.OnDisconnect += clientStatusEvent;
                     myClient.OnWaiting += clientStatusEvent;
@@ -145,7 +145,7 @@ namespace abbTools.AppWindowsIPC
                     myClient.OnEnd += clientEndEvent;
                 }
                 //update event status
-                myClient.events = true;
+                myClient.eventsConn = true;
                 //open communication pipe
                 myClient.open();
             }
@@ -162,10 +162,10 @@ namespace abbTools.AppWindowsIPC
         {
             //clear server name and checkboxes
             if (myClient != null) {
-                textServerName.Text = myClient.serverName;
-                checkAutoOpen.Checked = myClient.autoStart;
+                textServerName.Text = myClient.server;
+                checkAutoOpen.Checked = myClient.autoOpen;
                 checkAutoReconnect.Checked = myClient.autoRecon;
-                clientControlButtons(!myClient.isRunning());
+                clientControlButtons(!myClient.running);
             } else {
                 textServerName.Text = "";
                 checkAutoOpen.Checked = false;
@@ -196,7 +196,7 @@ namespace abbTools.AppWindowsIPC
         /// <summary>
         /// Update client control buttons GUI state
         /// </summary>
-        /// <param name="clientOff"></param>
+        /// <param name="clientOff">Input TRUE if buttons have to represent client off state</param>
         private void clientControlButtons(bool clientOff)
         {
             //check clients new state
@@ -221,16 +221,14 @@ namespace abbTools.AppWindowsIPC
         private void btnSendMsg_Click(object sender, EventArgs e)
         {
             //send inputted message from client to 
-            if (myClient != null) {
-                myClient.send(textMsgToSend.Text);
-            }
+            myClient?.send(textMsgToSend.Text);
         }
 
         /// <summary>
         /// Action on click buttonClientON = named-pipe client open communication
         /// </summary>
         /// <param name="sender">Object which triggered current event</param>
-        /// <param name="e">Click event arguments</param>
+        /// <param name="e">Event arguments</param>
         private void buttonClientON_Click(object sender, EventArgs e)
         {
             //check if user defined server name
@@ -239,7 +237,7 @@ namespace abbTools.AppWindowsIPC
                     openClientIPC();
                     clientControlButtons(false);
                 } else {
-                    abbLogger.writeLog(logType.error, "Server IPC - no server name defined");
+                    abbLogger?.writeLog(logType.error, "Server IPC - no server name defined");
                 }
             } else {
                 int collectionIndex = ipcData.controllerIndex(abbController.SystemName);
@@ -253,11 +251,11 @@ namespace abbTools.AppWindowsIPC
         /// Action on click buttonClientOFF = named-pipe client close communication
         /// </summary>
         /// <param name="sender">Object which triggered current event</param>
-        /// <param name="e">Click event arguments</param>
+        /// <param name="e">Event arguments</param>
         private void buttonClientOFF_Click(object sender, EventArgs e)
         {
             //close communication pipe
-            if (myClient != null) myClient.close();
+            myClient?.close();
         }
 
         /// <summary>
@@ -274,39 +272,59 @@ namespace abbTools.AppWindowsIPC
                 int checkIndex = checkMsgIndex(listBoxAllMessages,cMsg);
                 if (checkIndex == -1) {
                     updateListBox(listBoxAllMessages, cMsg);
-                    abbLogger.writeLog(logType.info, "Message <b>"+cMsg+"</b> added to list!");
+                    abbLogger?.writeLog(logType.info, "Message <b>"+cMsg+"</b> added to list!");
                     //select last added item
                     listBoxAllMessages.SelectedIndex = listBoxAllMessages.Items.Count - 1;
                 } else {
-                    abbLogger.writeLog(logType.warning, "Inputted message <b>"+cMsg+"</b> exists in list [index = "+checkIndex.ToString()+"]...");
+                    abbLogger?.writeLog(logType.warning, "Inputted message <b>"+cMsg+"</b> exists in list [index = "+checkIndex.ToString()+"]...");
                     //select exisiting element number
                     listBoxAllMessages.SelectedIndex = checkIndex;
                 }
                 //clear message after update
                 textManualMessage.Text = "";
             } else {
-                abbLogger.writeLog(logType.error, "No message inputted in box!");
+                abbLogger?.writeLog(logType.error, "No message inputted in box!");
             }
         }
 
+        /// <summary>
+        /// Event on popup menu open when messages right clicked
+        /// </summary>
+        /// <param name="sender">ListBox parent of popup menu</param>
+        /// <param name="e">Event arguments</param>
         private void listBoxMsgMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             //enable remove single item from list if any element is selected
             removeItemToolStripMenuItem.Enabled = listBoxAllMessages.SelectedIndex >= 0;
         }
 
+        /// <summary>
+        /// Event on remove item from messages popup menu
+        /// </summary>
+        /// <param name="sender">Popup menu item that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void removeItemToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //remove selected item from list
             listBoxAllMessages.Items.RemoveAt(listBoxAllMessages.SelectedIndex);
         }
 
+        /// <summary>
+        /// Event on clear all item from messages popup menu
+        /// </summary>
+        /// <param name="sender">Popup menu item that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void clearAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //clear all elements from list
             listBoxAllMessages.Items.Clear();
         }
 
+        /// <summary>
+        /// Action triggered on server name text change 
+        /// </summary>
+        /// <param name="sender">TextBox that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void textServerName_TextChanged(object sender, EventArgs e)
         {
             //update logic condition for enabling buttons
@@ -347,6 +365,11 @@ namespace abbTools.AppWindowsIPC
             checkWatchButtons();
         }
 
+        /// <summary>
+        /// Event triggered on index change of messages list
+        /// </summary>
+        /// <param name="sender">ListBox parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void listBoxAllMessages_SelectedIndexChanged(object sender, EventArgs e)
         {
             int sIndex = listBoxAllMessages.SelectedIndex;
@@ -357,6 +380,11 @@ namespace abbTools.AppWindowsIPC
             checkWatchButtons();
         }
 
+        /// <summary>
+        /// Event triggered on change of item in robot signals list
+        /// </summary>
+        /// <param name="sender">CheckedListBox that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             //uncheck other elements
@@ -372,6 +400,11 @@ namespace abbTools.AppWindowsIPC
             checkWatchButtons();
         }
 
+        /// <summary>
+        /// Event triggered on check of item in messages list
+        /// </summary>
+        /// <param name="sender">CheckedListBox that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void listMessagesWatch_ItemChecked(object sender, ItemCheckedEventArgs e)
         {
             //update logic condition for enabling buttons
@@ -382,6 +415,11 @@ namespace abbTools.AppWindowsIPC
 
         //================================================================
 
+        /// <summary>
+        /// Event triggered on new message button click
+        /// </summary>
+        /// <param name="sender">Button parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void buttonMsgNew_Click(object sender, EventArgs e)
         {
             //add new element to collection
@@ -390,13 +428,18 @@ namespace abbTools.AppWindowsIPC
             newItem.messageAdd(currMessage, currSignal, radioSigTo0.Checked ? 0 : 1);
             //add new item to collection (GUI auto-fill)
             ipcData.itemAdd(newItem);
-            myClient = ipcData[ipcData.controllerIndex(abbController.SystemName)].client;
+            myClient = ipcData[ipcData.controllerIndex(abbController.SystemName)].ipcClient;
             updateClientDescr();
             //update GUI
             ipcData.updateContainerGUI(listMessagesWatch);
             ipcData.updateServerGUI(textServerName, checkAutoReconnect, checkAutoOpen);
         }
 
+        /// <summary>
+        /// Event triggered on modify message button click
+        /// </summary>
+        /// <param name="sender">Button parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void buttonMsgModify_Click(object sender, EventArgs e)
         {
             //only one element can be modified
@@ -416,10 +459,15 @@ namespace abbTools.AppWindowsIPC
                 ipcData.updateContainerGUI(listMessagesWatch);
                 ipcData.updateServerGUI(textServerName, checkAutoReconnect, checkAutoOpen);
             } else {
-                abbLogger.writeLog(logType.warning, "Select only one element to be modified!");
+                abbLogger?.writeLog(logType.warning, "Select only one element to be modified!");
             }
         }
 
+        /// <summary>
+        /// Event triggered on remove message button click
+        /// </summary>
+        /// <param name="sender">Button parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void buttonMsgRemove_Click(object sender, EventArgs e)
         {
             //remove every selected item
@@ -441,10 +489,15 @@ namespace abbTools.AppWindowsIPC
 
         //================================================================
 
+        /// <summary>
+        /// Event triggered on focus leave from servers name text box
+        /// </summary>
+        /// <param name="sender">TextBox parent that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void textServerName_Leave(object sender, EventArgs e)
         {
             //check if client exists and its running
-            if (myClient != null && myClient.isRunning()) {
+            if (myClient != null && myClient.running) {
                 //client is running - dont do anything
                 return;
             }
@@ -462,27 +515,32 @@ namespace abbTools.AppWindowsIPC
                 myClient = testClient;
             } else {
                 //collection data client - check if user changed name
-                if (myClient.serverName != serverName) {
+                if (myClient.server != serverName) {
                     //server name changed - update it
-                    ipcData[syncIndex].ipcClientUpdate(serverName, myClient.autoRecon, myClient.autoStart);
+                    ipcData[syncIndex].ipcClientUpdate(serverName, myClient.autoRecon, myClient.autoOpen);
                     //update GUI (messages list and server settings)
                     ipcData.updateContainerGUI(listMessagesWatch);
                     ipcData.updateServerGUI(textServerName,checkAutoReconnect,checkAutoOpen);
                     //update myClient address
-                    myClient = ipcData[syncIndex].client;
+                    myClient = ipcData[syncIndex].ipcClient;
                     //show log
-                    if (abbLogger != null) abbLogger.writeLog(logType.info, "Setting applied to all messages for current robot!");
+                    abbLogger?.writeLog(logType.info, "Setting applied to all messages for current robot!");
                 }
             }
             //update label identifing client name
             updateClientDescr();
         }
 
+        /// <summary>
+        /// Event triggered on focus enter from servers name text box
+        /// </summary>
+        /// <param name="sender">TextBox parent that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void textServerName_Enter(object sender, EventArgs e)
         {
             //check if current client is running
-            if (myClient != null && myClient.isRunning()) {
-                abbLogger.writeLog(logType.error, "Cant change server name while running! Stop client and change name!");
+            if (myClient != null && myClient.running) {
+                abbLogger?.writeLog(logType.error, "Cant change server name while running! Stop client and change name!");
             } else {
                 //clear my client (if no client or test client)
                 if (myClient == null || myClient == testClient) myClient = null;
@@ -491,24 +549,34 @@ namespace abbTools.AppWindowsIPC
             updateClientDescr();
         }
 
+        /// <summary>
+        /// Event triggered on key press at servers name text box
+        /// </summary>
+        /// <param name="sender">TextBox parent that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void textServerName_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (myClient != null) {
                 //there is client defined
-                if (myClient.isRunning()) {
+                if (myClient.running) {
                     //its running = cant change name!
                     e.Handled = true;
-                    abbLogger.writeLog(logType.error, "Key pressed ignored! Stop client and change name!");
+                    abbLogger?.writeLog(logType.error, "Key pressed ignored! Stop client and change name!");
                 } else {
                     //its not running = change name available
                     if (myClient != testClient && syncIndex >= 0 && ipcData[syncIndex].messagesCount() > 0) {
                         //let the user know that changing collection client will affect its messages
-                        abbLogger.writeLog(logType.warning, "New server name will be applied to all messages!");
+                        abbLogger?.writeLog(logType.warning, "New server name will be applied to all messages!");
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Event triggered on auto reconnect check changed
+        /// </summary>
+        /// <param name="sender">CheckBox parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void checkAutoReconnect_CheckedChanged(object sender, EventArgs e)
         {
             if (myClient != null) {
@@ -516,47 +584,68 @@ namespace abbTools.AppWindowsIPC
                 //check if we are operating on client in collection
                 if (myClient != testClient && checkBoxClick) {
                     //leave info for user that we have changed
-                    if (abbLogger != null && checkBoxClick) abbLogger.writeLog(logType.info, "Setting applied to all messages for current robot!");
+                    abbLogger?.writeLog(logType.info, "Setting applied to all messages for current robot!");
                 }
             }
             checkBoxClick = false;
         }
 
+        /// <summary>
+        /// Event triggered on auto open communication check changed
+        /// </summary>
+        /// <param name="sender">CheckBox parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void checkAutoOpen_CheckedChanged(object sender, EventArgs e)
         {
             if (myClient != null) {
-                myClient.autoStart = checkAutoOpen.Checked;
+                myClient.autoOpen = checkAutoOpen.Checked;
                 //check if we are operating on client in collection
                 if (myClient != testClient) {
                     //leave info for user that we have changed
-                    if (abbLogger != null && checkBoxClick) {
-                        abbLogger.writeLog(logType.info, "Setting applied to all messages for current robot!");
-                    }
+                    if (checkBoxClick) abbLogger?.writeLog(logType.info, "Setting applied to all messages for current robot!");
                 }
             }
             checkBoxClick = false;
         }
 
+        /// <summary>
+        /// Event triggered on key press at message text box
+        /// </summary>
+        /// <param name="sender">TextBox parent that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void textManualMessage_KeyPress(object sender, KeyPressEventArgs e)
         {
             //if user presses Enter (return) then simulate add message click
-            if (e.KeyChar == '\r') {
-                btnAddManualMessage_Click(sender, new EventArgs());
-            }
+            if (e.KeyChar == '\r') btnAddManualMessage_Click(sender, new EventArgs());
         }
 
+        /// <summary>
+        /// Event triggered on focus enter at send message text box
+        /// </summary>
+        /// <param name="sender">TextBox parent that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void textMsgToSend_Enter(object sender, EventArgs e)
         {
             //cleartext box message title
             textMsgToSend.Text = "";
         }
 
+        /// <summary>
+        /// Event triggered on focus leave from send message text box
+        /// </summary>
+        /// <param name="sender">TextBox parent that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void textMsgToSend_Leave(object sender, EventArgs e)
         {
             //show text box message title
             textMsgToSend.Text = "test message";
         }
 
+        /// <summary>
+        /// Event triggered on key press at send message text box
+        /// </summary>
+        /// <param name="sender">TextBox parent that triggered event</param>
+        /// <param name="e">Event arguments</param>
         private void textMsgToSend_KeyPress(object sender, KeyPressEventArgs e)
         {
             //if user presses Enter (return) then simulate add message click
@@ -566,31 +655,45 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Method called to update label client description
+        /// </summary>
         private void updateClientDescr()
         {
             string clientDescr = "";
             if (myClient != null) {
-                if (myClient == testClient) {
-                    clientDescr = "TEST > "+myClient.serverName;
-                } else {
-                    clientDescr = "DATA > "+myClient.serverName;
-                }
+                clientDescr = myClient == testClient ? "TEST > " + myClient.server : "DATA > " + myClient.server;
             } else {
                 clientDescr = "null";
             }
             labelClientAddress.Text = "info: " + clientDescr;
         }
 
+        /// <summary>
+        /// Event triggered when mouse button is down on auto open checkbox
+        /// </summary>
+        /// <param name="sender">CheckBox that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void checkAutoOpen_MouseDown(object sender, MouseEventArgs e)
         {
             checkBoxClick = true;
         }
 
+        /// <summary>
+        /// Event triggered when mouse button is down on auto reconnect checkbox
+        /// </summary>
+        /// <param name="sender">CheckBox that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void checkAutoReconnect_MouseDown(object sender, MouseEventArgs e)
         {
             checkBoxClick = true;
         }
 
+        /// <summary>
+        /// Event triggered when link label is clicked
+        /// </summary>
+        /// <param name="sender">LinkLabel that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void linkMoreDescr_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             windowClientStatus status = new windowClientStatus(testClient, ipcData);
@@ -606,6 +709,7 @@ namespace abbTools.AppWindowsIPC
         /// <summary>
         /// wrapper of checkBox checked state to use with Invoke and normal approach
         /// </summary>
+        /// <param name="component"></param>
         /// <param name="newCheckState">true if checkbox is to be checked</param>
         private void updCheckBoxState(CheckBox component, bool newCheckState)
         {
@@ -614,6 +718,12 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Method used to update selected buttons apperance
+        /// </summary>
+        /// <param name="btn">Button parent to refresh apperance</param>
+        /// <param name="enable">Should button be enabled</param>
+        /// <param name="clr">Color of button</param>
         private void refreshButton(Button btn, bool enable, Color clr)
         {
             if (btn != null) {
@@ -622,17 +732,23 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Method called when adding new item to listbox 
+        /// </summary>
+        /// <param name="list">LisbBox to add item</param>
+        /// <param name="item">Item to add</param>
         private void addListBoxItem(ListBox list, string item)
         {
-            if (list != null) {
-                list.Items.Add(item);
-            }
+             list?.Items.Add(item);
         }
 
         /********************************************************
          ***  LOGIC
          ********************************************************/
 
+        /// <summary>
+        /// Method used to check message action butoons state and apperance
+        /// </summary>
         private void checkWatchButtons()
         {
             //modify button condition
@@ -673,12 +789,17 @@ namespace abbTools.AppWindowsIPC
         /***  APP IPC - update signals (BACKGROUND TASK)         /
         /********************************************************/
 
+        /// <summary>
+        /// Event triggered on update signals button click (execute backuground thread)
+        /// </summary>
+        /// <param name="sender">Button parent that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void buttonUpdateSignals_Click(object sender, EventArgs e)
         {
             if (abbController != null) {
                 //check if background worker is running
                 if (!backThread.IsBusy){
-                    abbLogger.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updating signals...");
+                    abbLogger?.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updating signals...");
                     //clear list items
                     listRobotSignals.Items.Clear();
                     //run background thread
@@ -689,7 +810,7 @@ namespace abbTools.AppWindowsIPC
                     panelLoading.Visible = true;
                 }
             } else {
-                abbLogger.writeLog(logType.warning, "can't update signals... no controller connected!");
+                abbLogger?.writeLog(logType.warning, "can't update signals... no controller connected!");
                 panelLoading.BackColor = Color.Red;
                 labelLoadSignals.Text = "no controller...";
             }
@@ -698,6 +819,11 @@ namespace abbTools.AppWindowsIPC
             panelLoading.Visible = true;
         }
 
+        /// <summary>
+        /// Actions executed when running background thread
+        /// </summary>
+        /// <param name="sender">Parent thread</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             //get all signals and report to main thread when finished
@@ -710,6 +836,11 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Event triggered when background threads action changed its state
+        /// </summary>
+        /// <param name="sender">Parent thread</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             //update list if controller is connected
@@ -718,6 +849,11 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Event triggered when background thread completed its action
+        /// </summary>
+        /// <param name="sender">Parent thread</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             //check if in mean time disconnection occured
@@ -726,7 +862,7 @@ namespace abbTools.AppWindowsIPC
                 listRobotSignals.BackColor = Color.White;
                 panelLoading.Visible = false;
                 //update info
-                abbLogger.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updated signals!");
+                abbLogger?.writeLog(logType.info, "controller <bu>" + abbController.SystemName + "</bu>: updated signals!");
             } else {
                 //robot disconnected - clear all its signals
                 abbSignals.Clear();
@@ -786,7 +922,7 @@ namespace abbTools.AppWindowsIPC
         private void clientEndEvent(object sender, WindowsIPCEventArgs e)
         {
             //unsubscribe all client events
-            if (myClient.events) {
+            if (myClient.eventsConn) {
                 myClient.OnConnect -= clientStatusEvent;
                 myClient.OnDisconnect -= clientStatusEvent;
                 myClient.OnWaiting -= clientStatusEvent;
@@ -795,11 +931,11 @@ namespace abbTools.AppWindowsIPC
                 myClient.OnEnd -= clientEndEvent;
             }
             //update event status
-            myClient.events = false;
+            myClient.eventsConn = false;
             //update GUI buttons 
             clientControlButtons(true);
             //show log info
-            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server + "] status: " + e.message);
+            abbLogger?.writeLog(logType.info, "[TEST IPC client " + e.server + "] status: " + e.message);
         }
 
         /// <summary>
@@ -810,7 +946,7 @@ namespace abbTools.AppWindowsIPC
         private void clientStatusEvent(object sender, WindowsIPCEventArgs e)
         {
             //show log info
-            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server+"] status: "+e.message);
+            abbLogger?.writeLog(logType.info, "[TEST IPC client " + e.server+"] status: "+e.message);
         }
 
         /// <summary>
@@ -828,7 +964,7 @@ namespace abbTools.AppWindowsIPC
                 }
             }
             //show log info
-            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server + "] received: " + e.message);
+            abbLogger?.writeLog(logType.info, "[TEST IPC client " + e.server + "] received: " + e.message);
         }
 
         /// <summary>
@@ -839,13 +975,16 @@ namespace abbTools.AppWindowsIPC
         private void clientSentEvent(object sender, WindowsIPCEventArgs e)
         {
             //show log info
-            abbLogger.writeLog(logType.info, "[TEST IPC client " + e.server + "] sent: " + e.message);
+            abbLogger?.writeLog(logType.info, "[TEST IPC client " + e.server + "] sent: " + e.message);
         }
 
         /********************************************************
          ***  APP IPC - data management from main window
          ********************************************************/
 
+        /// <summary>
+        /// Method called to clear all app data containers
+        /// </summary>
         public void clearAppData()
         {
             //clear collections 
@@ -854,6 +993,12 @@ namespace abbTools.AppWindowsIPC
             ipcData.disconnectLogger();
         }
 
+        /// <summary>
+        /// Method called when saving app data to XML file
+        /// </summary>
+        /// <param name="saveXml">XML file to save data to</param>
+        /// <param name="parent">ABB controller parent of current data</param>
+        /// <param name="parentName">ABB controllers name (useful when controller was lost in network)</param>
         public void saveAppData(ref System.Xml.XmlWriter saveXml, Controller parent = null, string parentName = "")
         {
             //save current robot child node to XML document
@@ -861,10 +1006,16 @@ namespace abbTools.AppWindowsIPC
             if (saveName.Length > 0) {
                 ipcData.saveToXml(ref saveXml, saveName);
             } else {
-                abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
+                abbLogger?.writeLog(logType.error, "cant save controller(s) without specified name...");
             }
         }
 
+        /// <summary>
+        /// Method called when loading app data from XML file
+        /// </summary>
+        /// <param name="loadXml">XML file to load data from</param>
+        /// <param name="parent">ABB controller parent of current data</param>
+        /// <param name="parentName">ABB controllers name (useful when controller isnt visible in network)</param>
         public void loadAppData(ref System.Xml.XmlReader loadXml, Controller parent = null, string parentName = "")
         {
             //reset GUI
@@ -891,6 +1042,10 @@ namespace abbTools.AppWindowsIPC
             resetGUI();
         }
 
+        /// <summary>
+        /// Method called when ABB controller from saved group was found in network
+        /// </summary>
+        /// <param name="found">ABB controller that was found in network</param>
         public void savedControllerFound(Controller found)
         {
             //update controllers data in collection
@@ -899,13 +1054,17 @@ namespace abbTools.AppWindowsIPC
                 ipcData.controllerUpdate(found);
                 //check if client has auto-open flag set to true
                 int foundIndex = ipcData.controllerIndex(found.SystemName);
-                if (ipcData[foundIndex].client.autoStart && !ipcData[foundIndex].client.isRunning()) {
+                if (ipcData[foundIndex].ipcClient.autoOpen && !ipcData[foundIndex].ipcClient.running) {
                     //auto-open TRUE = open client
                     ipcData[foundIndex].ipcClientOpen();
                 }
             }
         }
 
+        /// <summary>
+        /// Method called when ABB controller from saved group was lost in network
+        /// </summary>
+        /// <param name="lost">ABB controller that was lost in network</param>
         public void savedControllerLost(Controller lost)
         {
             if (lost != null) {
@@ -922,6 +1081,5 @@ namespace abbTools.AppWindowsIPC
                 }
             }
         }
-
     }
 }

@@ -8,40 +8,53 @@ namespace abbTools.AppWindowsIPC
 {
     public class WindowsIPCEventArgs : EventArgs
     {
-        private string eventMessage;
-        private string serverName;
-        private bool clientConnected;
-        private bool clientRestoreComm;
+        /********************************************************
+         ***  WINDOWS IPC EVENT ARGS - data 
+         ********************************************************/
 
-        public WindowsIPCEventArgs(string msg, string server, bool connected, bool autoRestart)
-        {
-            eventMessage = msg;
-            serverName = server;
-            clientConnected = connected;
-            clientRestoreComm = autoRestart;
-        }
+        /// <summary>
+        /// class field / property - event message
+        /// </summary>
+        public string message { get; }
 
-        public string message
-        {
-            get { return eventMessage; }
-        }
+        /// <summary>
+        /// class field / property - server name
+        /// </summary>
+        public string server { get; }
 
-        public string server
-        {
-            get { return serverName; }
-        }
+        /// <summary>
+        /// class field / property - client connected
+        /// </summary>
+        public bool connected { get; }
 
-        public bool connected
-        {
-            get { return clientConnected; }
-        }
+        /// <summary>
+        /// class field / property - auto restore communication
+        /// </summary>
+        public bool restoreComm { get; }
 
-        public bool restore
+        /********************************************************
+         ***  WINDOWS IPC EVENT ARGS - data 
+         ********************************************************/
+
+        /// <summary>
+        /// Constructor with filling all class fields
+        /// </summary>
+        /// <param name="msg">Event message string</param>
+        /// <param name="serverName">Server name</param>
+        /// <param name="clientConn">Is client connected to server</param>
+        /// <param name="autoRestart">If communication will be restarted</param>
+        public WindowsIPCEventArgs(string msg, string serverName, bool clientConn, bool autoRestart)
         {
-            get { return clientRestoreComm; }
+            message = msg;
+            server = serverName;
+            connected = clientConn;
+            restoreComm = autoRestart;
         }
     }
 
+    /********************************************************
+     ***  GLOBAL - WindowsIPC delegates / events
+     ********************************************************/
     public delegate void WindowsIPCWaiting(object sender, WindowsIPCEventArgs e);
     public delegate void WindowsIPCConnect(object sender, WindowsIPCEventArgs e);
     public delegate void WindowsIPCSent(object sender, WindowsIPCEventArgs e);

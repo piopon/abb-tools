@@ -6,9 +6,28 @@ namespace abbTools.AppWindowsIPC
 {
     class WindowsIPCMessages
     {
-        private string messageActor;
-        private string signalResultant;
-        private int signalValue;
+        /********************************************************
+         ***  WINDOWS IPC MESSAGES - data 
+         ********************************************************/
+
+        /// <summary>
+        /// class field / property - actor messages
+        /// </summary>
+        public string messageActor { get; set; }
+
+        /// <summary>
+        /// class field / property - signal resultant
+        /// </summary>
+        public string signalResult { get; set; }
+
+        /// <summary>
+        /// class field / property - signal value
+        /// </summary>
+        public int signalValue { get; set; }
+
+        /********************************************************
+         ***  WINDOWS IPC MESSAGES - constructors
+         ********************************************************/
 
         /// <summary>
         /// Default WindowsIPCMessages constructor
@@ -16,7 +35,7 @@ namespace abbTools.AppWindowsIPC
         public WindowsIPCMessages()
         {
             messageActor = "";
-            signalResultant = "";
+            signalResult = "";
             signalValue = -1;
         }
 
@@ -29,7 +48,7 @@ namespace abbTools.AppWindowsIPC
         public WindowsIPCMessages(string newMessage, string newSignal, int sigVal)
         {
             messageActor = newMessage;
-            signalResultant = newSignal;
+            signalResult = newSignal;
             signalValue = (sigVal == 0 || sigVal == 1) ? sigVal : -1;
         }
 
@@ -40,10 +59,19 @@ namespace abbTools.AppWindowsIPC
         public WindowsIPCMessages(WindowsIPCMessages org)
         {
             messageActor = org.messageActor;
-            signalResultant = org.signalResultant;
+            signalResult = org.signalResult;
             signalValue = org.signalValue;
         }
 
+        /********************************************************
+         ***  WINDOWS IPC MESSAGES - data management
+         ********************************************************/
+
+        /// <summary>
+        /// Method used to save collection data in XML file
+        /// </summary>
+        /// <param name="xmlNode">XML node to save data to</param>
+        /// <param name="nodeNo">Node number to save</param>
         public void saveToXML(ref XmlWriter xmlNode, int nodeNo)
         {
             //write start element
@@ -51,13 +79,17 @@ namespace abbTools.AppWindowsIPC
             //message name
             xmlNode.WriteAttributeString("message", messageActor);
             //signal name
-            xmlNode.WriteAttributeString("signal", signalResultant);
+            xmlNode.WriteAttributeString("signal", signalResult);
             //signal value (0 or 1)
             xmlNode.WriteAttributeString("value", signalValue.ToString());
             //finish element
             xmlNode.WriteEndElement();
         }
 
+        /// <summary>
+        /// Method used to load collection data from XML file
+        /// </summary>
+        /// <param name="xmlNode">XML subnode to load data from</param>
         public void loadFromXML(XmlReader xmlNode)
         {
             //only xml element nodes with attributes and "msg_" name are OK
@@ -66,31 +98,28 @@ namespace abbTools.AppWindowsIPC
                 //fill data from XML - get signal name
                 messageActor = xmlNode.GetAttribute("message");
                 //get actor (short attribute and convert it to useful data)
-                signalResultant = xmlNode.GetAttribute("signal"); 
+                signalResult = xmlNode.GetAttribute("signal"); 
                 //fill myAction data from sub tree node
                 signalValue = int.Parse(xmlNode.GetAttribute("value"));
             }
         }
-
-        public string message
-        {
-            get { return messageActor; }
-        }
-
-        public string sigName
-        {
-            get { return signalResultant; }
-        }
-
-        public int sigValue
-        {
-            get { return signalValue; }
-        }
     }
 
-    class WindowsIPCMessagesCollection: List<WindowsIPCMessages>
+    //================================================================================================================================
+    //================================================================================================================================
+    //================================================================================================================================
+
+    class WindowsIPCMessagesCollection : List<WindowsIPCMessages>
     {
+        /********************************************************
+         ***  WINDOWS IPC MESSAGES COLLECTION - fields 
+         ********************************************************/
+
         private WindowsIPCMessages currentData;
+
+        /********************************************************
+         ***  WINDOWS IPC MESSAGES COLLECTION - constructor
+         ********************************************************/
 
         /// <summary>
         /// Default collection constructor
@@ -102,6 +131,15 @@ namespace abbTools.AppWindowsIPC
             Clear();
         }
 
+        /********************************************************
+         ***  WINDOWS IPC MESSAGES COLLECTION - data management
+         ********************************************************/
+
+        /// <summary>
+        /// Function used to check if inputted message is in collection
+        /// </summary>
+        /// <param name="current">Message to check</param>
+        /// <returns>TRUE if message is in collection, FALSE otherwise</returns>
         public bool hasMessage(WindowsIPCMessages current)
         {
             bool result = false;
@@ -110,11 +148,11 @@ namespace abbTools.AppWindowsIPC
                 //check every collection item
                 foreach (WindowsIPCMessages item in this) {
                     //check message
-                    result = item.message == current.message;
+                    result = item.messageActor == current.messageActor;
                     //check signal name
-                    result = result && item.sigName == current.sigName;
+                    result = result && item.signalResult == current.signalResult;
                     //check signal value
-                    result = result && item.sigValue == current.sigValue;
+                    result = result && item.signalValue == current.signalValue;
                     //if current exists in collection then break with true
                     if (result) {
                         result = true;
@@ -125,23 +163,10 @@ namespace abbTools.AppWindowsIPC
             return result;
         }
 
-        public void updateGUI(string cServerName,ListView container)
-        {
-            if (container != null) {
-                foreach (WindowsIPCMessages item in this) {
-                    ListViewItem newItem = new ListViewItem(cServerName);
-                    newItem.SubItems.Add(item.message);
-                    newItem.SubItems.Add(item.sigName);
-                    newItem.SubItems.Add(item.sigValue.ToString());
-                    newItem.Checked = false;
-                    //add current item to container
-                    container.Items.Add(newItem);
-                    //change container color to white
-                    container.BackColor = System.Drawing.Color.White;
-                }
-            }
-        }
-
+        /// <summary>
+        /// Method used to save collection data in XML file
+        /// </summary>
+        /// <param name="xmlSubtree">XML file to save data to</param>
         public void saveToXML(ref XmlWriter xmlSubtree)
         {
             int itemNo = 0;
@@ -150,6 +175,10 @@ namespace abbTools.AppWindowsIPC
             }
         }
 
+        /// <summary>
+        /// Method used to load collection data from XML file
+        /// </summary>
+        /// <param name="xmlSubtree">XML subnode to load data from</param>
         public void loadFromXML(ref XmlReader xmlSubtree)
         {
             //load every element in delivered XML (faster if only interesting xmlSubtree)
@@ -162,6 +191,35 @@ namespace abbTools.AppWindowsIPC
                 }
                 //break from while loop if we are at end element of clientIPC
                 if (xmlSubtree.NodeType == XmlNodeType.EndElement && xmlSubtree.Name.StartsWith("clientIPC")) break;
+            }
+        }
+
+        /********************************************************
+         ***  WINDOWS IPC MESSAGES COLLECTION - GUI
+         ********************************************************/
+
+        /// <summary>
+        /// Method used to update GUI wit collection data
+        /// </summary>
+        /// <param name="cServerName">Server name to update GUI list</param>
+        /// <param name="container">ListView which contains collection data</param>
+        public void updateGUI(string cServerName, ListView container)
+        {
+            //check if container is correct
+            if (container != null) {
+                //scan all collection items and put them into list
+                foreach (WindowsIPCMessages item in this) {
+                    //generate list view item add fill it with data
+                    ListViewItem newItem = new ListViewItem(cServerName);
+                    newItem.SubItems.Add(item.messageActor);
+                    newItem.SubItems.Add(item.signalResult);
+                    newItem.SubItems.Add(item.signalValue.ToString());
+                    newItem.Checked = false;
+                    //add current item to container
+                    container.Items.Add(newItem);
+                    //change container color to white
+                    container.BackColor = System.Drawing.Color.White;
+                }
             }
         }
     }

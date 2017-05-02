@@ -126,6 +126,8 @@
     <Compile Include="AppWindowsIPC\appWindowsIPC.Designer.cs">
       <DependentUpon>appWindowsIPC.cs</DependentUpon>
     </Compile>
+    <Compile Include="AppWindowsIPC\WindowsIPCComm.cs" />
+    <Compile Include="AppWindowsIPC\WindowsIPCStats.cs" />
     <Compile Include="UnitTests\AppRemoteABBTests.cs" />
     <Compile Include="UnitTests\AppWindowsIPCTests.cs" />
     <Compile Include="UnitTests\EmbeddedResource.cs" />

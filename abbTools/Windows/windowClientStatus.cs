@@ -46,14 +46,14 @@ namespace abbTools.AppWindowsIPC
             listViewClients.Items.Clear();
             //add test client 
             if (testClient != null) {
-                ListViewItem guiClient = new ListViewItem(testClient.serverName + "  [GUI]");
-                guiClient.ImageIndex = testClient.isRunning() ? 1 : 0;
+                ListViewItem guiClient = new ListViewItem(testClient.server + "  [GUI]");
+                guiClient.ImageIndex = testClient.running ? 1 : 0;
                 listViewClients.Items.Add(guiClient);
             }
             //add all items from collection
             foreach (WindowsIPC item in clientCollection) {
-                ListViewItem currClient = new ListViewItem(item.client.serverName + "  ["+item.controllerName+"]");
-                currClient.ImageIndex = item.client.isRunning() ? 1 : 0;
+                ListViewItem currClient = new ListViewItem(item.ipcClient.server + "  ["+item.controllerStoredName+"]");
+                currClient.ImageIndex = item.ipcClient.running ? 1 : 0;
                 listViewClients.Items.Add(currClient);
             }
             //check if list contains any data...
@@ -91,26 +91,26 @@ namespace abbTools.AppWindowsIPC
             //view selected client
             if (clientNo==0) {
                 //test client data
-                labelValRunning.Text = testClient.isRunning().ToString().ToUpper();
-                labelValStatus.Text = testClient.status.ToUpper();
+                labelValRunning.Text = testClient.running.ToString().ToUpper();
+                labelValStatus.Text = testClient.stats.status.ToUpper();
                 labelValAutoRecon.Text = testClient.autoRecon.ToString().ToUpper();
-                labelValAutoOpen.Text = testClient.autoStart.ToString().ToUpper();
-                labelValMsgRecv.Text = testClient.recvNo.ToString();
-                labelValMsgSent.Text = testClient.sentNo.ToString();
+                labelValAutoOpen.Text = testClient.autoOpen.ToString().ToUpper();
+                labelValMsgRecv.Text = testClient.stats.recvCounter.ToString();
+                labelValMsgSent.Text = testClient.stats.sentCounter.ToString();
                 labelValMsgExe.Text = "0";
-                labelValEvents.Text = testClient.events.ToString().ToUpper();
-                labelValLastMsg.Text = testClient.messageReport;
+                labelValEvents.Text = testClient.eventsConn.ToString().ToUpper();
+                labelValLastMsg.Text = testClient.stats.messageReport;
             } else {
                 //collection client data
-                labelValRunning.Text = clientCollection[clientNo - 1].client.isRunning().ToString().ToUpper();
-                labelValStatus.Text = clientCollection[clientNo - 1].client.status.ToUpper();
-                labelValAutoRecon.Text = clientCollection[clientNo - 1].client.autoRecon.ToString().ToUpper();
-                labelValAutoOpen.Text = clientCollection[clientNo - 1].client.autoStart.ToString().ToUpper();
-                labelValMsgRecv.Text = clientCollection[clientNo - 1].client.recvNo.ToString();
-                labelValMsgSent.Text = clientCollection[clientNo - 1].client.sentNo.ToString();
-                labelValMsgExe.Text = clientCollection[clientNo - 1].messagesExecuted.ToString();
-                labelValEvents.Text = clientCollection[clientNo - 1].client.events.ToString().ToUpper();
-                labelValLastMsg.Text = clientCollection[clientNo - 1].client.messageReport;
+                labelValRunning.Text = clientCollection[clientNo - 1].ipcClient.running.ToString().ToUpper();
+                labelValStatus.Text = clientCollection[clientNo - 1].ipcClient.stats.status.ToUpper();
+                labelValAutoRecon.Text = clientCollection[clientNo - 1].ipcClient.autoRecon.ToString().ToUpper();
+                labelValAutoOpen.Text = clientCollection[clientNo - 1].ipcClient.autoOpen.ToString().ToUpper();
+                labelValMsgRecv.Text = clientCollection[clientNo - 1].ipcClient.stats.recvCounter.ToString();
+                labelValMsgSent.Text = clientCollection[clientNo - 1].ipcClient.stats.sentCounter.ToString();
+                labelValMsgExe.Text = clientCollection[clientNo - 1].ipcClient.stats.messagesExecuted.ToString();
+                labelValEvents.Text = clientCollection[clientNo - 1].ipcClient.eventsConn.ToString().ToUpper();
+                labelValLastMsg.Text = clientCollection[clientNo - 1].ipcClient.stats.messageReport;
             }
         }
 
@@ -119,12 +119,12 @@ namespace abbTools.AppWindowsIPC
             int selectedIndex = listViewClients.SelectedIndices[0];
             if (selectedIndex >= 0) {
                 if (selectedIndex == 0 && testClient != null) {
-                    listViewClients.Items[selectedIndex].ImageIndex = testClient.isRunning() ? 1 : 0;
+                    listViewClients.Items[selectedIndex].ImageIndex = testClient.running ? 1 : 0;
                 } else {
                     if (testClient == null) {
-                        listViewClients.Items[selectedIndex].ImageIndex = clientCollection[selectedIndex].client.isRunning() ? 1 : 0;
+                        listViewClients.Items[selectedIndex].ImageIndex = clientCollection[selectedIndex].ipcClient.running ? 1 : 0;
                     } else {
-                        listViewClients.Items[selectedIndex].ImageIndex = clientCollection[selectedIndex - 1].client.isRunning() ? 1 : 0;
+                        listViewClients.Items[selectedIndex].ImageIndex = clientCollection[selectedIndex - 1].ipcClient.running ? 1 : 0;
                     }
                 }
                 getClientDetails(selectedIndex);
