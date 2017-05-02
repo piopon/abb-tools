@@ -40,7 +40,7 @@ namespace abbTools.UnitTests
         {
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
-            Assert.Equal(srcRobot, myItem.abbName);
+            Assert.Equal(srcRobot, myItem.controllerName);
         }
 
         [Fact]
@@ -185,7 +185,7 @@ namespace abbTools.UnitTests
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
             //get clear days value
-            Assert.Equal("C:\\Users\\pponikowski\\Desktop\\test", myItem.outputPath);
+            Assert.Equal("C:\\Users\\pponikowski\\Desktop\\test", myItem.outputDir);
         }
 
         [Fact]
@@ -194,7 +194,7 @@ namespace abbTools.UnitTests
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
             //get clear days value
-            Assert.Equal(true, myItem.watchdog);
+            Assert.Equal(true, myItem.timer);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace abbTools.UnitTests
             //check random data
             Assert.Equal(false, myItem.timeExists(backupMaster.pc, timeType.exact));
             Assert.Equal(0, myItem.clearDays);
-            Assert.Equal("", myItem.outputPath);
+            Assert.Equal("", myItem.outputDir);
             Assert.Equal(0, myItem.pcIntervalInMins);
         }
 

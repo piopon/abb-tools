@@ -379,8 +379,8 @@ namespace abbTools.AppBackupManager
             //do enable/disable COMMON group
             if (currData != null && currData.controller != null) {
                 groupCommonSettings.Enabled = true;
-                if (currData.outputPath != "") {
-                    labelOutPathVal.Text = currData.outputPath;
+                if (currData.outputDir != "") {
+                    labelOutPathVal.Text = currData.outputDir;
                 } else {
                     labelOutPathVal.Text = "-";
                 }
@@ -388,7 +388,7 @@ namespace abbTools.AppBackupManager
                 btnOutSelect.BackColor = System.Drawing.Color.DarkOrange;
                 btnOutShow.BackColor = System.Drawing.Color.DarkOrange;
                 btnCleanExe.BackColor = System.Drawing.Color.OrangeRed;
-                if (currData.watchdog) {
+                if (currData.timer) {
                     btnWatchOn.Enabled = false;
                     btnWatchOn.BackColor = System.Drawing.Color.Silver;
                     btnWatchOff.Enabled = true;
@@ -427,12 +427,12 @@ namespace abbTools.AppBackupManager
                     return;
                 }
                 //check if output path is defined
-                if (item.outputPath == null || item.outputPath == "") {
-                    if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - watch action error! No outputh path defined...");
+                if (item.outputDir == null || item.outputDir == "") {
+                    abbLogger?.writeLog(logType.error, "abbTools - watch action error! No outputh path defined...");
                     return;
                 }
                 //check if item is watched
-                if (item.watchdog) {
+                if (item.timer) {
                     //-------------------------
                     //--- clean output folder 
                     if (item.clearDays != 0) {
@@ -498,11 +498,11 @@ namespace abbTools.AppBackupManager
                 currData.activateMaster(checkPCactive.Checked, checkRobActive.Checked);
                 //check if any robot is connected
                 if (currData.controller == null) {
-                    if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
+                    abbLogger?.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
                 }
             } else {
                 if (((CheckBox)sender).Checked) {
-                    if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
+                    abbLogger?.writeLog(logType.warning, "abbTools - connect to any controller to change data...");
                 }
             }
             //update GUI
@@ -523,9 +523,9 @@ namespace abbTools.AppBackupManager
             dialogOutDir.RootFolder = Environment.SpecialFolder.Desktop;
             if (dialogOutDir.ShowDialog() == DialogResult.OK) {
                 //remember current output path
-                currData.outputPath = dialogOutDir.SelectedPath;
+                currData.outputDir = dialogOutDir.SelectedPath;
                 //store it to local variable to show in label for user
-                string path = currData.outputPath;
+                string path = currData.outputDir;
                 if (dialogOutDir.SelectedPath.Length > 35) {
                     //directory is too long - get beginning and end of it
                     int slashF = path.IndexOf("\\"),
@@ -544,9 +544,9 @@ namespace abbTools.AppBackupManager
         /// <param name="e">Event arguments</param>
         private void btnOutShow_Click(object sender, EventArgs e)
         {
-            if (currData.outputPath != null && currData.outputPath != "") {
+            if (currData.outputDir != null && currData.outputDir != "") {
                 //open windows explorer window with current path
-                System.Diagnostics.Process.Start("explorer.exe", currData.outputPath);
+                System.Diagnostics.Process.Start("explorer.exe", currData.outputDir);
             } else {
                 if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - cant show output path! Its not defined...");
             }
@@ -560,9 +560,9 @@ namespace abbTools.AppBackupManager
         private void labelOutPathVal_MouseEnter(object sender, EventArgs e)
         {
             //show tooltip with full path value (if its exceed label capacity)
-            if (currData.outputPath != null && currData.outputPath != "" && labelOutPathVal.Text != currData.outputPath + "\\") {
-                myToolTip.SetToolTip(labelRobBackupDir, currData.outputPath);
-                myToolTip.Show(currData.outputPath + "\\", labelOutPathVal, 0, 18);
+            if (currData.outputDir != null && currData.outputDir != "" && labelOutPathVal.Text != currData.outputDir + "\\") {
+                myToolTip.SetToolTip(labelRobBackupDir, currData.outputDir);
+                myToolTip.Show(currData.outputDir + "\\", labelOutPathVal, 0, 18);
             }
         }
 
@@ -640,16 +640,16 @@ namespace abbTools.AppBackupManager
             //check action to do
             if (on) {
                 //TURN ON timer
-                currData.watchdog = true;
+                currData.timer = true;
                 if (!timerCheckBackup.Enabled) {
                     //timer start
                     timerCheckBackup.Start();
                     //if timer on from GUI then inform user that its running
-                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.abbName + " added to watch list! Watch timer turned ON!");
+                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " added to watch list! Watch timer turned ON!");
                 } else {
                     //inform user that current controller was added to watch list
                     if (myCollection.itemWatchedNo() > 0) {
-                        if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller "+currData.abbName+" added to watch list!");
+                        if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller "+currData.controllerName + " added to watch list!");
                     } else {
                         //if timer on from GUI then inform user that its already running
                         if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - watch timer was already running...");
@@ -657,15 +657,15 @@ namespace abbTools.AppBackupManager
                 }
             } else {
                 //disable current item from backup watch
-                currData.watchdog = false;
+                currData.timer = false;
                 //TURN OFF timer only when no items in collection arent watched
                 if (myCollection.itemWatchedNo() == 0) {
                     //timer stop
                     timerCheckBackup.Stop();
                     //if timer on from GUI then inform user that its running
-                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.abbName + " removed from watch list! Watch timer turned OFF!");
+                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " removed from watch list! Watch timer turned OFF!");
                 } else  {
-                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.abbName + " removed from watch list!");
+                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " removed from watch list!");
                 }
             }
         }
@@ -709,7 +709,7 @@ namespace abbTools.AppBackupManager
                     if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - create backup to get reference to count from...");
                 } else {
                     //reference backup time present - check if timer is running
-                    if (!currData.watchdog) {
+                    if (!currData.timer) {
                         //timer is not running - inform user to run timer
                         if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
                     }
@@ -732,7 +732,7 @@ namespace abbTools.AppBackupManager
                 } else {
                     currData.pcDailyTime = DateTime.Parse(textEveryTime.Text);
                     //check if timer is running
-                    if (!currData.watchdog) {
+                    if (!currData.timer) {
                         //timer is not running - inform user to run timer
                         if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
                     } else {
