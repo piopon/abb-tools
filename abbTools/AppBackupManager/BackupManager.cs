@@ -246,10 +246,10 @@ namespace abbTools.AppBackupManager
             //check if final directory exists
             if (Directory.Exists(result)) {
                 //path exists - check what we want to do
-                if (desiredAction == (int)sameNameAction.overwrite) {
+                if (desiredAction == (int)BackupSettings.duplicate.overwrite) {
                     //we will overwrite backup - delete older one
                     Directory.Delete(result, true);
-                } else if (desiredAction == (int)sameNameAction.increment) {
+                } else if (desiredAction == (int)BackupSettings.duplicate.increment) {
                     //we will add second folder with increment number - check how many folder there is
                     string[] folders = Directory.GetDirectories(outPath + "\\");
                     int currFolder = 0;
@@ -275,7 +275,7 @@ namespace abbTools.AppBackupManager
                     backupFolder += "_" + (++currFolder).ToString();
                     //update backup path
                     result = outPath + "\\" + backupFolder;
-                } else if (desiredAction == (int)sameNameAction.additTime) {
+                } else if (desiredAction == (int)BackupSettings.duplicate.additTime) {
                     //we will add second folder with current time
                     backupFolder += "_" + DateTime.Now.ToLongTimeString();
                     //replace time colon with dash
@@ -290,20 +290,20 @@ namespace abbTools.AppBackupManager
         /// <summary>
         /// Function used to check if selected time is defined in current instance
         /// </summary>
-        /// <param name="master">Select backup master: PC or ROBOT</param>
-        /// <param name="time">Select time to check: LAST or EXACT</param>
+        /// <param name="selMaster">Select backup master: PC or ROBOT</param>
+        /// <param name="selTime">Select time to check: LAST or EXACT</param>
         /// <returns>TRUE if selected time is defined in object</returns>
-        public bool timeExists(backupMaster master, timeType time)
+        public bool timeExists(BackupSettings.master selMaster, BackupSettings.time selTime)
         {
             bool result = false;
 
-            if (master == backupMaster.pc) {
-                if (time == timeType.last) {
+            if (selMaster == BackupSettings.master.pc) {
+                if (selTime == BackupSettings.time.last) {
                     result = !(pcLastBackupTime == null || pcLastBackupTime == emptyTime);
-                } else if (time == timeType.exact) {
+                } else if (selTime == BackupSettings.time.exact) {
                     result = !(pcDailyTime == null || pcDailyTime == emptyTime);
                 }
-            } else if (master == backupMaster.robot) {
+            } else if (selMaster == BackupSettings.master.robot) {
                 result = !(robotLastBackupTime == null || robotLastBackupTime == emptyTime);
             }
             return result;
@@ -351,20 +351,20 @@ namespace abbTools.AppBackupManager
             if (mySigExe != null) mySigExe.Changed -= DoBackup_Changed;
             if (mySigInP != null) mySigInP.Changed -= DiBackup_Changed;
             //update backup robot object with new signal names
-            backupRobot.sigExecute = sigNameExe;
-            backupRobot.sigInProgress = sigNameInP;
+            backupRobot.sigBackupExe = sigNameExe;
+            backupRobot.sigBackupInP = sigNameInP;
             //update signal objects
             if (controller != null) {
                 //update signal "DO BACKUP" (if defined)
-                if (backupRobot.sigExecute != "") {
-                    mySigExe = controller.IOSystem.GetSignal(backupRobot.sigExecute);
+                if (backupRobot.sigBackupExe != "") {
+                    mySigExe = controller.IOSystem.GetSignal(backupRobot.sigBackupExe);
                     if (mySigExe != null) mySigExe.Changed += DoBackup_Changed;
                 } else {
                     mySigExe = null;
                 }
                 //update signal "BACKUP IN PROGRESS"
-                if (backupRobot.sigInProgress != "") {
-                    mySigInP = controller.IOSystem.GetSignal(backupRobot.sigInProgress);
+                if (backupRobot.sigBackupInP != "") {
+                    mySigInP = controller.IOSystem.GetSignal(backupRobot.sigBackupInP);
                 } else {
                     mySigInP = null;
                 }
@@ -403,7 +403,7 @@ namespace abbTools.AppBackupManager
             {
                 mySigInP.Changed -= DiBackup_Changed;
                 //check if source path is inputted
-                if (backupRobot.srcDir != null && backupRobot.srcDir != "") {
+                if (backupRobot.sourceDir != null && backupRobot.sourceDir!= "") {
                     //check if output path is created
                     if (outputDir != null && outputDir != "") {
                         if (timer) {
@@ -440,15 +440,15 @@ namespace abbTools.AppBackupManager
                 //set remote directory to most top
                 controller.FileSystem.RemoteDirectory = controller.GetEnvironmentVariable("SYSTEM");
                 //check if user-specified directory exist in controller
-                if (controller.FileSystem.DirectoryExists(backupRobot.srcDir)) {
+                if (controller.FileSystem.DirectoryExists(backupRobot.sourceDir)) {
                     //find newest file
-                    string newestFile = robotGetNewestFile(controller, backupRobot.srcDir);
+                    string newestFile = robotGetNewestFile(controller, backupRobot.sourceDir);
                     if (newestFile == "") {
                         logger?.writeLog(logType.error, "controller <b>" + controller.SystemName + "</b>" +
                                                      " [BACKUP MASTER]:  backup done - but no controller file found!");
                         return;
                     }
-                    string backupSrc = backupRobot.srcDir + "/" + newestFile;
+                    string backupSrc = backupRobot.sourceDir + "/" + newestFile;
                     //check if current path is existent
                     string backupOut = createBackupPath(outputDir, controller.SystemName, backupRobot.suffix, backupRobot.duplicateMethod);
                     //leave log for user
@@ -525,7 +525,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string robotSignalExe
         {
-            get { return backupRobot.sigExecute; }
+            get { return backupRobot.sigBackupExe; }
         }
 
         /// <summary>
@@ -533,7 +533,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string robotSignalInP
         {
-            get { return backupRobot.sigInProgress; }
+            get { return backupRobot.sigBackupInP; }
         }
 
         /// <summary>
@@ -549,8 +549,8 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string robotDirSrc
         {
-            get { return backupRobot.srcDir; }
-            set { backupRobot.srcDir = value; }
+            get { return backupRobot.sourceDir; }
+            set { backupRobot.sourceDir = value; }
         }
 
         /// <summary>
@@ -589,7 +589,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         /// <param name="backupSrc">Source of backup creation demand (GUI, DAILY or INTERVAL)</param>
         /// <param name="updateTime">Check if update time in GUI after backup is finished</param>
-        public void createBackup(backupSource backupSrc, bool updateTime = true)
+        public void createBackup(BackupSettings.source backupSrc, bool updateTime = true)
         {
             //check if controller is existing in network
             if (controller == null) {
@@ -688,15 +688,6 @@ namespace abbTools.AppBackupManager
         }
 
         /// <summary>
-        /// GET or SET suffix of backup created at exact time (DAILY)
-        /// </summary>
-        public string pcDailySuffix
-        {
-            get { return backupPC.timeSuffix; }
-            set { backupPC.timeSuffix = value; }
-        }
-
-        /// <summary>
         /// GET total interval time in minutes
         /// </summary>
         public int pcIntervalInMins
@@ -718,7 +709,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         /// <param name="element">Interval element to set (min, hour or day)</param>
         /// <param name="value">Interval element value</param>
-        public void pcIntervalSet(intervalElement element, int value)
+        public void pcIntervalSet(BackupSettings.interval element, int value)
         {
             backupPC.intervalSet(element, value);
         }
@@ -728,7 +719,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         /// <param name="element">Interval element to get (mins, hours or days)</param>
         /// <returns>Interval element time</returns>
-        public int pcIntervalGet(intervalElement element)
+        public int pcIntervalGet(BackupSettings.interval element)
         {
             return backupPC.intervalGet(element);
         }
@@ -738,8 +729,8 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string pcIntervalSuffix
         {
-            get { return backupPC.intervalSuffix; }
-            set { backupPC.intervalSuffix = value; }
+            get { return backupPC.suffixInterval; }
+            set { backupPC.suffixInterval = value; }
         }
 
         /// <summary>
@@ -747,8 +738,17 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string pcGUISuffix
         {
-            get { return backupPC.guiSuffix; }
-            set { backupPC.guiSuffix = value; }
+            get { return backupPC.suffixGUI; }
+            set { backupPC.suffixGUI = value; }
+        }
+
+        /// <summary>
+        /// GET or SET suffix of backup created at exact time (DAILY)
+        /// </summary>
+        public string pcDailySuffix
+        {
+            get { return backupPC.suffixTime; }
+            set { backupPC.suffixTime = value; }
         }
 
         /// <summary>

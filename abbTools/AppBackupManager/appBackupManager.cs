@@ -195,7 +195,7 @@ namespace abbTools.AppBackupManager
                 //save backup manager data
                 myCollection.saveToXml(ref saveXml, saveName);
             } else {
-                abbLogger.writeLog(logType.error, "cant save controller(s) without specified name...");
+                abbLogger?.writeLog(logType.error, "cant save controller(s) without specified name...");
             }
         }
 
@@ -281,20 +281,20 @@ namespace abbTools.AppBackupManager
             if (enablePC) {
                 checkPCactive.Checked = true;
                 groupPCmaster.Enabled = true;
-                if (currData.timeExists(backupMaster.pc, timeType.last)) {
+                if (currData.timeExists(BackupSettings.master.pc, BackupSettings.time.last)) {
                     labelLastTimePC.Text = currData.pcLastBackupTime.ToString();
                 } else {
                     labelLastTimePC.Text = "-";
                 }
                 btnBackupExe.BackColor = System.Drawing.Color.Chartreuse;
-                if (currData.timeExists(backupMaster.pc, timeType.exact)) {
+                if (currData.timeExists(BackupSettings.master.pc, BackupSettings.time.exact)) {
                     textEveryTime.Text = currData.pcDailyTime.ToShortTimeString();
                 } else {
                     textEveryTime.Text = "";
                 }
-                numIntervalDays.Value = currData.pcIntervalGet(intervalElement.days);
-                numIntervalHours.Value = currData.pcIntervalGet(intervalElement.hours);
-                numIntervalMins.Value = currData.pcIntervalGet(intervalElement.mins);
+                numIntervalDays.Value = currData.pcIntervalGet(BackupSettings.interval.days);
+                numIntervalHours.Value = currData.pcIntervalGet(BackupSettings.interval.hours);
+                numIntervalMins.Value = currData.pcIntervalGet(BackupSettings.interval.mins);
             } else {
                 checkPCactive.Checked = false;
                 groupPCmaster.Enabled = false;
@@ -309,7 +309,7 @@ namespace abbTools.AppBackupManager
             if (enableROB) {
                 checkRobActive.Checked = true;
                 groupRobMaster.Enabled = true;
-                if (currData.timeExists(backupMaster.robot, timeType.last)) {
+                if (currData.timeExists(BackupSettings.master.robot, BackupSettings.time.last)) {
                     labelLastTimeROB.Text = currData.robotLastBackupTime.ToString();
                 } else {
                     labelLastTimeROB.Text = "-";
@@ -354,13 +354,13 @@ namespace abbTools.AppBackupManager
                 textDailySuffix.Text = currData.pcDailySuffix;
                 textRobotSuffix.Text = currData.robotDirSuffix;
                 //RadioButton duplicates PC
-                radioPCOverwrite.Checked = currData.duplicateMethodPC == (int)sameNameAction.overwrite;
-                radioPCIncr.Checked = currData.duplicateMethodPC == (int)sameNameAction.increment;
-                radioPCTime.Checked = currData.duplicateMethodPC == (int)sameNameAction.additTime;
+                radioPCOverwrite.Checked = currData.duplicateMethodPC == (int)BackupSettings.duplicate.overwrite;
+                radioPCIncr.Checked = currData.duplicateMethodPC == (int)BackupSettings.duplicate.increment;
+                radioPCTime.Checked = currData.duplicateMethodPC == (int)BackupSettings.duplicate.additTime;
                 //RadioButton duplicates ROBOT
-                radioROBOverwrite.Checked = currData.duplicateMethodRobot == (int)sameNameAction.overwrite;
-                radioROBIncr.Checked = currData.duplicateMethodRobot == (int)sameNameAction.increment;
-                radioROBTime.Checked = currData.duplicateMethodRobot == (int)sameNameAction.additTime;
+                radioROBOverwrite.Checked = currData.duplicateMethodRobot == (int)BackupSettings.duplicate.overwrite;
+                radioROBIncr.Checked = currData.duplicateMethodRobot == (int)BackupSettings.duplicate.increment;
+                radioROBTime.Checked = currData.duplicateMethodRobot == (int)BackupSettings.duplicate.additTime;
             } else {
                 //TextBox suffixes
                 textGuiSuffix.Text = "";
@@ -442,33 +442,33 @@ namespace abbTools.AppBackupManager
                     //--- create backup from interval settings
                     if (item.pcIntervalCheck()) {
                         //check interval (if reference time exist then its OK)
-                        if (item.timeExists(backupMaster.pc, timeType.last)) {
+                        if (item.timeExists(BackupSettings.master.pc, BackupSettings.time.last)) {
                             //check time difference between current time and last time
                             DateTime pcLastBackup = item.pcLastBackupTime;
                             TimeSpan diff = now - pcLastBackup;
                             //check if difference is bigger than desired interval
                             if (diff.TotalMinutes >= item.pcIntervalInMins) {
-                                item.createBackup(backupSource.interval);
+                                item.createBackup(BackupSettings.source.interval);
                             }
                         } else {
                             //there is no backup done yet - no reference to count from... create it
-                            item.createBackup(backupSource.interval);
+                            item.createBackup(BackupSettings.source.interval);
                         }
                         //call event to update xml file (new last backup time)
                         updateBackupTime();
                     }
                     //-------------------------
                     //--- create backup from exact time
-                    if (item.timeExists(backupMaster.pc, timeType.exact)) {
+                    if (item.timeExists(BackupSettings.master.pc, BackupSettings.time.exact)) {
                         DateTime pcDailyBackup = item.pcDailyTime;
                         //check if its time for backup
                         if (now.Hour == pcDailyBackup.Hour && now.Minute == pcDailyBackup.Minute) {
-                            item.createBackup(backupSource.daily, false);
+                            item.createBackup(BackupSettings.source.daily, false);
                         }
                     }
                     //-------------------------
                     //--- get backup from robot
-                    if (item.robotWatchBackup && item.timeExists(backupMaster.robot, timeType.last)) {
+                    if (item.robotWatchBackup && item.timeExists(BackupSettings.master.robot, BackupSettings.time.last)) {
                         //check time difference between current time and robot time (give robot at leas 1 minute timeout)
                         DateTime robLastBackup = item.robotLastBackupTime;
                         TimeSpan diff = now - robLastBackup;
@@ -548,7 +548,7 @@ namespace abbTools.AppBackupManager
                 //open windows explorer window with current path
                 System.Diagnostics.Process.Start("explorer.exe", currData.outputDir);
             } else {
-                if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - cant show output path! Its not defined...");
+                abbLogger?.writeLog(logType.error, "abbTools - cant show output path! Its not defined...");
             }
         }
 
@@ -645,14 +645,14 @@ namespace abbTools.AppBackupManager
                     //timer start
                     timerCheckBackup.Start();
                     //if timer on from GUI then inform user that its running
-                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " added to watch list! Watch timer turned ON!");
+                    if (guiDemand) abbLogger?.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " added to watch list! Watch timer turned ON!");
                 } else {
                     //inform user that current controller was added to watch list
                     if (myCollection.itemWatchedNo() > 0) {
-                        if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller "+currData.controllerName + " added to watch list!");
+                        if (guiDemand) abbLogger?.writeLog(logType.info, "abbTools - controller "+currData.controllerName + " added to watch list!");
                     } else {
                         //if timer on from GUI then inform user that its already running
-                        if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - watch timer was already running...");
+                        abbLogger?.writeLog(logType.warning, "abbTools - watch timer was already running...");
                     }
                 }
             } else {
@@ -663,9 +663,9 @@ namespace abbTools.AppBackupManager
                     //timer stop
                     timerCheckBackup.Stop();
                     //if timer on from GUI then inform user that its running
-                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " removed from watch list! Watch timer turned OFF!");
+                    if (guiDemand) abbLogger?.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " removed from watch list! Watch timer turned OFF!");
                 } else  {
-                    if (guiDemand && abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " removed from watch list!");
+                    if (guiDemand) abbLogger?.writeLog(logType.info, "abbTools - controller " + currData.controllerName + " removed from watch list!");
                 }
             }
         }
@@ -686,7 +686,7 @@ namespace abbTools.AppBackupManager
         private void btnBackupExe_Click(object sender, EventArgs e)
         {
             //create backup on GUI demand
-            currData.createBackup(backupSource.gui);
+            currData.createBackup(BackupSettings.source.gui);
         }
 
         //=============================================================================================== INTERVAL
@@ -700,18 +700,18 @@ namespace abbTools.AppBackupManager
         {
             if (currData != null && currData.controller != null) {
                 NumericUpDown numParent = (NumericUpDown)sender;
-                if (numParent.Name.Contains("Mins")) currData.pcIntervalSet(intervalElement.mins, (int)numParent.Value);
-                if (numParent.Name.Contains("Hour")) currData.pcIntervalSet(intervalElement.hours, (int)numParent.Value);
-                if (numParent.Name.Contains("Days")) currData.pcIntervalSet(intervalElement.days, (int)numParent.Value);
+                if (numParent.Name.Contains("Mins")) currData.pcIntervalSet(BackupSettings.interval.mins, (int)numParent.Value);
+                if (numParent.Name.Contains("Hour")) currData.pcIntervalSet(BackupSettings.interval.hours, (int)numParent.Value);
+                if (numParent.Name.Contains("Days")) currData.pcIntervalSet(BackupSettings.interval.days, (int)numParent.Value);
                 //check if there was reference backup (to measure time from)
-                if (!currData.timeExists(backupMaster.pc, timeType.last)) {
+                if (!currData.timeExists(BackupSettings.master.pc, BackupSettings.time.last)) {
                     //no reference time - inform user to create backup
-                    if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - create backup to get reference to count from...");
+                    abbLogger?.writeLog(logType.warning, "abbTools - create backup to get reference to count from...");
                 } else {
                     //reference backup time present - check if timer is running
                     if (!currData.timer) {
                         //timer is not running - inform user to run timer
-                        if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
+                        abbLogger?.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
                     }
                 }
             }
@@ -734,10 +734,10 @@ namespace abbTools.AppBackupManager
                     //check if timer is running
                     if (!currData.timer) {
                         //timer is not running - inform user to run timer
-                        if (abbLogger != null) abbLogger.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
+                        abbLogger?.writeLog(logType.warning, "abbTools - turn timer on to start monitoring...");
                     } else {
                         //timer is running - inform user that setting is correct
-                        if (abbLogger != null) abbLogger.writeLog(logType.info, "abbTools - backup will be done everyday at " + currData.pcDailyTime.ToShortTimeString() + "!");
+                        abbLogger?.writeLog(logType.info, "abbTools - backup will be done everyday at " + currData.pcDailyTime.ToShortTimeString() + "!");
                     }
                 }
             }
@@ -756,7 +756,7 @@ namespace abbTools.AppBackupManager
             //if user presses arrows then its OK
             if (currKey == Keys.Left || currKey == Keys.Right) return;
             //we are here - user was pressing invalid key
-            if (abbLogger != null) abbLogger.writeLog(logType.error, "abbTools - only digits allowed...");
+            abbLogger?.writeLog(logType.error, "abbTools - only digits allowed...");
             e.Handled = true;
         }
 
