@@ -106,7 +106,10 @@
       <DependentUpon>appBackupManager.cs</DependentUpon>
     </Compile>
     <Compile Include="AppBackupManager\BackupManager.cs" />
-    <Compile Include="AppBackupManager\BackupMaster.cs" />
+    <Compile Include="AppBackupManager\BackupMasterBase.cs" />
+    <Compile Include="AppBackupManager\BackupMasterPC.cs" />
+    <Compile Include="AppBackupManager\BackupMasterRobot.cs" />
+    <Compile Include="AppBackupManager\BackupSettings.cs" />
     <Compile Include="AppRemoteABB\appRemoteABB.cs">
       <SubType>UserControl</SubType>
     </Compile>

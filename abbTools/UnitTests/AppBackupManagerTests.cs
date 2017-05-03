@@ -40,7 +40,7 @@ namespace abbTools.UnitTests
         {
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
-            Assert.Equal(srcRobot, myItem.abbName);
+            Assert.Equal(srcRobot, myItem.controllerName);
         }
 
         [Fact]
@@ -130,11 +130,11 @@ namespace abbTools.UnitTests
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
             //check interval DAYS
-            Assert.Equal(1,myItem.pcIntervalGet(intervalElement.days));
+            Assert.Equal(1,myItem.pcIntervalGet(BackupSettings.interval.days));
             //check interval HOURS
-            Assert.Equal(3, myItem.pcIntervalGet(intervalElement.hours));
+            Assert.Equal(3, myItem.pcIntervalGet(BackupSettings.interval.hours));
             //check interval MINS
-            Assert.Equal(1, myItem.pcIntervalGet(intervalElement.mins));
+            Assert.Equal(1, myItem.pcIntervalGet(BackupSettings.interval.mins));
         }
 
         [Fact]
@@ -143,9 +143,9 @@ namespace abbTools.UnitTests
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
             //set interval data
-            myItem.pcIntervalSet(intervalElement.days, 3);
-            myItem.pcIntervalSet(intervalElement.hours, 5);
-            myItem.pcIntervalSet(intervalElement.mins, 57);
+            myItem.pcIntervalSet(BackupSettings.interval.days, 3);
+            myItem.pcIntervalSet(BackupSettings.interval.hours, 5);
+            myItem.pcIntervalSet(BackupSettings.interval.mins, 57);
             //check if set data is OK
             Assert.Equal(4677, myItem.pcIntervalInMins);
         }
@@ -185,7 +185,7 @@ namespace abbTools.UnitTests
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
             //get clear days value
-            Assert.Equal("C:\\Users\\pponikowski\\Desktop\\test", myItem.outputPath);
+            Assert.Equal("C:\\Users\\pponikowski\\Desktop\\test", myItem.outputDir);
         }
 
         [Fact]
@@ -194,7 +194,7 @@ namespace abbTools.UnitTests
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
             //get clear days value
-            Assert.Equal(true, myItem.watchdog);
+            Assert.Equal(true, myItem.timer);
         }
 
         [Fact]
@@ -203,11 +203,11 @@ namespace abbTools.UnitTests
             _backupManagerCollection.loadFromXml(ref myFile, null, srcRobot);
             BackupManager myItem = _backupManagerCollection.itemGet(null, srcRobot);
             //check if time exists: PC EXACT
-            Assert.Equal(true, myItem.timeExists(backupMaster.pc,timeType.exact));
+            Assert.Equal(true, myItem.timeExists(BackupSettings.master.pc, BackupSettings.time.exact));
             //check if time exists: PC LAST
-            Assert.Equal(true, myItem.timeExists(backupMaster.pc, timeType.last));
+            Assert.Equal(true, myItem.timeExists(BackupSettings.master.pc, BackupSettings.time.last));
             //check if time exists: ROBOT LAST
-            Assert.Equal(true, myItem.timeExists(backupMaster.robot, timeType.last));
+            Assert.Equal(true, myItem.timeExists(BackupSettings.master.robot, BackupSettings.time.last));
         }
 
         [Fact]
@@ -218,9 +218,9 @@ namespace abbTools.UnitTests
             //check if time exists: PC EXACT
             myItem.clearData();
             //check random data
-            Assert.Equal(false, myItem.timeExists(backupMaster.pc, timeType.exact));
+            Assert.Equal(false, myItem.timeExists(BackupSettings.master.pc, BackupSettings.time.exact));
             Assert.Equal(0, myItem.clearDays);
-            Assert.Equal("", myItem.outputPath);
+            Assert.Equal("", myItem.outputDir);
             Assert.Equal(0, myItem.pcIntervalInMins);
         }
 

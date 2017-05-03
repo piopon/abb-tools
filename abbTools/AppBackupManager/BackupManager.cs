@@ -14,19 +14,42 @@ namespace abbTools.AppBackupManager
          ***  BACKUP MANAGER - DATA 
          ********************************************************/
 
-        private Controller myController;
+        /// <summary>
+        /// GET and SET controller object in current instance
+        /// </summary>
+        public Controller controller { get; set; }
+
+        /// <summary>
+        /// GET and SET controller name in current instance
+        /// </summary>
+        public string controllerName { get; set; }
+
+        /// <summary>
+        /// GET and SET logger object in current instance
+        /// </summary>
+        public loggerABB logger { get; set; }
+
+        /// <summary>
+        /// GET or SET max number of days for which backups will not be deleted
+        /// </summary>
+        public int clearDays { get; set; }
+
+        /// <summary>
+        /// GET or SET current instances' output path to store backups
+        /// </summary>
+        public string outputDir { get; set; }
+
+        /// <summary>
+        /// GET or SET current instance watchdog timer settings (ON or OFF)
+        /// </summary>
+        public bool timer { get; set; }
+
+        //internal data
+        private DateTime emptyTime = new DateTime(1, 1, 1);
         private Signal mySigExe;
         private Signal mySigInP;
-        private loggerABB myLogger;
-        //gui data
-        private bool timerStart;
-        private int daysClear;
-        private string outputDir;
-        private string controllerName;
         private BackupMasterPC backupPC;
         private BackupMasterRobot backupRobot;
-        //inner data
-        DateTime emptyTime;
         //events
         public delegate void robotBackupState(int newState);
         public delegate void pcBackupState(int newState);
@@ -42,16 +65,20 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public BackupManager()
         {
-            timerStart = false;
-            outputDir = "";
+            //controller data
+            controller = null;
             controllerName = "";
-            myController = null;
-            mySigExe = null;
-            mySigInP = null;
-            myLogger = null;
+            //logger data
+            logger = null;
+            //backup masters
             backupPC = new BackupMasterPC();
             backupRobot = new BackupMasterRobot();
-            emptyTime = new DateTime(1, 1, 1);
+            //internal data
+            timer = false;
+            outputDir = "";
+            clearDays = 0;
+            mySigExe = null;
+            mySigInP = null;
         }
 
         /// <summary>
@@ -61,14 +88,20 @@ namespace abbTools.AppBackupManager
         /// <param name="outPath">Output path</param>
         public BackupManager(bool watchOn, string outPath)
         {
-            timerStart = watchOn;
-            outputDir = outPath;
+            //controller data
+            controller = null;
             controllerName = "";
-            myController = null;
+            //logger data
+            logger = null;
+            //backup masters
+            backupPC = new BackupMasterPC();
+            backupRobot = new BackupMasterRobot();
+            //internal data
+            timer = watchOn;
+            outputDir = outPath;
+            clearDays = 0;
             mySigExe = null;
             mySigInP = null;
-            myLogger = null;
-            backupPC = new BackupMasterPC();
         }
 
         /// <summary>
@@ -76,14 +109,21 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public void clearData()
         {
-            timerStart = false;
-            daysClear = 0;
-            outputDir = "";
             //clear controller data
-            if (myController != null) {
-                myController.BackupCompleted -= backupDoneEvent;
-                myController = null;
+            if (controller != null) {
+                controller.BackupCompleted -= backupDoneEvent;
+                controller = null;
             }
+            controllerName = "";
+            //clear logger data
+            logger = null;
+            //clear backup masters data
+            backupPC.clearData();
+            backupRobot.clearData();
+            //reset internal data
+            timer = false;
+            clearDays = 0;
+            outputDir = "";
             //clear signals data
             if (mySigExe != null) {
                 mySigExe.Changed -= DoBackup_Changed;
@@ -93,40 +133,6 @@ namespace abbTools.AppBackupManager
                 mySigInP.Changed -= DiBackup_Changed;
                 mySigInP = null;
             }
-            backupPC.clearData();
-            backupRobot.clearData();
-        }
-
-        /// <summary>
-        /// GET and SET controller object in current instance
-        /// </summary>
-        public Controller controller
-        {
-            get {
-                return myController;
-            }
-            set {
-                myController = value;
-                if (myController!=null) controllerName = myController.SystemName;
-            }
-        }
-
-        /// <summary>
-        /// GET and SET controller name in current instance
-        /// </summary>
-        public string abbName
-        {
-            get { return controllerName; }
-            set { controllerName = value; }
-        }
-
-        /// <summary>
-        /// GET and SET logger object in current instance
-        /// </summary>
-        public loggerABB logger
-        {
-            get { return myLogger; }
-            set { myLogger = value; }
         }
 
         /// <summary>
@@ -188,13 +194,13 @@ namespace abbTools.AppBackupManager
         public void clearOutputDir(bool guiDemand = false)
         {
             //check if controller is existing in network
-            if (myController == null) {
-                if (myLogger != null) myLogger.writeLog(logType.error, "abbTools - can't clear folders! No controller connected...");
+            if (controller == null) {
+                logger?.writeLog(logType.error, "abbTools - can't clear folders! No controller connected...");
                 return;
             }
             //check if output path is defined
             if (outputDir == null || outputDir == "") {
-                if (myLogger != null) myLogger.writeLog(logType.error, "abbTools - can't clear folders! No outputh path defined...");
+                logger?.writeLog(logType.error, "abbTools - can't clear folders! No outputh path defined...");
                 return;
             }
             //get all directories in output dir
@@ -207,20 +213,18 @@ namespace abbTools.AppBackupManager
                     if (folders[i].Contains("_BACKUP_")) {
                         DateTime createdTime = Directory.GetCreationTime(folders[i]);
                         TimeSpan timeDiff = DateTime.Now - createdTime;
-                        if (daysClear > 0 && timeDiff.TotalDays > daysClear) {
+                        if (clearDays > 0 && timeDiff.TotalDays > clearDays) {
                             Directory.Delete(folders[i], true);
                             foldersDeleted++;
                         }
                     }
                 }
                 //show log if some folders were deleted
-                if (myLogger != null) {
-                    if (foldersDeleted > 0) {
-                        myLogger.writeLog(logType.warning, "controller <b>" + myController.SystemName + "</b> cleaned " + foldersDeleted.ToString() + " folders!");
-                    } else {
-                        if (guiDemand) {
-                            myLogger.writeLog(logType.warning, "controller <b>" + myController.SystemName + "</b> no folders to clean!");
-                        }
+                if (foldersDeleted > 0) {
+                    logger?.writeLog(logType.warning, $"controller <b>{controller.SystemName}</b> cleaned {foldersDeleted.ToString()} folders!");
+                } else {
+                    if (guiDemand) {
+                        logger?.writeLog(logType.warning, $"controller <b>{controller.SystemName}</b> no folders to clean!");
                     }
                 }
             }
@@ -242,10 +246,10 @@ namespace abbTools.AppBackupManager
             //check if final directory exists
             if (Directory.Exists(result)) {
                 //path exists - check what we want to do
-                if (desiredAction == (int)sameNameAction.overwrite) {
+                if (desiredAction == (int)BackupSettings.duplicate.overwrite) {
                     //we will overwrite backup - delete older one
                     Directory.Delete(result, true);
-                } else if (desiredAction == (int)sameNameAction.increment) {
+                } else if (desiredAction == (int)BackupSettings.duplicate.increment) {
                     //we will add second folder with increment number - check how many folder there is
                     string[] folders = Directory.GetDirectories(outPath + "\\");
                     int currFolder = 0;
@@ -271,7 +275,7 @@ namespace abbTools.AppBackupManager
                     backupFolder += "_" + (++currFolder).ToString();
                     //update backup path
                     result = outPath + "\\" + backupFolder;
-                } else if (desiredAction == (int)sameNameAction.additTime) {
+                } else if (desiredAction == (int)BackupSettings.duplicate.additTime) {
                     //we will add second folder with current time
                     backupFolder += "_" + DateTime.Now.ToLongTimeString();
                     //replace time colon with dash
@@ -286,32 +290,23 @@ namespace abbTools.AppBackupManager
         /// <summary>
         /// Function used to check if selected time is defined in current instance
         /// </summary>
-        /// <param name="master">Select backup master: PC or ROBOT</param>
-        /// <param name="time">Select time to check: LAST or EXACT</param>
+        /// <param name="selMaster">Select backup master: PC or ROBOT</param>
+        /// <param name="selTime">Select time to check: LAST or EXACT</param>
         /// <returns>TRUE if selected time is defined in object</returns>
-        public bool timeExists(backupMaster master, timeType time)
+        public bool timeExists(BackupSettings.master selMaster, BackupSettings.time selTime)
         {
             bool result = false;
 
-            if (master == backupMaster.pc) {
-                if (time == timeType.last) {
+            if (selMaster == BackupSettings.master.pc) {
+                if (selTime == BackupSettings.time.last) {
                     result = !(pcLastBackupTime == null || pcLastBackupTime == emptyTime);
-                } else if (time == timeType.exact) {
+                } else if (selTime == BackupSettings.time.exact) {
                     result = !(pcDailyTime == null || pcDailyTime == emptyTime);
                 }
-            } else if (master == backupMaster.robot) {
+            } else if (selMaster == BackupSettings.master.robot) {
                 result = !(robotLastBackupTime == null || robotLastBackupTime == emptyTime);
             }
             return result;
-        }
-
-        /// <summary>
-        /// GET or SET current instance watchdog timer settings (ON or OFF)
-        /// </summary>
-        public bool watchdog
-        {
-            get { return timerStart; }
-            set { timerStart = value; }
         }
 
         /// <summary>
@@ -340,25 +335,7 @@ namespace abbTools.AppBackupManager
         {
             get { return backupRobot.activated; }
         }
-
-        /// <summary>
-        /// GET or SET max number of days for which backups will not be deleted
-        /// </summary>
-        public int clearDays
-        {
-            get { return daysClear; }
-            set { daysClear = value; }
-        }
-
-        /// <summary>
-        /// GET or SET current instances' output path to store backups
-        /// </summary>
-        public string outputPath
-        {
-            get { return outputDir; }
-            set { outputDir = value; }
-        }
-
+        
         /********************************************************
          ***  BACKUP MANAGER - ROBOT
          ********************************************************/
@@ -374,20 +351,20 @@ namespace abbTools.AppBackupManager
             if (mySigExe != null) mySigExe.Changed -= DoBackup_Changed;
             if (mySigInP != null) mySigInP.Changed -= DiBackup_Changed;
             //update backup robot object with new signal names
-            backupRobot.sigExecute = sigNameExe;
-            backupRobot.sigInProgress = sigNameInP;
+            backupRobot.sigBackupExe = sigNameExe;
+            backupRobot.sigBackupInP = sigNameInP;
             //update signal objects
-            if (myController != null) {
+            if (controller != null) {
                 //update signal "DO BACKUP" (if defined)
-                if (backupRobot.sigExecute != "") {
-                    mySigExe = myController.IOSystem.GetSignal(backupRobot.sigExecute);
+                if (backupRobot.sigBackupExe != "") {
+                    mySigExe = controller.IOSystem.GetSignal(backupRobot.sigBackupExe);
                     if (mySigExe != null) mySigExe.Changed += DoBackup_Changed;
                 } else {
                     mySigExe = null;
                 }
                 //update signal "BACKUP IN PROGRESS"
-                if (backupRobot.sigInProgress != "") {
-                    mySigInP = myController.IOSystem.GetSignal(backupRobot.sigInProgress);
+                if (backupRobot.sigBackupInP != "") {
+                    mySigInP = controller.IOSystem.GetSignal(backupRobot.sigBackupInP);
                 } else {
                     mySigInP = null;
                 }
@@ -404,13 +381,11 @@ namespace abbTools.AppBackupManager
             if (e.NewSignalState.Value == 1) {
                 if (mySigInP != null) {
                     mySigInP.Changed += DiBackup_Changed;
-                    myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup in progress - waiting for end...");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]:  backup in progress - waiting for end...");
                     //robot backup state changed = doing backup - call event method
                     eventRobotBackupState(0);
                 } else {
-                    myLogger.writeLog(logType.error, "controller <b>" + myController.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup in progress - no signal defined!");
+                    logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]:  backup in progress - no signal defined!");
                 }
             }
         }
@@ -426,15 +401,13 @@ namespace abbTools.AppBackupManager
             {
                 mySigInP.Changed -= DiBackup_Changed;
                 //check if source path is inputted
-                if (backupRobot.srcDir != null && backupRobot.srcDir != "") {
+                if (backupRobot.sourceDir != null && backupRobot.sourceDir!= "") {
                     //check if output path is created
                     if (outputDir != null && outputDir != "") {
-                        if (timerStart) {
-                            myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>" +
-                                                             " [BACKUP MASTER]:  backup done - download in queue...");
+                        if (timer) {
+                            logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - download in queue...");
                         } else {
-                            myLogger.writeLog(logType.warning, "controller <b>" + myController.SystemName + "</b>" +
-                                                             " [BACKUP MASTER]:  backup done - turn timer ON to queue download!");
+                            logger?.writeLog(logType.warning, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - turn timer ON to queue download!");
                         }
                         //backup created - set flag to get it from robot
                         backupRobot.checkBackup = true;
@@ -443,13 +416,11 @@ namespace abbTools.AppBackupManager
                         eventRobotBackupState(1);
                     } else {
                         //now output path - error
-                        myLogger.writeLog(logType.error, "controller <b>" + myController.SystemName + "</b>" +
-                                                          " [BACKUP MASTER]:  backup done - but no output directory selected!");
+                        logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - but no output directory selected!");
                     }
                 } else {
                     //now output path - error
-                    myLogger.writeLog(logType.error, "controller <b>" + myController.SystemName + "</b>" +
-                                                      " [BACKUP MASTER]:  backup done - but no source directory selected!");
+                    logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - but no source directory selected!");
                 }
             }
         }
@@ -459,31 +430,29 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public void robotGetBackup()
         {
-            if (myController != null) {
+            if (controller != null) {
                 //set remote directory to most top
-                myController.FileSystem.RemoteDirectory = myController.GetEnvironmentVariable("SYSTEM");
+                controller.FileSystem.RemoteDirectory = controller.GetEnvironmentVariable("SYSTEM");
                 //check if user-specified directory exist in controller
-                if (myController.FileSystem.DirectoryExists(backupRobot.srcDir)) {
+                if (controller.FileSystem.DirectoryExists(backupRobot.sourceDir)) {
                     //find newest file
-                    string newestFile = robotGetNewestFile(myController, backupRobot.srcDir);
+                    string newestFile = robotGetNewestFile(controller, backupRobot.sourceDir);
                     if (newestFile == "") {
-                        myLogger.writeLog(logType.error, "controller <b>" + myController.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup done - but no controller file found!");
+                        logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - but no controller file found!");
                         return;
                     }
-                    string backupSrc = backupRobot.srcDir + "/" + newestFile;
+                    string backupSrc = backupRobot.sourceDir + "/" + newestFile;
                     //check if current path is existent
-                    string backupOut = createBackupPath(outputDir, myController.SystemName, backupRobot.suffix, backupRobot.duplicateMethod);
+                    string backupOut = createBackupPath(outputDir, controller.SystemName, backupRobot.suffix, backupRobot.duplicateMethod);
                     //leave log for user
-                    myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup done - download copy in progress...");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]:  ackup done - download copy in progress...");
                     //update robot backup time
                     backupRobot.lastBackupTime = DateTime.Now;
                     //robot backup state changed = download in progress - call event method
                     eventRobotBackupState(2);
                     //copy backup file
-                    myController.FileSystem.RemoteDirectory = myController.GetEnvironmentVariable("SYSTEM");
-                    IAsyncResult dirCopyRes = myController.FileSystem.BeginGetDirectory(backupSrc, backupOut, true, robotGetBackupCallback, null);
+                    controller.FileSystem.RemoteDirectory = controller.GetEnvironmentVariable("SYSTEM");
+                    IAsyncResult dirCopyRes = controller.FileSystem.BeginGetDirectory(backupSrc, backupOut, true, robotGetBackupCallback, null);
                 }
             }
         }
@@ -496,22 +465,19 @@ namespace abbTools.AppBackupManager
         {
             try {
                 if (res.IsCompleted) {
-                    myController.FileSystem.EndCopyDirectory(res);
-                    myLogger.writeLog(logType.info, "controller " + myController.SystemName + "" +
-                                                     " [BACKUP MASTER]:  backup done - download copy OK!");
+                    controller.FileSystem.EndCopyDirectory(res);
+                    logger?.writeLog(logType.info, $"controller {controller.SystemName} [ROBOT MASTER]: backup done - download copy OK!");
                     //robot backup state changed = download OK - call event method
                     eventRobotBackupState(3);
                 }
             } catch (Exception e) {
                 //abb has internal problem in postprocess after copy instructions - check if its that case
                 if (e.TargetSite.Name == "PostProcessCmd" && res.IsCompleted) {
-                    myLogger.writeLog(logType.info, "controller " + myController.SystemName + "" +
-                                                     " [BACKUP MASTER]:  backup done - download copy OK!");
+                    logger?.writeLog(logType.info, $"controller {controller.SystemName} [ROBOT MASTER]: backup done - download copy OK!");
                     //robot backup state changed = download OK - call event method
                     eventRobotBackupState(3);
                 } else {
-                    myLogger.writeLog(logType.error, "controller " + myController.SystemName + "" +
-                                                         " [BACKUP MASTER]:  backup done - but exception thrown! " + e.Message);
+                    logger?.writeLog(logType.error, $"controller {controller.SystemName} [ROBOT MASTER]: backup done - but exception thrown {e.Message}!");
                     //robot backup state changed = download ERROR - call event method
                     eventRobotBackupState(4);
                 }
@@ -548,7 +514,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string robotSignalExe
         {
-            get { return backupRobot.sigExecute; }
+            get { return backupRobot.sigBackupExe; }
         }
 
         /// <summary>
@@ -556,7 +522,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string robotSignalInP
         {
-            get { return backupRobot.sigInProgress; }
+            get { return backupRobot.sigBackupInP; }
         }
 
         /// <summary>
@@ -572,8 +538,8 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string robotDirSrc
         {
-            get { return backupRobot.srcDir; }
-            set { backupRobot.srcDir = value; }
+            get { return backupRobot.sourceDir; }
+            set { backupRobot.sourceDir = value; }
         }
 
         /// <summary>
@@ -612,50 +578,48 @@ namespace abbTools.AppBackupManager
         /// </summary>
         /// <param name="backupSrc">Source of backup creation demand (GUI, DAILY or INTERVAL)</param>
         /// <param name="updateTime">Check if update time in GUI after backup is finished</param>
-        public void createBackup(backupSource backupSrc, bool updateTime = true)
+        public void createBackup(BackupSettings.source backupSrc, bool updateTime = true)
         {
             //check if controller is existing in network
-            if (myController == null) {
-                if (myLogger != null) myLogger.writeLog(logType.error, "abbTools - can't create backup! No controller connected...");
+            if (controller == null) {
+                logger?.writeLog(logType.error, "abbTools - can't create backup! No controller connected...");
                 return;
             }
             //check if output path is defined
             if (outputDir == null || outputDir == "") {
-                if (myLogger != null) myLogger.writeLog(logType.error, "abbTools - can't create backup! No outputh path defined...");
+                logger?.writeLog(logType.error, "abbTools - can't create backup! No outputh path defined...");
                 return;
             }
             //create full backup path
-            string backupPath = createBackupPath(outputDir, myController.SystemName, backupPC.getSuffix(backupSrc), backupPC.duplicateMethod);
+            string backupPath = createBackupPath(outputDir, controller.SystemName, backupPC.getSuffix(backupSrc), backupPC.duplicateMethod);
             //check if backup isnt currently in progress
             try {
-                bool wasConnected = myController.CurrentUser != null;
+                bool wasConnected = controller.CurrentUser != null;
                 //check if we are logged to controller
-                if (!wasConnected) myController.Logon(UserInfo.DefaultUser);
+                if (!wasConnected) controller.Logon(UserInfo.DefaultUser);
                 //check if backup is already in progress
-                if (!myController.BackupInProgress) {
+                if (!controller.BackupInProgress) {
                     //hide info about updating time after backup ok (to check it in event on backup done)
-                    if (myController.UICulture.NumberFormat.PositiveSign.IndexOf("_") == -1) {
-                        myController.UICulture.NumberFormat.PositiveSign += "_" + updateTime.ToString();
+                    if (controller.UICulture.NumberFormat.PositiveSign.IndexOf("_") == -1) {
+                        controller.UICulture.NumberFormat.PositiveSign += "_" + updateTime.ToString();
                     }
                     //subscribe to backup completed event
-                    myController.BackupCompleted -= backupDoneEvent;
-                    myController.BackupCompleted += backupDoneEvent;
+                    controller.BackupCompleted -= backupDoneEvent;
+                    controller.BackupCompleted += backupDoneEvent;
                     //everything is ok - do backup
-                    myController.Backup(backupPath);
+                    controller.Backup(backupPath);
                     //pc backup state changed = backup in progress - call event method
                     eventPCBackupState(0);
                     //show log info
-                    if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>: " +
-                                                                "doing robot backup [" + DateTime.Now.ToShortTimeString() + "]!");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [PC MASTER]: doing robot backup ({DateTime.Now.ToShortTimeString()})!");
                 } else {
                     //backup in progress - inform user
-                    if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + myController.SystemName + "</b>: " +
-                                                                "backup in progress! Wait for end and retry [" + DateTime.Now.ToShortTimeString() + "]...");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [PC MASER]: backup in progress ({DateTime.Now.ToShortTimeString()})...");
                 }
                 //at end check if we werent connected - if yes then disconnect
-                if (!wasConnected) myController.Logoff();
+                if (!wasConnected) controller.Logoff();
             } catch (Exception e) {
-                if (myLogger != null) myLogger.writeLog(logType.error, "controller <b>" + myController.SystemName + "</b>: backup exception! " + e.Message);
+                logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [PC MASTER]: backup exception {e.Message}!");
             }
         }
 
@@ -684,12 +648,10 @@ namespace abbTools.AppBackupManager
                 temp.UICulture.NumberFormat.PositiveSign = temp.UICulture.NumberFormat.PositiveSign.Substring(0, checkPos);
                 temp.BackupCompleted -= backupDoneEvent;
                 //show log info
-                if (myLogger != null) myLogger.writeLog(logType.info, "controller <b>" + temp.SystemName + "</b>: " +
-                                                            "backup done [" + DateTime.Now.ToShortTimeString() + "]!");
+                logger?.writeLog(logType.info, $"controller <b>{temp.SystemName}</b> [PC MASTER]: backup done ({DateTime.Now.ToShortTimeString()})!");
             } else {
                 //show log info
-                if (myLogger != null) myLogger.writeLog(logType.error, "controller <b>" + temp.SystemName + "</b>: " +
-                                                            "backup error [" + DateTime.Now.ToShortTimeString() + "]...");
+                logger?.writeLog(logType.error, $"controller <b>{temp.SystemName}</b> [PC MASTER]: backup error ({DateTime.Now.ToShortTimeString()})...");
             }
         }
 
@@ -708,15 +670,6 @@ namespace abbTools.AppBackupManager
         {
             get { return backupPC.exactTime; }
             set { backupPC.exactTime = value; }
-        }
-
-        /// <summary>
-        /// GET or SET suffix of backup created at exact time (DAILY)
-        /// </summary>
-        public string pcDailySuffix
-        {
-            get { return backupPC.timeSuffix; }
-            set { backupPC.timeSuffix = value; }
         }
 
         /// <summary>
@@ -741,7 +694,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         /// <param name="element">Interval element to set (min, hour or day)</param>
         /// <param name="value">Interval element value</param>
-        public void pcIntervalSet(intervalElement element, int value)
+        public void pcIntervalSet(BackupSettings.interval element, int value)
         {
             backupPC.intervalSet(element, value);
         }
@@ -751,7 +704,7 @@ namespace abbTools.AppBackupManager
         /// </summary>
         /// <param name="element">Interval element to get (mins, hours or days)</param>
         /// <returns>Interval element time</returns>
-        public int pcIntervalGet(intervalElement element)
+        public int pcIntervalGet(BackupSettings.interval element)
         {
             return backupPC.intervalGet(element);
         }
@@ -761,8 +714,8 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string pcIntervalSuffix
         {
-            get { return backupPC.intervalSuffix; }
-            set { backupPC.intervalSuffix = value; }
+            get { return backupPC.suffixInterval; }
+            set { backupPC.suffixInterval = value; }
         }
 
         /// <summary>
@@ -770,8 +723,17 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public string pcGUISuffix
         {
-            get { return backupPC.guiSuffix; }
-            set { backupPC.guiSuffix = value; }
+            get { return backupPC.suffixGUI; }
+            set { backupPC.suffixGUI = value; }
+        }
+
+        /// <summary>
+        /// GET or SET suffix of backup created at exact time (DAILY)
+        /// </summary>
+        public string pcDailySuffix
+        {
+            get { return backupPC.suffixTime; }
+            set { backupPC.suffixTime = value; }
         }
 
         /// <summary>
@@ -866,9 +828,7 @@ namespace abbTools.AppBackupManager
             //scan all collection
             foreach (BackupManager item in this) {
                 //check what to search
-                if (item.watchdog) {
-                    result++;
-                }
+                if (item.timer) result++;
             }
             return result;
         }
@@ -886,7 +846,7 @@ namespace abbTools.AppBackupManager
                 //scan all collection
                 foreach (BackupManager item in this) {
                     //check what to search
-                    if (item.abbName == cItem.SystemName) {
+                    if (item.controllerName == cItem.SystemName) {
                         break;
                     } else {
                         result++;
@@ -912,7 +872,7 @@ namespace abbTools.AppBackupManager
             //scan all collection
             foreach (BackupManager item in this) {
                 //check what to search
-                if (item.abbName == cItemName) {
+                if (item.controllerName == cItemName) {
                     break;
                 } else {
                     result++;
@@ -955,9 +915,10 @@ namespace abbTools.AppBackupManager
                 //item not existent - create new one
                 result = new BackupManager();
                 if (cItem == null) {
-                    result.abbName = cItemName;
+                    result.controllerName = cItemName;
                 } else {
                     result.controller = cItem;
+                    result.controllerName = cItem.SystemName;
                 }
                 result.logger = defaultLogger;
                 //subscribe to its events
@@ -1012,9 +973,9 @@ namespace abbTools.AppBackupManager
                                      outputData = xmlSubnode.Name.StartsWith("output");
                                 //if we are starting to read client data then get it
                                 if (start && outputData){
-                                    loadItem.outputPath = xmlSubnode.GetAttribute("dir");
+                                    loadItem.outputDir = xmlSubnode.GetAttribute("dir");
                                     loadItem.clearDays = int.Parse(xmlSubnode.GetAttribute("clr"));
-                                    loadItem.watchdog = bool.Parse(xmlSubnode.GetAttribute("watch"));
+                                    loadItem.timer = bool.Parse(xmlSubnode.GetAttribute("watch"));
                                     //break from WHILE loop - now will be masters data
                                     break;
                                 }
@@ -1045,11 +1006,11 @@ namespace abbTools.AppBackupManager
                 //controller is on list - save backup manager data
                 xmlSubnode.WriteStartElement("output");
                 //output directory
-                xmlSubnode.WriteAttributeString("dir", this[cIndex].outputPath);
+                xmlSubnode.WriteAttributeString("dir", this[cIndex].outputDir);
                 //clear output days number
                 xmlSubnode.WriteAttributeString("clr", this[cIndex].clearDays.ToString());
                 //watchdog activated
-                xmlSubnode.WriteAttributeString("watch", this[cIndex].watchdog.ToString());
+                xmlSubnode.WriteAttributeString("watch", this[cIndex].timer.ToString());
                 //end client node
                 xmlSubnode.WriteEndElement();
                 //save all messages in collection
