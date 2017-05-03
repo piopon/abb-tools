@@ -221,10 +221,10 @@ namespace abbTools.AppBackupManager
                 }
                 //show log if some folders were deleted
                 if (foldersDeleted > 0) {
-                    logger?.writeLog(logType.warning, "controller <b>" + controller.SystemName + "</b> cleaned " + foldersDeleted.ToString() + " folders!");
+                    logger?.writeLog(logType.warning, $"controller <b>{controller.SystemName}</b> cleaned {foldersDeleted.ToString()} folders!");
                 } else {
                     if (guiDemand) {
-                        logger?.writeLog(logType.warning, "controller <b>" + controller.SystemName + "</b> no folders to clean!");
+                        logger?.writeLog(logType.warning, $"controller <b>{controller.SystemName}</b> no folders to clean!");
                     }
                 }
             }
@@ -381,13 +381,11 @@ namespace abbTools.AppBackupManager
             if (e.NewSignalState.Value == 1) {
                 if (mySigInP != null) {
                     mySigInP.Changed += DiBackup_Changed;
-                    logger?.writeLog(logType.info, "controller <b>" + controller.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup in progress - waiting for end...");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]:  backup in progress - waiting for end...");
                     //robot backup state changed = doing backup - call event method
                     eventRobotBackupState(0);
                 } else {
-                    logger?.writeLog(logType.error, "controller <b>" + controller.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup in progress - no signal defined!");
+                    logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]:  backup in progress - no signal defined!");
                 }
             }
         }
@@ -407,11 +405,9 @@ namespace abbTools.AppBackupManager
                     //check if output path is created
                     if (outputDir != null && outputDir != "") {
                         if (timer) {
-                            logger?.writeLog(logType.info, "controller <b>" + controller.SystemName + "</b>" +
-                                                             " [BACKUP MASTER]:  backup done - download in queue...");
+                            logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - download in queue...");
                         } else {
-                            logger?.writeLog(logType.warning, "controller <b>" + controller.SystemName + "</b>" +
-                                                             " [BACKUP MASTER]:  backup done - turn timer ON to queue download!");
+                            logger?.writeLog(logType.warning, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - turn timer ON to queue download!");
                         }
                         //backup created - set flag to get it from robot
                         backupRobot.checkBackup = true;
@@ -420,13 +416,11 @@ namespace abbTools.AppBackupManager
                         eventRobotBackupState(1);
                     } else {
                         //now output path - error
-                        logger?.writeLog(logType.error, "controller <b>" + controller.SystemName + "</b>" +
-                                                          " [BACKUP MASTER]:  backup done - but no output directory selected!");
+                        logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - but no output directory selected!");
                     }
                 } else {
                     //now output path - error
-                    logger?.writeLog(logType.error, "controller <b>" + controller.SystemName + "</b>" +
-                                                      " [BACKUP MASTER]:  backup done - but no source directory selected!");
+                    logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - but no source directory selected!");
                 }
             }
         }
@@ -444,16 +438,14 @@ namespace abbTools.AppBackupManager
                     //find newest file
                     string newestFile = robotGetNewestFile(controller, backupRobot.sourceDir);
                     if (newestFile == "") {
-                        logger?.writeLog(logType.error, "controller <b>" + controller.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup done - but no controller file found!");
+                        logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]: backup done - but no controller file found!");
                         return;
                     }
                     string backupSrc = backupRobot.sourceDir + "/" + newestFile;
                     //check if current path is existent
                     string backupOut = createBackupPath(outputDir, controller.SystemName, backupRobot.suffix, backupRobot.duplicateMethod);
                     //leave log for user
-                    logger?.writeLog(logType.info, "controller <b>" + controller.SystemName + "</b>" +
-                                                     " [BACKUP MASTER]:  backup done - download copy in progress...");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [ROBOT MASTER]:  ackup done - download copy in progress...");
                     //update robot backup time
                     backupRobot.lastBackupTime = DateTime.Now;
                     //robot backup state changed = download in progress - call event method
@@ -474,21 +466,18 @@ namespace abbTools.AppBackupManager
             try {
                 if (res.IsCompleted) {
                     controller.FileSystem.EndCopyDirectory(res);
-                    logger?.writeLog(logType.info, "controller " + controller.SystemName + "" +
-                                                     " [BACKUP MASTER]:  backup done - download copy OK!");
+                    logger?.writeLog(logType.info, $"controller {controller.SystemName} [ROBOT MASTER]: backup done - download copy OK!");
                     //robot backup state changed = download OK - call event method
                     eventRobotBackupState(3);
                 }
             } catch (Exception e) {
                 //abb has internal problem in postprocess after copy instructions - check if its that case
                 if (e.TargetSite.Name == "PostProcessCmd" && res.IsCompleted) {
-                    logger?.writeLog(logType.info, "controller " + controller.SystemName + "" +
-                                                     " [BACKUP MASTER]:  backup done - download copy OK!");
+                    logger?.writeLog(logType.info, $"controller {controller.SystemName} [ROBOT MASTER]: backup done - download copy OK!");
                     //robot backup state changed = download OK - call event method
                     eventRobotBackupState(3);
                 } else {
-                    logger?.writeLog(logType.error, "controller " + controller.SystemName + "" +
-                                                         " [BACKUP MASTER]:  backup done - but exception thrown! " + e.Message);
+                    logger?.writeLog(logType.error, $"controller {controller.SystemName} [ROBOT MASTER]: backup done - but exception thrown {e.Message}!");
                     //robot backup state changed = download ERROR - call event method
                     eventRobotBackupState(4);
                 }
@@ -622,17 +611,15 @@ namespace abbTools.AppBackupManager
                     //pc backup state changed = backup in progress - call event method
                     eventPCBackupState(0);
                     //show log info
-                    logger?.writeLog(logType.info, "controller <b>" + controller.SystemName + "</b>: " +
-                                                                "doing robot backup [" + DateTime.Now.ToShortTimeString() + "]!");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [PC MASTER]: doing robot backup ({DateTime.Now.ToShortTimeString()})!");
                 } else {
                     //backup in progress - inform user
-                    logger?.writeLog(logType.info, "controller <b>" + controller.SystemName + "</b>: " +
-                                                                "backup in progress! Wait for end and retry [" + DateTime.Now.ToShortTimeString() + "]...");
+                    logger?.writeLog(logType.info, $"controller <b>{controller.SystemName}</b> [PC MASER]: backup in progress ({DateTime.Now.ToShortTimeString()})...");
                 }
                 //at end check if we werent connected - if yes then disconnect
                 if (!wasConnected) controller.Logoff();
             } catch (Exception e) {
-                logger?.writeLog(logType.error, "controller <b>" + controller.SystemName + "</b>: backup exception! " + e.Message);
+                logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [PC MASTER]: backup exception {e.Message}!");
             }
         }
 
@@ -661,12 +648,10 @@ namespace abbTools.AppBackupManager
                 temp.UICulture.NumberFormat.PositiveSign = temp.UICulture.NumberFormat.PositiveSign.Substring(0, checkPos);
                 temp.BackupCompleted -= backupDoneEvent;
                 //show log info
-                logger?.writeLog(logType.info, "controller <b>" + temp.SystemName + "</b>: " +
-                                                            "backup done [" + DateTime.Now.ToShortTimeString() + "]!");
+                logger?.writeLog(logType.info, $"controller <b>{temp.SystemName}</b> [PC MASTER]: backup done ({DateTime.Now.ToShortTimeString()})!");
             } else {
                 //show log info
-                logger?.writeLog(logType.error, "controller <b>" + temp.SystemName + "</b>: " +
-                                                            "backup error [" + DateTime.Now.ToShortTimeString() + "]...");
+                logger?.writeLog(logType.error, $"controller <b>{temp.SystemName}</b> [PC MASTER]: backup error ({DateTime.Now.ToShortTimeString()})...");
             }
         }
 
