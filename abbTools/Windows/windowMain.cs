@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Xml;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.Discovery;
+using abbTools.Shared;
 
 namespace abbTools
 {
@@ -23,6 +24,8 @@ namespace abbTools
         private Controller abbConn = null;
         //status writer
         private loggerABB status = null;
+        //applications management object
+        private AbbApplicationCollection myApps;
 
         public windowMain()
         {
@@ -37,6 +40,9 @@ namespace abbTools
             appSettings.loadData();
             //try to send welcome mail
             sendMail(abbStatus.mail.openApp);
+            //register applications and update dashboard
+            registerApps();
+            updateDashboard();
         }
 
         private void abbToolsThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
@@ -51,6 +57,20 @@ namespace abbTools
             //send e-mail that app is closed
             sendMail(abbStatus.mail.exception);
             Close();
+        }
+
+        private void registerApps()
+        {
+            myApps = new AbbApplicationCollection(tabActions);
+            myApps.registerApp(appRemotePC, "Control PC remotely from ABB signals", "appPC", Height, Width);
+            myApps.registerApp(appBackupManager, "Scheduled backups management", "appBackup", Height, Width);
+            myApps.registerApp(appWindowsIPC, "Update ABB signals from external app", "appIPC", Height, Width);
+        }
+
+        private void updateDashboard()
+        {
+            Panel dash = myApps.generateDashboard();
+            dash.Parent = actionDashboard;
         }
 
         private void mainWindow_Resize(object sender, EventArgs e)
@@ -803,12 +823,8 @@ namespace abbTools
             appRemotePC.syncLogger(status);
             //backupManager
             appBackupManager.syncLogger(status);
-            appBackupManager.parentHeight = Height;
-            appBackupManager.parentWidth = Width;
             //windows IPC
             appWindowsIPC.syncLogger(status);
-            appWindowsIPC.parentHeight = Height;
-            appWindowsIPC.parentWidth = Width;
         }
 
         private void appsClearData(bool resyncLogger)

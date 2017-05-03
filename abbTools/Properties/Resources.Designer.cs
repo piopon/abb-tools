@@ -63,6 +63,16 @@ namespace abbTools.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap appBackup {
+            get {
+                object obj = ResourceManager.GetObject("appBackup", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap mainMenu_abb {
             get {
                 object obj = ResourceManager.GetObject("mainMenu_abb", resourceCulture);
