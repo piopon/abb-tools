@@ -41,8 +41,9 @@ namespace abbTools
             //try to send welcome mail
             sendMail(abbStatus.mail.openApp);
             //register applications and update dashboard
-            registerApps();
-            updateDashboard();
+            appsRegister();
+            appsUpdateGUI();
+            
         }
 
         private void abbToolsThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
@@ -59,18 +60,21 @@ namespace abbTools
             Close();
         }
 
-        private void registerApps()
+        private void appsRegister()
         {
             myApps = new AbbApplicationCollection(tabActions);
-            myApps.registerApp(appRemotePC, "Control PC remotely from ABB signals", "appPC", Height, Width);
             myApps.registerApp(appBackupManager, "Scheduled backups management", "appBackup", Height, Width);
+            myApps.registerApp(appRemotePC, "Control PC remotely from ABB signals", "appPC", Height, Width);
             myApps.registerApp(appWindowsIPC, "Update ABB signals from external app", "appIPC", Height, Width);
         }
 
-        private void updateDashboard()
+        private void appsUpdateGUI()
         {
+            //update dashboard
             Panel dash = myApps.generateDashboard();
             dash.Parent = actionDashboard;
+            //reorder tab pages
+            myApps.reorderPages();
         }
 
         private void mainWindow_Resize(object sender, EventArgs e)
@@ -874,6 +878,12 @@ namespace abbTools
             appRemotePC.controllerFound(foundController);
             appBackupManager.savedControllerFound(foundController);
             appWindowsIPC.savedControllerFound(foundController);
+        }
+
+        private void tabActions_Selecting(object sender, TabControlCancelEventArgs e)
+        {
+            e.Cancel = tabActions.CausesValidation;
+            if (e.TabPageIndex == 0) tabActions.CausesValidation = true;
         }
 
         private void appsControllerLost(Controller lostController)

@@ -62,7 +62,7 @@ namespace abbTools.Shared
         public Panel generateDashboard()
         {
             Panel mainDashboard = new Panel();
-            mainDashboard.Size = new System.Drawing.Size(600, 450);
+            mainDashboard.Size = new Size(600, 450);
             mainDashboard.Top = 30;
             mainDashboard.Left = 30;
             //populate panel with buttons
@@ -132,9 +132,11 @@ namespace abbTools.Shared
             Button clicked = (Button)sender;
             IAbbApplication app = (IAbbApplication)clicked.Tag;
             //change page of parent
-            if (parentPages.GetType().FullName.Contains("TabControl")) {
+            if (parentPages != null && parentPages.GetType().FullName.Contains("TabControl")) {
                 TabControl myPar = (TabControl)parentPages;
+                myPar.CausesValidation = false;
                 myPar.SelectedIndex = app.appIndex + 1;
+                //myPar.CausesValidation = true;
             }
         }
 
@@ -144,9 +146,24 @@ namespace abbTools.Shared
             return res;
         }
 
-        public void updateTabPages()
+        public void reorderPages()
         {
-            
+            if (parentPages != null && parentPages.GetType().FullName.Contains("TabControl")) {
+                TabControl myPar = (TabControl)parentPages;
+                List<TabPage> newOrder = new List<TabPage>(Count);
+                //remember collection order
+                foreach (IAbbApplication app in this) {
+                    string tabName = $"action{app.appName.Substring(3)}";
+                    myPar.SelectTab(tabName);
+                    newOrder.Add(myPar.SelectedTab);
+                }
+                //apply order to GUI
+                for (int page = 0; page < Count; page++) {
+                    myPar.TabPages[page+1] = newOrder[page];
+                }
+                //show dashboard
+                myPar.SelectTab(0);
+            }
         }
 
     }
