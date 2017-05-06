@@ -12,6 +12,10 @@ namespace abbTools
 {
     public partial class windowMain : Form
     {
+        /********************************************************
+         ***  MAIN WINDOW - class fields
+         ********************************************************/
+
         //application settings
         private windowSettings appSettings = null;
         //global variables
@@ -27,6 +31,13 @@ namespace abbTools
         //applications management object
         private AbbApplicationCollection myApps;
 
+        /********************************************************
+         ***  MAIN WINDOW - constructor
+         ********************************************************/
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public windowMain()
         {
             InitializeComponent();
@@ -43,9 +54,17 @@ namespace abbTools
             //register applications and update dashboard
             appsRegister();
             appsUpdateGUI();
-            
         }
 
+        /********************************************************
+         ***  MAIN WINDOW - uhandled errors
+         ********************************************************/
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void abbToolsThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             //send e-mail that app is closed
@@ -53,6 +72,11 @@ namespace abbTools
             Close();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void abbToolsUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             //send e-mail that app is closed
@@ -60,14 +84,24 @@ namespace abbTools
             Close();
         }
 
+        /********************************************************
+         ***  MAIN WINDOW - application manager
+         ********************************************************/
+
+        /// <summary>
+        /// Method used to register all abbTools applications
+        /// </summary>
         private void appsRegister()
         {
             myApps = new AbbApplicationCollection(tabActions);
-            myApps.registerApp(appBackupManager, "Scheduled backups management", "appBackup", Height, Width);
-            myApps.registerApp(appRemotePC, "Control PC remotely from ABB signals", "appPC", Height, Width);
-            myApps.registerApp(appWindowsIPC, "Update ABB signals from external app", "appIPC", Height, Width);
+            myApps.registerApp(appBackupManager, "appBackup", Height, Width);
+            myApps.registerApp(appRemotePC, "appPC", Height, Width);
+            myApps.registerApp(appWindowsIPC, "appIPC", Height, Width);
         }
 
+        /// <summary>
+        /// Method used to update abbTools related GUI 
+        /// </summary>
         private void appsUpdateGUI()
         {
             //update dashboard
@@ -77,88 +111,15 @@ namespace abbTools
             myApps.reorderPages();
         }
 
-        private void mainWindow_Resize(object sender, EventArgs e)
+        private void tabActions_Selecting(object sender, TabControlCancelEventArgs e)
         {
-            //set the notification icon
-            notifyIcon.Icon = this.Icon;
-            //check if window is minimized or opened (normal or maximized)
-            notifyIcon.Visible = (this.WindowState == FormWindowState.Minimized);
-            //show tip and hide app from taskbar if window is minimized
-            if (notifyIcon.Visible) this.Hide();
+            e.Cancel = tabActions.CausesValidation;
+            if (e.TabPageIndex == 0) tabActions.CausesValidation = true;
         }
 
-        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
-        {
-            //check which button was pressed
-            if (e.Button == MouseButtons.Right) {
-                notifyIcon.ContextMenuStrip.Show(Cursor.Position);
-            } else {
-                //reopen window
-                Show();
-                WindowState = FormWindowState.Normal;
-            }
-        }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //save settings
-            appSettings.saveData();
-            //send e-mail that app is closed
-            sendMail(abbStatus.mail.closeApp);
-            //terminate app
-            Close();
-        }
-
-        private void testToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //reopen window
-            Show();
-            WindowState = FormWindowState.Normal;
-        }
-
-        private void minimizeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            WindowState = FormWindowState.Minimized;
-        }
-
-        private void menuBar_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left) isDragged = false;
-        }
-
-        private void menuBar_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left) {
-                isDragged = true;
-                mouseX = e.X;
-                mouseY = e.Y;
-            }
-        }
-
-        private void menuBar_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (isDragged) {
-                Point curr = new Point();
-                curr.X = Location.X + (e.X - mouseX);
-                curr.Y = Location.Y + (e.Y - mouseY);
-                //update form position
-                Location = curr;
-            }
-        }
-
-        private void helpToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            //show about window
-            windowAbout helpWindow = new windowAbout();
-            //no new taskbar element
-            helpWindow.ShowInTaskbar = false;
-            //position in center of main form
-            helpWindow.StartPosition = FormStartPosition.Manual;
-            helpWindow.Top = Top + (Height - helpWindow.Height) / 2;
-            helpWindow.Left = Left + (Width - helpWindow.Width) / 2;
-            //show form
-            helpWindow.ShowDialog();
-        }
+        /********************************************************
+         ***  MAIN WINDOW - main window events
+         ********************************************************/
 
         private void windowMain_Load(object sender, EventArgs e)
         {
@@ -213,16 +174,6 @@ namespace abbTools
             abbWatcher.Lost += abbWatcherLostEvent;
         }
 
-        private void abbWatcherLostEvent(object sender, NetworkWatcherEventArgs e)
-        {
-            Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
-        }
-
-        private void abbWatcherFoundEvent(object sender, NetworkWatcherEventArgs e)
-        {
-            Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
-        }
-
         private void windowMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             abbWatcher.Found -= abbWatcherFoundEvent;
@@ -235,40 +186,136 @@ namespace abbTools
             }
         }
 
-        private void robotListQMenu_Opening(object sender, CancelEventArgs e)
+        private void abbWatcherLostEvent(object sender, NetworkWatcherEventArgs e)
         {
-            if (listViewRobots.SelectedItems.Count > 0) {
-                /***** CONNECT/DISCONNECT FROM CONTROLLER *****/
-                if (abbConn == null) {
-                    //no controller connected - disconect menu not visible
-                    connectToolStripMenuItem.Visible = true;
-                    disconnectToolStripMenuItem.Visible = false;
-                } else {
-                    //controller which is connected only has disconnect menu
-                    string itemName = listViewRobots.FocusedItem.Text;
-                    if (itemName == abbConn.SystemName) {
-                        connectToolStripMenuItem.Visible = false;
-                        disconnectToolStripMenuItem.Visible = true;
-                    } else {
-                        connectToolStripMenuItem.Visible = true;
-                        disconnectToolStripMenuItem.Visible = false;
-                    }
-                }
-                /***** ADD/REMOVE FROM SAVED GROUP *****/
-                string itemGroup = listViewRobots.FocusedItem.Group.Header;
-                //check which element is selected
-                if (itemGroup == "saved") {
-                    addToSavedToolStripMenuItem.Visible = false;
-                    removeToolStripMenuItem.Visible = true;
-                } else if (itemGroup == "network" || itemGroup == "virtual") {
-                    addToSavedToolStripMenuItem.Visible = true;
-                    removeToolStripMenuItem.Visible = false;
-                }
-            } else {
-                addToSavedToolStripMenuItem.Visible = false;
-                removeToolStripMenuItem.Visible = false;
+            Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
+        }
+
+        private void abbWatcherFoundEvent(object sender, NetworkWatcherEventArgs e)
+        {
+            Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
+        }
+
+        private void mainWindow_Resize(object sender, EventArgs e)
+        {
+            //set the notification icon
+            notifyIcon.Icon = this.Icon;
+            //check if window is minimized or opened (normal or maximized)
+            notifyIcon.Visible = (this.WindowState == FormWindowState.Minimized);
+            //show tip and hide app from taskbar if window is minimized
+            if (notifyIcon.Visible) this.Hide();
+        }
+
+        /********************************************************
+         ***  MAIN WINDOW - main menu and bar actions
+         ********************************************************/
+
+        private void menuBar_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left) isDragged = false;
+        }
+
+        private void menuBar_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left) {
+                isDragged = true;
+                mouseX = e.X;
+                mouseY = e.Y;
             }
         }
+
+        private void menuBar_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (isDragged) {
+                Point curr = new Point();
+                curr.X = Location.X + (e.X - mouseX);
+                curr.Y = Location.Y + (e.Y - mouseY);
+                //update form position
+                Location = curr;
+            }
+        }
+
+        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //show open dialog
+            openDialog.InitialDirectory = Application.StartupPath;
+            openDialog.ShowDialog();
+            //save elements to selected file
+            loadMyRobots(openDialog.FileName);
+        }
+
+        private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //show save dialog
+            saveDialog.InitialDirectory = Application.StartupPath;
+            saveDialog.ShowDialog();
+            //save elements to selected file
+            saveMyRobots(saveDialog.FileName);
+        }
+
+        private void toolsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //no new taskbar element
+            appSettings.ShowInTaskbar = false;
+            //position in center of main form
+            appSettings.StartPosition = FormStartPosition.Manual;
+            appSettings.Top = Top + (Height - appSettings.Height) / 2;
+            appSettings.Left = Left + (Width - appSettings.Width) / 2;
+            //show form
+            appSettings.ShowDialog();
+        }
+
+        private void helpToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //show about window
+            windowAbout helpWindow = new windowAbout();
+            //no new taskbar element
+            helpWindow.ShowInTaskbar = false;
+            //position in center of main form
+            helpWindow.StartPosition = FormStartPosition.Manual;
+            helpWindow.Top = Top + (Height - helpWindow.Height) / 2;
+            helpWindow.Left = Left + (Width - helpWindow.Width) / 2;
+            //show form
+            helpWindow.ShowDialog();
+        }
+
+        private void minimizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Minimized;
+        }
+
+        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
+        {
+            //check which button was pressed
+            if (e.Button == MouseButtons.Right) {
+                notifyIcon.ContextMenuStrip.Show(Cursor.Position);
+            } else {
+                //reopen window
+                Show();
+                WindowState = FormWindowState.Normal;
+            }
+        }
+
+        private void testToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //reopen window
+            Show();
+            WindowState = FormWindowState.Normal;
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //save settings
+            appSettings.saveData();
+            //send e-mail that app is closed
+            sendMail(abbStatus.mail.closeApp);
+            //terminate app
+            Close();
+        }
+
+        /********************************************************
+         ***  MAIN WINDOW - metwork visible robots list
+         ********************************************************/
 
         private void updateRobotList(object sender, NetworkWatcherEventArgs e)
         {
@@ -343,6 +390,41 @@ namespace abbTools
             }
         }
 
+        private void robotListQMenu_Opening(object sender, CancelEventArgs e)
+        {
+            if (listViewRobots.SelectedItems.Count > 0) {
+                /***** CONNECT/DISCONNECT FROM CONTROLLER *****/
+                if (abbConn == null) {
+                    //no controller connected - disconect menu not visible
+                    connectToolStripMenuItem.Visible = true;
+                    disconnectToolStripMenuItem.Visible = false;
+                } else {
+                    //controller which is connected only has disconnect menu
+                    string itemName = listViewRobots.FocusedItem.Text;
+                    if (itemName == abbConn.SystemName) {
+                        connectToolStripMenuItem.Visible = false;
+                        disconnectToolStripMenuItem.Visible = true;
+                    } else {
+                        connectToolStripMenuItem.Visible = true;
+                        disconnectToolStripMenuItem.Visible = false;
+                    }
+                }
+                /***** ADD/REMOVE FROM SAVED GROUP *****/
+                string itemGroup = listViewRobots.FocusedItem.Group.Header;
+                //check which element is selected
+                if (itemGroup == "saved") {
+                    addToSavedToolStripMenuItem.Visible = false;
+                    removeToolStripMenuItem.Visible = true;
+                } else if (itemGroup == "network" || itemGroup == "virtual") {
+                    addToSavedToolStripMenuItem.Visible = true;
+                    removeToolStripMenuItem.Visible = false;
+                }
+            } else {
+                addToSavedToolStripMenuItem.Visible = false;
+                removeToolStripMenuItem.Visible = false;
+            }
+        }
+
         private void removeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //only saved controllers can be removed from list
@@ -396,21 +478,140 @@ namespace abbTools
             status.writeLog(logType.info, "controller <bu>" + controllerName + "</bu> added to saved group!");
         }
 
-        private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void updateIcon(ListViewItem cItem, abbStatus.conn newStatus, int overrideSim = -1)
         {
-            //show save dialog
-            saveDialog.InitialDirectory = Application.StartupPath;
-            saveDialog.ShowDialog();
-            //save elements to selected file
-            saveMyRobots(saveDialog.FileName);
+            int offset = -1;
+            //check if user specified if current item is sim or real
+            if (overrideSim >= 0) {
+                offset = overrideSim == 0 ? 0 : 4;
+            } else {
+                //check if selected item is virtual or real
+                if (cItem.StateImageIndex >= 0) {
+                    offset = Convert.ToInt16(cItem.StateImageIndex >= (int)abbStatus.found.sim) * 4;
+                } else {
+                    if (cItem.Group == listViewRobots.Groups["robotsGroupNet"]) {
+                        offset = 0;
+                    } else if (cItem.Group == listViewRobots.Groups["robotsGroupSim"]) {
+                        offset = 4;
+                    }
+                }
+            }
+            //check if input is ok
+            if (offset >= 0) {
+                //check new status
+                if (newStatus == abbStatus.conn.available) {
+                    if (cItem.Group.Header == "saved") {
+                        cItem.StateImageIndex = (int)abbStatus.found.netSaveAvail + offset;
+                    } else {
+                        cItem.StateImageIndex = (int)abbStatus.found.net + offset;
+                    }
+                } else if (newStatus == abbStatus.conn.connOK) {
+                    cItem.StateImageIndex = (int)abbStatus.found.netSaveConn + offset;
+                } else if (newStatus == abbStatus.conn.disconnOK) {
+                    if (cItem.Group.Header == "saved") {
+                        cItem.StateImageIndex = (int)abbStatus.found.netSaveAvail + offset;
+                    } else {
+                        cItem.StateImageIndex = (int)abbStatus.found.net + offset;
+                    }
+                } else if (newStatus == abbStatus.conn.notAvailable) {
+                    //only saved items can be visible on list and not available!
+                    cItem.StateImageIndex = (int)abbStatus.found.netSaveDiscon + offset;
+                }
+            }
         }
 
-        private Controller itemToController(ListViewItem item)
+        private void btnRobotListCollapse_Click(object sender, EventArgs e)
         {
-            Controller result = null;
-            if (item.Tag != null) result = ControllerFactory.CreateFrom((ControllerInfo)item.Tag);
-            return result;
+            //toggle panel collapse
+            appContainer.Panel1Collapsed = !appContainer.Panel1Collapsed;
+            //check if panel is collapsed (then adjust GUI)
+            if (appContainer.Panel1Collapsed) {
+                btnRobotListCollapse.Parent = appContainer.Panel2;
+                btnRobotListCollapse.Dock = DockStyle.Left;
+                btnRobotListCollapse.Text = ">>>";
+                tabActions.Location = new Point(42, 12);
+                tabActions.Width -= 40;
+                //if container is collapsed then center all views in tabs
+                foreach (TabPage page in tabActions.TabPages) {
+                    if (page.Controls.Count > 0) {
+                        Control child = page.Controls[0];
+                        child.Dock = DockStyle.None;
+                        child.Left = (tabActions.Width - child.Width) / 2;
+                    }
+                }
+            } else {
+                btnRobotListCollapse.Parent = appContainer.Panel1;
+                btnRobotListCollapse.Dock = DockStyle.Right;
+                btnRobotListCollapse.Text = "<<<";
+                tabActions.Location = new Point(2, 12);
+                tabActions.Width += 40;
+                //if container is not collapsed then dock all views in tabs
+                foreach (TabPage page in tabActions.TabPages) {
+                    if (page.Controls.Count > 0) {
+                        Control child = page.Controls[0];
+                        child.Dock = DockStyle.Fill;
+                    }
+                }
+            }
         }
+
+        private void listViewRobots_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Delete) {
+                //delete robot only from saved group
+                ListViewItem item = listViewRobots.FocusedItem;
+                if (item != null && item.Group.Header == "saved") {
+                    int currState = item.StateImageIndex;
+                    if (currState == (int)abbStatus.found.netSaveConn) {
+                        //visible robots move to network groups
+                        item.Group = listViewRobots.Groups["robotsGroupNet"];
+                        item.StateImageIndex = (int)abbStatus.found.net;
+                    } else if (currState == (int)abbStatus.found.simSaveConn) {
+                        //visible robots move to virtual groups
+                        item.Group = listViewRobots.Groups["robotsGroupSim"];
+                        item.StateImageIndex = (int)abbStatus.found.sim;
+                    } else {
+                        //delete non-visible robots
+                        this.listViewRobots.Items.Remove(item);
+                    }
+                }
+            }
+        }
+
+        private void connectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //connect to selected controller
+            int connStatus = connectController(listViewRobots.FocusedItem);
+            if (connStatus == (int)abbStatus.conn.connOK) {
+                //send controller address to other classes
+                appRemotePC.syncController(abbConn);
+                appBackupManager.syncController(abbConn);
+                appWindowsIPC.syncController(abbConn);
+            }
+
+        }
+
+        private void listViewRobots_DoubleClick(object sender, EventArgs e)
+        {
+            //connect to selected controller (simulate connect tool strip click event)
+            connectToolStripMenuItem_Click(sender, e);
+        }
+
+        private void disconnectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //disconnect from selected controller
+            int disconnStatus = disconnectController(listViewRobots.FocusedItem);
+            if (disconnStatus == (int)abbStatus.conn.disconnOK) {
+                //clear controller address in my programs
+                appRemotePC.desyncController();
+                appBackupManager.desyncController();
+                appWindowsIPC.desyncController();
+            }
+        }
+
+        /********************************************************
+         ***  MAIN WINDOW - abb robots management
+         ********************************************************/
 
         private void saveMyRobots(string filePath)
         {
@@ -513,6 +714,13 @@ namespace abbTools
             }
         }
 
+        private Controller itemToController(ListViewItem item)
+        {
+            Controller result = null;
+            if (item.Tag != null) result = ControllerFactory.CreateFrom((ControllerInfo)item.Tag);
+            return result;
+        }
+
         private bool sameController(ListViewItem listedRobot, ControllerInfo abbRobot)
         {
             bool sameName = listedRobot.Text == abbRobot.Name;
@@ -547,15 +755,6 @@ namespace abbTools
                 index++;
             }
             return result;
-        }
-        
-        private void openToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            //show open dialog
-            openDialog.InitialDirectory = Application.StartupPath;
-            openDialog.ShowDialog();
-            //save elements to selected file
-            loadMyRobots(openDialog.FileName);
         }
 
         private int connectController(ListViewItem listController)
@@ -658,113 +857,9 @@ namespace abbTools
             return (int)abbStatus.conn.disconnOK;
         }
 
-
-        private void btnRobotListCollapse_Click(object sender, EventArgs e)
-        {
-            //toggle panel collapse
-            appContainer.Panel1Collapsed = !appContainer.Panel1Collapsed;
-            //check if panel is collapsed (then adjust GUI)
-            if (appContainer.Panel1Collapsed) {
-                btnRobotListCollapse.Parent = appContainer.Panel2;
-                btnRobotListCollapse.Dock = DockStyle.Left;
-                btnRobotListCollapse.Text = ">>>";
-                tabActions.Location = new Point(42, 12);
-                tabActions.Width -= 40;
-                //if container is collapsed then center all views in tabs
-                foreach (TabPage page in tabActions.TabPages) {
-                    if (page.Controls.Count > 0) {
-                        Control child = page.Controls[0];
-                        child.Dock = DockStyle.None;
-                        child.Left = (tabActions.Width - child.Width) / 2;
-                    }
-                }
-            } else {
-                btnRobotListCollapse.Parent = appContainer.Panel1;
-                btnRobotListCollapse.Dock = DockStyle.Right;
-                btnRobotListCollapse.Text = "<<<";
-                tabActions.Location = new Point(2, 12);
-                tabActions.Width += 40;
-                //if container is not collapsed then dock all views in tabs
-                foreach (TabPage page in tabActions.TabPages) {
-                    if (page.Controls.Count > 0) {
-                        Control child = page.Controls[0];
-                        child.Dock = DockStyle.Fill;
-                    }
-                }
-            }
-        }
-
-        private void listViewRobots_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyData == Keys.Delete) {
-                //delete robot only from saved group
-                ListViewItem item = listViewRobots.FocusedItem;
-                if (item != null && item.Group.Header == "saved") {
-                    int currState = item.StateImageIndex;
-                    if (currState == (int)abbStatus.found.netSaveConn) {
-                        //visible robots move to network groups
-                        item.Group = listViewRobots.Groups["robotsGroupNet"];
-                        item.StateImageIndex = (int)abbStatus.found.net;
-                    } else if (currState == (int)abbStatus.found.simSaveConn) {
-                        //visible robots move to virtual groups
-                        item.Group = listViewRobots.Groups["robotsGroupSim"];
-                        item.StateImageIndex = (int)abbStatus.found.sim;
-                    } else {
-                        //delete non-visible robots
-                        this.listViewRobots.Items.Remove(item);
-                    }
-                }
-            }
-        }
-
-        private void connectToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //connect to selected controller
-            int connStatus = connectController(listViewRobots.FocusedItem);
-            if (connStatus == (int)abbStatus.conn.connOK) {
-                //send controller address to other classes
-                appRemotePC.syncController(abbConn);
-                appBackupManager.syncController(abbConn);
-                appWindowsIPC.syncController(abbConn);
-            }
-
-        }
-
-        private void listViewRobots_DoubleClick(object sender, EventArgs e)
-        {
-            //connect to selected controller
-            int connStatus = connectController(listViewRobots.FocusedItem);
-            if (connStatus == (int)abbStatus.conn.connOK) {
-                //send controller address to my programs
-                appRemotePC.syncController(abbConn);
-                appBackupManager.syncController(abbConn);
-                appWindowsIPC.syncController(abbConn);
-            }
-        }
-
-        private void disconnectToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //disconnect from selected controller
-            int disconnStatus = disconnectController(listViewRobots.FocusedItem);
-            if (disconnStatus == (int)abbStatus.conn.disconnOK) {
-                //clear controller address in my programs
-                appRemotePC.desyncController();
-                appBackupManager.desyncController();
-                appWindowsIPC.desyncController();
-            }
-        }
-
-        private void toolsToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            //no new taskbar element
-            appSettings.ShowInTaskbar = false;
-            //position in center of main form
-            appSettings.StartPosition = FormStartPosition.Manual;
-            appSettings.Top = Top + (Height - appSettings.Height) / 2;
-            appSettings.Left = Left + (Width - appSettings.Width) / 2;
-            //show form
-            appSettings.ShowDialog();
-        }
+        /********************************************************
+         ***  MAIN WINDOW - email management
+         ********************************************************/
 
         private void sendMail(abbStatus.mail mailType)
         {
@@ -775,50 +870,8 @@ namespace abbTools
             }
         }
 
-        private void updateIcon(ListViewItem cItem, abbStatus.conn newStatus, int overrideSim=-1)
-        {
-            int offset = -1;
-            //check if user specified if current item is sim or real
-            if (overrideSim >= 0) {
-                offset = overrideSim == 0 ? 0 : 4;
-            } else {
-                //check if selected item is virtual or real
-                if (cItem.StateImageIndex >= 0) {
-                    offset = Convert.ToInt16(cItem.StateImageIndex >= (int)abbStatus.found.sim) * 4;
-                } else {
-                    if (cItem.Group == listViewRobots.Groups["robotsGroupNet"]) {
-                        offset = 0;
-                    } else if (cItem.Group == listViewRobots.Groups["robotsGroupSim"]) {
-                        offset = 4;
-                    }
-                }
-            }
-            //check if input is ok
-            if (offset >= 0) {
-                //check new status
-                if (newStatus == abbStatus.conn.available) {
-                    if (cItem.Group.Header == "saved") {
-                        cItem.StateImageIndex = (int)abbStatus.found.netSaveAvail + offset;
-                    } else {
-                        cItem.StateImageIndex = (int)abbStatus.found.net + offset;
-                    }
-                } else if (newStatus == abbStatus.conn.connOK) {
-                    cItem.StateImageIndex = (int)abbStatus.found.netSaveConn + offset;
-                } else if (newStatus == abbStatus.conn.disconnOK) {
-                    if (cItem.Group.Header == "saved") {
-                        cItem.StateImageIndex = (int)abbStatus.found.netSaveAvail + offset;
-                    } else {
-                        cItem.StateImageIndex = (int)abbStatus.found.net + offset;
-                    }
-                } else if (newStatus == abbStatus.conn.notAvailable) {
-                    //only saved items can be visible on list and not available!
-                    cItem.StateImageIndex = (int)abbStatus.found.netSaveDiscon + offset;
-                }
-            }
-        }
-
         /********************************************************
-         ***  USER APPS - add your apps operations here
+         ***  MAIN WINDOW - abbTools apps operations
          ********************************************************/
 
         private void appsLoadProgramActions()
@@ -878,12 +931,6 @@ namespace abbTools
             appRemotePC.controllerFound(foundController);
             appBackupManager.savedControllerFound(foundController);
             appWindowsIPC.savedControllerFound(foundController);
-        }
-
-        private void tabActions_Selecting(object sender, TabControlCancelEventArgs e)
-        {
-            e.Cancel = tabActions.CausesValidation;
-            if (e.TabPageIndex == 0) tabActions.CausesValidation = true;
         }
 
         private void appsControllerLost(Controller lostController)

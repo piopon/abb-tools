@@ -50,6 +50,7 @@ namespace abbTools
         public appRemoteABB()
         {
             appName = "appRemotePC";
+            appDescr = "Control PC remotely from ABB signals";
             InitializeComponent();
             abbController = null;
             abbLogger = null;
@@ -64,6 +65,7 @@ namespace abbTools
         public appRemoteABB(loggerABB newLogger)
         {
             appName = "appRemotePC";
+            appDescr = "Control PC remotely from ABB signals";
             InitializeComponent();
             abbController = null;
             abbLogger = newLogger;

@@ -54,6 +54,7 @@ namespace abbTools.AppWindowsIPC
         public appWindowsIPC()
         {
             appName = "appWindowsIPC";
+            appDescr = "Update ABB signals from external app";
             //init all form components
             InitializeComponent();
             //init data containers

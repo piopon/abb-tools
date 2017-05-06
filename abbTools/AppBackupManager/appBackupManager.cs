@@ -44,6 +44,7 @@ namespace abbTools.AppBackupManager
         public appBackupManager()
         {
             appName = "appBackupManager";
+            appDescr = "Scheduled backups management";
             //init all form components
             InitializeComponent();
             //init data containers

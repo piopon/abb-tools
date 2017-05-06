@@ -8,6 +8,10 @@ namespace abbTools.Shared
 {
     public interface IAbbApplication
     {
+        /********************************************************
+         ***  ABB APPLICATION - properties
+         ********************************************************/
+
         /// <summary>
         /// GET or SET property defining application name
         /// </summary>
@@ -39,26 +43,58 @@ namespace abbTools.Shared
         int appWidth { get; set; }
     }
 
+    //================================================================================================================================
+    //================================================================================================================================
+    //================================================================================================================================
+
     public class AbbApplicationCollection : List<IAbbApplication>
     {
-        object parentPages = null;
+        /********************************************************
+         ***  ABB APPLICATION COLLECTION - data
+         ********************************************************/
 
+        //pages containing abbTools applications
+        private object parentPages = null;
+
+        /********************************************************
+         ***  ABB APPLICATION COLLECTION - constructor
+         ********************************************************/
+
+        /// <summary>
+        /// Constructor with parent pages data init
+        /// </summary>
+        /// <param name="parent"></param>
         public AbbApplicationCollection(object parent)
         {
             parentPages = parent;
         }
 
-        public void registerApp(IAbbApplication newApp, string descr, string iconName, int height = 709, int width = 1010)
+        /********************************************************
+         ***  ABB APPLICATION COLLECTION - public data
+         ********************************************************/
+
+        /// <summary>
+        /// Method used to register abbTool application and add it to collection
+        /// </summary>
+        /// <param name="newApp">abbTool application object</param>
+        /// <param name="descr">Description of current application</param>
+        /// <param name="iconName">Application icon</param>
+        /// <param name="height">Application height</param>
+        /// <param name="width">Application width</param>
+        public void registerApp(IAbbApplication newApp, string iconName, int height, int width)
         {
             newApp.appIndex = Count;
             newApp.appIcon = iconName;
             newApp.appHeight = height;
             newApp.appWidth = width;
-            newApp.appDescr = descr;
             //add app to collection
             Add(newApp);
         }
 
+        /// <summary>
+        /// Function used to generate and populate application dashboard
+        /// </summary>
+        /// <returns>New generated dashboard Panel containing application buttons</returns>
         public Panel generateDashboard()
         {
             Panel mainDashboard = new Panel();
@@ -71,6 +107,37 @@ namespace abbTools.Shared
             return mainDashboard;
         }
 
+        /// <summary>
+        /// Method used to reorder parent pages in order defined by registration
+        /// </summary>
+        public void reorderPages()
+        {
+            if (parentPages != null && parentPages.GetType().FullName.Contains("TabControl")) {
+                TabControl myPar = (TabControl)parentPages;
+                List<TabPage> newOrder = new List<TabPage>(Count);
+                //remember collection order
+                foreach (IAbbApplication app in this) {
+                    string tabName = $"action{app.appName.Substring(3)}";
+                    myPar.SelectTab(tabName);
+                    newOrder.Add(myPar.SelectedTab);
+                }
+                //apply order to GUI
+                for (int page = 0; page < Count; page++) {
+                    myPar.TabPages[page + 1] = newOrder[page];
+                }
+                //show dashboard
+                myPar.SelectTab(0);
+            }
+        }
+
+        /********************************************************
+         ***  ABB APPLICATION COLLECTION - private data
+         ********************************************************/
+
+        /// <summary>
+        /// Method generating buttons and labels to input parent dashboard
+        /// </summary>
+        /// <param name="parent">Parent dashboard Panel containing icons of apps</param>
         private void populateDashboard(Panel parent)
         {
             //contant buttons dimensions
@@ -114,6 +181,11 @@ namespace abbTools.Shared
             }
         }
 
+        /// <summary>
+        /// Function used to calculate offset between application buttons
+        /// </summary>
+        /// <param name="whichElement">Which element to calculate offset (-1 to get cols and rows number)</param>
+        /// <returns>Tuple containing cols and rows offset (or number if input = -1)</returns>
         private Tuple<int,int> currOffset(int whichElement)
         {
             int threshold = 4, 
@@ -127,6 +199,11 @@ namespace abbTools.Shared
             return new Tuple<int,int>(resultCols, resultRows);
         }
 
+        /// <summary>
+        /// Generate event method connected to created app buttons onclick method
+        /// </summary>
+        /// <param name="sender">Button parent that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void AppButton_Click(object sender, System.EventArgs e)
         {
             Button clicked = (Button)sender;
@@ -136,35 +213,18 @@ namespace abbTools.Shared
                 TabControl myPar = (TabControl)parentPages;
                 myPar.CausesValidation = false;
                 myPar.SelectedIndex = app.appIndex + 1;
-                //myPar.CausesValidation = true;
             }
         }
 
+        /// <summary>
+        /// Function used to get icon Bitmap object from application resources
+        /// </summary>
+        /// <param name="name">Application resource name</param>
+        /// <returns>Bitmap object containing inputted icon name</returns>
         private Bitmap getBitmapIcon(string name)
         {
             Bitmap res = (Bitmap)Resources.ResourceManager.GetObject(name);
             return res;
         }
-
-        public void reorderPages()
-        {
-            if (parentPages != null && parentPages.GetType().FullName.Contains("TabControl")) {
-                TabControl myPar = (TabControl)parentPages;
-                List<TabPage> newOrder = new List<TabPage>(Count);
-                //remember collection order
-                foreach (IAbbApplication app in this) {
-                    string tabName = $"action{app.appName.Substring(3)}";
-                    myPar.SelectTab(tabName);
-                    newOrder.Add(myPar.SelectedTab);
-                }
-                //apply order to GUI
-                for (int page = 0; page < Count; page++) {
-                    myPar.TabPages[page+1] = newOrder[page];
-                }
-                //show dashboard
-                myPar.SelectTab(0);
-            }
-        }
-
     }
 }
