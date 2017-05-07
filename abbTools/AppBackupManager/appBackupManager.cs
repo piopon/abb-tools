@@ -1,11 +1,12 @@
 ﻿using abbTools.Windows;
+using abbTools.Shared;
 using System;
 using System.Windows.Forms;
 using ABB.Robotics.Controllers;
 
 namespace abbTools.AppBackupManager
 {
-    public partial class appBackupManager : UserControl
+    public partial class appBackupManager : UserControl, IAbbApplication
     {
         /********************************************************
          ***  APP BACKUP MANAGER - data
@@ -16,15 +17,22 @@ namespace abbTools.AppBackupManager
         private BackupManager currData = null;
         private loggerABB abbLogger = null;
         //additional windows & settings
-        public int parentHeight;
-        public int parentWidth;
         int doBackupIndex;
         int diBackupIndex;
         windowRobotSig signalsWindow;
         windowRobotFiles filesWindow;
+        
         //event
         public delegate void updateXMLFile();
         public event updateXMLFile UpdateBackupTimeInXML;
+
+        //interface implementation
+        public string appName { get; }
+        public int appIndex { get; set; }
+        public string appIcon { get; set; }
+        public string appDescr { get; set; }
+        public int appHeight { get; set; }
+        public int appWidth { get; set; }
 
         /********************************************************
          ***  APP IPC - manage connection data containers
@@ -35,6 +43,8 @@ namespace abbTools.AppBackupManager
         /// </summary>
         public appBackupManager()
         {
+            appName = "appBackupManager";
+            appDescr = "Scheduled backups management";
             //init all form components
             InitializeComponent();
             //init data containers
@@ -122,8 +132,8 @@ namespace abbTools.AppBackupManager
                 signalsWindow.StartPosition = FormStartPosition.CenterParent;
                 signalsWindow.ShowInTaskbar = false;
             }
-            signalsWindow.Height = parentHeight;
-            signalsWindow.Width = parentWidth;
+            signalsWindow.Height = appHeight;
+            signalsWindow.Width = appWidth;
             signalsWindow.updateSignals(currData.controller);
             //update controllers file structure in background
             if (filesWindow == null) {
@@ -132,8 +142,8 @@ namespace abbTools.AppBackupManager
                 filesWindow.StartPosition = FormStartPosition.CenterParent;
                 filesWindow.ShowInTaskbar = false;
             }
-            filesWindow.Height = parentHeight;
-            filesWindow.Width = parentWidth;
+            filesWindow.Height = appHeight;
+            filesWindow.Width = appWidth;
             filesWindow.updateFiles(currData.controller);
         }
 

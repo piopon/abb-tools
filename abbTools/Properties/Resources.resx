@@ -124,22 +124,31 @@
   <data name="mainMenu_info" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\img\mainMenu_info.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="windowMain_back" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\img\windowMain_back.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="mainMenu_exit" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\img\mainMenu_exit.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="mainMenu_abb" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\img\mainMenu_abb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="mainMenu_exit" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\img\mainMenu_exit.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="appIPC" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\img\appIPC.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="mainMenu_settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\img\mainMenu_settings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="sidebar" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\img\sidebar.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="windowMain_back" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\img\windowMain_back.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="mainMenu_minimize" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\img\mainMenu_minimize.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="sidebar" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\img\sidebar.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="mainMenu_settings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\img\mainMenu_settings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="appBackup" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\img\appBackup.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="appPC" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\img\appPC.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

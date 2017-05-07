@@ -84,7 +84,7 @@
             this.appRemotePC = new abbTools.appRemoteABB();
             this.actionBackupManager = new System.Windows.Forms.TabPage();
             this.appBackupManager = new abbTools.AppBackupManager.appBackupManager();
-            this.actionWinIPC = new System.Windows.Forms.TabPage();
+            this.actionWindowsIPC = new System.Windows.Forms.TabPage();
             this.appWindowsIPC = new abbTools.AppWindowsIPC.appWindowsIPC();
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
@@ -102,7 +102,7 @@
             this.tabActions.SuspendLayout();
             this.actionRemotePC.SuspendLayout();
             this.actionBackupManager.SuspendLayout();
-            this.actionWinIPC.SuspendLayout();
+            this.actionWindowsIPC.SuspendLayout();
             this.SuspendLayout();
             // 
             // notifyIcon
@@ -574,7 +574,7 @@
             this.tabActions.Controls.Add(this.actionDashboard);
             this.tabActions.Controls.Add(this.actionRemotePC);
             this.tabActions.Controls.Add(this.actionBackupManager);
-            this.tabActions.Controls.Add(this.actionWinIPC);
+            this.tabActions.Controls.Add(this.actionWindowsIPC);
             this.tabActions.ItemSize = new System.Drawing.Size(100, 23);
             this.tabActions.Location = new System.Drawing.Point(1, 12);
             this.tabActions.Margin = new System.Windows.Forms.Padding(100);
@@ -582,6 +582,7 @@
             this.tabActions.SelectedIndex = 0;
             this.tabActions.Size = new System.Drawing.Size(715, 588);
             this.tabActions.TabIndex = 0;
+            this.tabActions.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabActions_Selecting);
             // 
             // actionDashboard
             // 
@@ -590,7 +591,7 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(719, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(707, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
@@ -603,12 +604,17 @@
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
             this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(719, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(713, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
             // 
             // appRemotePC
             // 
+            this.appRemotePC.appDescr = null;
+            this.appRemotePC.appHeight = 0;
+            this.appRemotePC.appIcon = null;
+            this.appRemotePC.appIndex = 0;
+            this.appRemotePC.appWidth = 0;
             this.appRemotePC.BackColor = System.Drawing.Color.White;
             this.appRemotePC.Location = new System.Drawing.Point(0, 0);
             this.appRemotePC.Margin = new System.Windows.Forms.Padding(0);
@@ -624,31 +630,41 @@
             this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
             this.actionBackupManager.Name = "actionBackupManager";
             this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
-            this.actionBackupManager.Size = new System.Drawing.Size(719, 557);
+            this.actionBackupManager.Size = new System.Drawing.Size(713, 557);
             this.actionBackupManager.TabIndex = 1;
             this.actionBackupManager.Text = "backupManager";
             // 
             // appBackupManager
             // 
+            this.appBackupManager.appDescr = null;
+            this.appBackupManager.appHeight = 0;
+            this.appBackupManager.appIcon = null;
+            this.appBackupManager.appIndex = 0;
+            this.appBackupManager.appWidth = 0;
             this.appBackupManager.BackColor = System.Drawing.Color.White;
             this.appBackupManager.Location = new System.Drawing.Point(0, 0);
             this.appBackupManager.Name = "appBackupManager";
-            this.appBackupManager.Size = new System.Drawing.Size(714, 557);
+            this.appBackupManager.Size = new System.Drawing.Size(707, 557);
             this.appBackupManager.TabIndex = 0;
             // 
-            // actionWinIPC
+            // actionWindowsIPC
             // 
-            this.actionWinIPC.BackColor = System.Drawing.Color.White;
-            this.actionWinIPC.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
-            this.actionWinIPC.Controls.Add(this.appWindowsIPC);
-            this.actionWinIPC.Location = new System.Drawing.Point(4, 27);
-            this.actionWinIPC.Name = "actionWinIPC";
-            this.actionWinIPC.Size = new System.Drawing.Size(707, 557);
-            this.actionWinIPC.TabIndex = 3;
-            this.actionWinIPC.Text = "windowsIPC";
+            this.actionWindowsIPC.BackColor = System.Drawing.Color.White;
+            this.actionWindowsIPC.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
+            this.actionWindowsIPC.Controls.Add(this.appWindowsIPC);
+            this.actionWindowsIPC.Location = new System.Drawing.Point(4, 27);
+            this.actionWindowsIPC.Name = "actionWindowsIPC";
+            this.actionWindowsIPC.Size = new System.Drawing.Size(713, 557);
+            this.actionWindowsIPC.TabIndex = 3;
+            this.actionWindowsIPC.Text = "windowsIPC";
             // 
             // appWindowsIPC
             // 
+            this.appWindowsIPC.appDescr = null;
+            this.appWindowsIPC.appHeight = 0;
+            this.appWindowsIPC.appIcon = null;
+            this.appWindowsIPC.appIndex = 0;
+            this.appWindowsIPC.appWidth = 0;
             this.appWindowsIPC.BackColor = System.Drawing.Color.White;
             this.appWindowsIPC.Location = new System.Drawing.Point(0, 0);
             this.appWindowsIPC.Name = "appWindowsIPC";
@@ -692,7 +708,7 @@
             this.tabActions.ResumeLayout(false);
             this.actionRemotePC.ResumeLayout(false);
             this.actionBackupManager.ResumeLayout(false);
-            this.actionWinIPC.ResumeLayout(false);
+            this.actionWindowsIPC.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -743,7 +759,7 @@
         private System.Windows.Forms.PictureBox pictureLogType;
         private System.Windows.Forms.Panel panelConnStatus;
         private System.Windows.Forms.ImageList imagesLogType;
-        private System.Windows.Forms.TabPage actionWinIPC;
+        private System.Windows.Forms.TabPage actionWindowsIPC;
         private AppWindowsIPC.appWindowsIPC appWindowsIPC;
         private AppBackupManager.appBackupManager appBackupManager;
     }

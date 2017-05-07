@@ -4,10 +4,11 @@ using System.Windows.Forms;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.IOSystemDomain;
 using abbTools.AppRemoteABB;
+using abbTools.Shared;
 
 namespace abbTools
 {
-    public partial class appRemoteABB : UserControl
+    public partial class appRemoteABB : UserControl, IAbbApplication
     {
         /********************************************************
          ***  APP REMOTE - data 
@@ -21,14 +22,24 @@ namespace abbTools
                      resultCondition = false,
                      pcCondition = false,
                      watchCondition = false;
+        
         //ABB remote and current signals collection
         RemoteABBCollection remoteABB = null;
         SignalCollection abbSignals = null;
+        
         //remember checked elements (signals, watch)
         private int selectedSig = -1;
         private int selectedRes = -1;
         private string actorModifiers = "";
-        
+
+        //interface implementation
+        public string appName { get; }
+        public int appIndex { get; set; }
+        public string appIcon { get; set; }
+        public string appDescr { get; set; }
+        public int appHeight { get; set; }
+        public int appWidth { get; set; }
+
         /********************************************************
          ***  APP REMOTE - constructors
          ********************************************************/
@@ -38,6 +49,8 @@ namespace abbTools
         /// </summary>
         public appRemoteABB()
         {
+            appName = "appRemotePC";
+            appDescr = "Control PC remotely from ABB signals";
             InitializeComponent();
             abbController = null;
             abbLogger = null;
@@ -51,6 +64,8 @@ namespace abbTools
         /// <param name="newLogger">New logger object</param>
         public appRemoteABB(loggerABB newLogger)
         {
+            appName = "appRemotePC";
+            appDescr = "Control PC remotely from ABB signals";
             InitializeComponent();
             abbController = null;
             abbLogger = newLogger;

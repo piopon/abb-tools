@@ -131,6 +131,8 @@
     </Compile>
     <Compile Include="AppWindowsIPC\WindowsIPCComm.cs" />
     <Compile Include="AppWindowsIPC\WindowsIPCStats.cs" />
+    <Compile Include="Shared\AbbApplication.cs" />
+    <Compile Include="Shared\AppsManager.cs" />
     <Compile Include="UnitTests\AppRemoteABBTests.cs" />
     <Compile Include="UnitTests\AppWindowsIPCTests.cs" />
     <Compile Include="UnitTests\EmbeddedResource.cs" />
@@ -261,6 +263,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="appIcon.ico" />
+    <None Include="Resources\img\appPC.png" />
+    <None Include="Resources\img\appIPC.png" />
+    <None Include="Resources\img\appBackup.png" />
+    <None Include="Resources\appBackup.bmp" />
     <EmbeddedResource Include="Resources\tests\source.xml" />
     <None Include="Resources\img\sidebar.jpg" />
     <None Include="Resources\img\windowAbout_back.jpg" />

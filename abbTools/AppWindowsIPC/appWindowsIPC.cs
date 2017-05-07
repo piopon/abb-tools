@@ -3,10 +3,11 @@ using System.Drawing;
 using System.Windows.Forms;
 using ABB.Robotics.Controllers;
 using ABB.Robotics.Controllers.IOSystemDomain;
+using abbTools.Shared;
 
 namespace abbTools.AppWindowsIPC
 {
-    public partial class appWindowsIPC : UserControl
+    public partial class appWindowsIPC : UserControl, IAbbApplication
     {
         /********************************************************
          ***  APP IPC - data
@@ -28,13 +29,20 @@ namespace abbTools.AppWindowsIPC
                      msgCondition = false,
                      serverCondition = false,
                      watchCondition = false;
+
         //remember current selected data
         private int syncIndex = -1;
-        public int parentHeight = 0;
-        public int parentWidth = 0;
         private string currMessage = "";
         private string currSignal = "";
         private bool checkBoxClick;
+
+        //interface implementation
+        public string appName { get; }
+        public int appIndex { get; set; }
+        public string appIcon { get; set; }
+        public string appDescr { get; set; }
+        public int appHeight { get; set; }
+        public int appWidth { get; set; }
 
         /********************************************************
          ***  APP IPC - manage connection data containers
@@ -45,6 +53,8 @@ namespace abbTools.AppWindowsIPC
         /// </summary>
         public appWindowsIPC()
         {
+            appName = "appWindowsIPC";
+            appDescr = "Update ABB signals from external app";
             //init all form components
             InitializeComponent();
             //init data containers
@@ -698,8 +708,8 @@ namespace abbTools.AppWindowsIPC
         {
             windowClientStatus status = new windowClientStatus(testClient, ipcData);
             status.StartPosition = FormStartPosition.CenterParent;
-            status.Height = parentHeight;
-            status.Width = parentWidth;
+            status.Height = appHeight;
+            status.Width = appWidth;
             status.ShowInTaskbar = false;
             status.ShowDialog();
         }
