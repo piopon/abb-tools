@@ -134,6 +134,7 @@ namespace abbTools.AppBackupManager
             }
             signalsWindow.Height = appHeight;
             signalsWindow.Width = appWidth;
+            //update signals in background
             signalsWindow.updateSignals(currData.controller);
             //update controllers file structure in background
             if (filesWindow == null) {
@@ -142,8 +143,12 @@ namespace abbTools.AppBackupManager
                 filesWindow.StartPosition = FormStartPosition.CenterParent;
                 filesWindow.ShowInTaskbar = false;
             }
+            //update window size
             filesWindow.Height = appHeight;
             filesWindow.Width = appWidth;
+            //update source directory
+            filesWindow.selectedDir = currData.robotDirSrc;
+            //update files in background
             filesWindow.updateFiles(currData.controller);
         }
 
@@ -882,6 +887,7 @@ namespace abbTools.AppBackupManager
         /// <param name="e">Event arguments</param>
         private void btnRobBackupDir_Click(object sender, EventArgs e)
         {
+            //show window
             filesWindow.ShowDialog();
             //check if directory was selected
             currData.robotDirSrc = filesWindow.selectedDir;
