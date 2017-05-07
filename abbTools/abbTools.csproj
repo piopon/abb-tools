@@ -132,6 +132,7 @@
     <Compile Include="AppWindowsIPC\WindowsIPCComm.cs" />
     <Compile Include="AppWindowsIPC\WindowsIPCStats.cs" />
     <Compile Include="Shared\AbbApplication.cs" />
+    <Compile Include="Shared\AppsManager.cs" />
     <Compile Include="UnitTests\AppRemoteABBTests.cs" />
     <Compile Include="UnitTests\AppWindowsIPCTests.cs" />
     <Compile Include="UnitTests\EmbeddedResource.cs" />

@@ -29,7 +29,7 @@ namespace abbTools
         //status writer
         private loggerABB status = null;
         //applications management object
-        private AbbApplicationCollection myApps;
+        private AppsManager myApps;
 
         /********************************************************
          ***  MAIN WINDOW - constructor
@@ -61,10 +61,10 @@ namespace abbTools
          ********************************************************/
 
         /// <summary>
-        /// 
+        /// Event connected to catch unhandled exceptions triggered by app domain
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">AppDomain object that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void abbToolsThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             //send e-mail that app is closed
@@ -73,10 +73,10 @@ namespace abbTools
         }
 
         /// <summary>
-        /// 
+        /// Event connected to catch unhandled exception by any app thread
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Application element that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void abbToolsUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             //send e-mail that app is closed
@@ -93,7 +93,7 @@ namespace abbTools
         /// </summary>
         private void appsRegister()
         {
-            myApps = new AbbApplicationCollection(tabActions);
+            myApps = new AppsManager(tabActions);
             myApps.registerApp(appBackupManager, "appBackup", Height, Width);
             myApps.registerApp(appRemotePC, "appPC", Height, Width);
             myApps.registerApp(appWindowsIPC, "appIPC", Height, Width);
@@ -111,6 +111,11 @@ namespace abbTools
             myApps.reorderPages();
         }
 
+        /// <summary>
+        /// Event triggered at change of page in application tabs control
+        /// </summary>
+        /// <param name="sender">TabPages that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void tabActions_Selecting(object sender, TabControlCancelEventArgs e)
         {
             e.Cancel = tabActions.CausesValidation;
@@ -121,6 +126,11 @@ namespace abbTools
          ***  MAIN WINDOW - main window events
          ********************************************************/
 
+        /// <summary>
+        /// Event triggered on applications main window load (create)
+        /// </summary>
+        /// <param name="sender">Main app window object</param>
+        /// <param name="e">Event arguments</param>
         private void windowMain_Load(object sender, EventArgs e)
         {
             int foundSavedController = -1;
@@ -174,6 +184,11 @@ namespace abbTools
             abbWatcher.Lost += abbWatcherLostEvent;
         }
 
+        /// <summary>
+        /// Event triggered on close main app window
+        /// </summary>
+        /// <param name="sender">Main app window object to be closed</param>
+        /// <param name="e">Event arguments</param>
         private void windowMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             abbWatcher.Found -= abbWatcherFoundEvent;
@@ -186,16 +201,31 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Event connected to ABB network watched and triggered when controller was lost during program executrion
+        /// </summary>
+        /// <param name="sender">ABB Waatcher object</param>
+        /// <param name="e">Event arguments</param>
         private void abbWatcherLostEvent(object sender, NetworkWatcherEventArgs e)
         {
             Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
         }
 
+        /// <summary>
+        /// Event connected to ABB network watched and triggered when controller was found during program executrion
+        /// </summary>
+        /// <param name="sender">ABB Waatcher object</param>
+        /// <param name="e">Event arguments</param>
         private void abbWatcherFoundEvent(object sender, NetworkWatcherEventArgs e)
         {
             Invoke(new EventHandler<NetworkWatcherEventArgs>(updateRobotList), new Object[] { this, e });
         }
 
+        /// <summary>
+        /// Event triggered when main app window was resized (minimalized, etc)
+        /// </summary>
+        /// <param name="sender">Main app window object</param>
+        /// <param name="e">Event arguments</param>
         private void mainWindow_Resize(object sender, EventArgs e)
         {
             //set the notification icon
@@ -210,11 +240,21 @@ namespace abbTools
          ***  MAIN WINDOW - main menu and bar actions
          ********************************************************/
 
+        /// <summary>
+        /// Event triggered on mouse key up on menu bar (MenuStrip object)
+        /// </summary>
+        /// <param name="sender">MenuStrip object that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void menuBar_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left) isDragged = false;
         }
 
+        /// <summary>
+        /// Event triggered on mouse key down on menu bar (MenuStrip object)
+        /// </summary>
+        /// <param name="sender">MenuStrip object that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void menuBar_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left) {
@@ -224,6 +264,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Event triggered on mouse move on menu bar (MenuStrip object)
+        /// </summary>
+        /// <param name="sender">MenuStrip object that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void menuBar_MouseMove(object sender, MouseEventArgs e)
         {
             if (isDragged) {
@@ -235,6 +280,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Event triggered on OPEN menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
         private void openToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //show open dialog
@@ -244,6 +294,11 @@ namespace abbTools
             loadMyRobots(openDialog.FileName);
         }
 
+        /// <summary>
+        /// Event triggered on SAVE menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //show save dialog
@@ -253,6 +308,11 @@ namespace abbTools
             saveMyRobots(saveDialog.FileName);
         }
 
+        /// <summary>
+        /// Event triggered on SETTINGS (TOOLS) menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
         private void toolsToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //no new taskbar element
@@ -265,6 +325,11 @@ namespace abbTools
             appSettings.ShowDialog();
         }
 
+        /// <summary>
+        /// Event triggered on HELP menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
         private void helpToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             //show about window
@@ -279,11 +344,21 @@ namespace abbTools
             helpWindow.ShowDialog();
         }
 
+        /// <summary>
+        /// Event triggered on MINIMIZE menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
         private void minimizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Minimized;
         }
 
+        /// <summary>
+        /// Event triggered on NOTIFICATION ICON button click
+        /// </summary>
+        /// <param name="sender">Parent that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
             //check which button was pressed
@@ -296,6 +371,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Event triggered on SHOW (REOPEN) menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
         private void testToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //reopen window
@@ -303,6 +383,11 @@ namespace abbTools
             WindowState = FormWindowState.Normal;
         }
 
+        /// <summary>
+        /// Event triggered on EXIT menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //save settings
@@ -314,9 +399,14 @@ namespace abbTools
         }
 
         /********************************************************
-         ***  MAIN WINDOW - metwork visible robots list
+         ***  MAIN WINDOW - network visible robots list
          ********************************************************/
 
+        /// <summary>
+        /// Method used to update robot list (triggered from network watcher object)
+        /// </summary>
+        /// <param name="sender">Parent that triggered current event (controller found or lost event)</param>
+        /// <param name="e">Event arguments</param>
         private void updateRobotList(object sender, NetworkWatcherEventArgs e)
         {
             ControllerInfo eventController = e.Controller;
@@ -390,6 +480,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method triggered before showing robot list popup menu 
+        /// </summary>
+        /// <param name="sender">Parent popup menu that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void robotListQMenu_Opening(object sender, CancelEventArgs e)
         {
             if (listViewRobots.SelectedItems.Count > 0) {
@@ -425,6 +520,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method triggered after click popup menu item REMOVE FROM SAVED GROUP
+        /// </summary>
+        /// <param name="sender">Popup menu button parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void removeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //only saved controllers can be removed from list
@@ -461,6 +561,11 @@ namespace abbTools
             status.writeLog(logType.warning, "controller <bu>" + controllerName + "</bu> removed from saved group!");
         }
 
+        /// <summary>
+        /// Method triggered after click popup menu item ADD TO SAVED GROUP
+        /// </summary>
+        /// <param name="sender">Popup menu button parent that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void addToSavedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //get selected item with quick menu
@@ -478,6 +583,12 @@ namespace abbTools
             status.writeLog(logType.info, "controller <bu>" + controllerName + "</bu> added to saved group!");
         }
 
+        /// <summary>
+        /// Method used to update robot list items icon (connected, visible, not visible, saved, etc)
+        /// </summary>
+        /// <param name="cItem">Robot list item to update icon</param>
+        /// <param name="newStatus">New status of items icon</param>
+        /// <param name="overrideSim">Flag used to override check of real or virtual controller type</param>
         private void updateIcon(ListViewItem cItem, abbStatus.conn newStatus, int overrideSim = -1)
         {
             int offset = -1;
@@ -520,6 +631,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Event triggered after SplitContainer collapse button clisk
+        /// </summary>
+        /// <param name="sender">SplitContainer parent that triggers current event</param>
+        /// <param name="e">Event arguments</param>
         private void btnRobotListCollapse_Click(object sender, EventArgs e)
         {
             //toggle panel collapse
@@ -555,6 +671,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Event triggered at keyboard key down on item from robot list
+        /// </summary>
+        /// <param name="sender">Robot list that triggers current element</param>
+        /// <param name="e">Event arguments</param>
         private void listViewRobots_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyData == Keys.Delete) {
@@ -578,41 +699,51 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Event triggered on robot list item popup menu CONNECT click
+        /// </summary>
+        /// <param name="sender">Popup menu that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void connectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //connect to selected controller
             int connStatus = connectController(listViewRobots.FocusedItem);
-            if (connStatus == (int)abbStatus.conn.connOK) {
-                //send controller address to other classes
-                appRemotePC.syncController(abbConn);
-                appBackupManager.syncController(abbConn);
-                appWindowsIPC.syncController(abbConn);
-            }
-
+            //send controller address to my apps
+            if (connStatus == (int)abbStatus.conn.connOK) appsControllerSync(abbConn);
         }
 
+        /// <summary>
+        /// Event triggered when double click on robot list item
+        /// </summary>
+        /// <param name="sender">Popup menu item that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void listViewRobots_DoubleClick(object sender, EventArgs e)
         {
             //connect to selected controller (simulate connect tool strip click event)
             connectToolStripMenuItem_Click(sender, e);
         }
 
+        /// <summary>
+        /// Event triggered on robot list item popup menu DISCONNECT click
+        /// </summary>
+        /// <param name="sender">Popup menu that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void disconnectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //disconnect from selected controller
             int disconnStatus = disconnectController(listViewRobots.FocusedItem);
-            if (disconnStatus == (int)abbStatus.conn.disconnOK) {
-                //clear controller address in my programs
-                appRemotePC.desyncController();
-                appBackupManager.desyncController();
-                appWindowsIPC.desyncController();
-            }
+            //clear controller address in my programs
+            if (disconnStatus == (int)abbStatus.conn.disconnOK) appsControllerDesync();
         }
 
         /********************************************************
          ***  MAIN WINDOW - abb robots management
          ********************************************************/
 
+        /// <summary>
+        /// Method used to save all listed robots that are in SAVED GROUP
+        /// </summary>
+        /// <param name="filePath">XML file destination path</param>
         private void saveMyRobots(string filePath)
         {
             //check if path is correct
@@ -648,6 +779,10 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method used to load all SAVED GROUP robots and place them in robot list
+        /// </summary>
+        /// <param name="filePath">XML file path to load robots from</param>
         private void loadMyRobots(string filePath)
         {
             //check if path is correct
@@ -714,6 +849,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Function used to convert from ListViewItem to ABB Controller object
+        /// </summary>
+        /// <param name="item">List item to convert</param>
+        /// <returns>ABB Controller object converted from ListViewItem</returns>
         private Controller itemToController(ListViewItem item)
         {
             Controller result = null;
@@ -721,6 +861,12 @@ namespace abbTools
             return result;
         }
 
+        /// <summary>
+        /// Function used to check if current ListViewItem is the same as referenced ABB ControllerInfo object
+        /// </summary>
+        /// <param name="listedRobot">List item to be checked</param>
+        /// <param name="abbRobot">Reference ABB ControllerInfo object</param>
+        /// <returns>TRUE if both items represents the same controller, FALSE otherwise</returns>
         private bool sameController(ListViewItem listedRobot, ControllerInfo abbRobot)
         {
             bool sameName = listedRobot.Text == abbRobot.Name;
@@ -729,6 +875,13 @@ namespace abbTools
             return sameName && sameType;
         }
 
+        /// <summary>
+        /// Function used to check if current ListViewItem is the same as referenced ABB name and type objects
+        /// </summary>
+        /// <param name="listedRobot">List item to be checked</param>
+        /// <param name="robotName">Name of ABB reference controller</param>
+        /// <param name="robotSim">Type of ABB reference controller (real = FALSE or virtual = TRUE)</param>
+        /// <returns>TRUE if both items represents the same controller, FALSE otherwise</returns>
         private bool sameController(ListViewItem listedRobot, string robotName, bool robotSim)
         {
             bool sameName = listedRobot.Text == robotName;
@@ -737,6 +890,12 @@ namespace abbTools
             return sameName && sameType;
         }
 
+        /// <summary>
+        /// Function used to check if inputted controller is present on robot list
+        /// </summary>
+        /// <param name="robotName">Searched ABB Controller name (SystemName)</param>
+        /// <param name="robotSim">Searched ABB Controller type (real = FALSE, virtual = TRUE)</param>
+        /// <returns>Index of inputted ABB Controller (-1 if non-existent)</returns>
         private int findController(string robotName, bool robotSim)
         {
             int result = -1, index = 0;
@@ -757,6 +916,11 @@ namespace abbTools
             return result;
         }
 
+        /// <summary>
+        /// Function used to connect to inputted controller from list
+        /// </summary>
+        /// <param name="listController">List item from robot list controller to connect to</param>
+        /// <returns>Connection status</returns>
         private int connectController(ListViewItem listController)
         {
             int result = (int)abbStatus.conn.notAvailable;
@@ -801,6 +965,11 @@ namespace abbTools
             return result;
         }
 
+        /// <summary>
+        /// Function used to connect to inputted controller object
+        /// </summary>
+        /// <param name="selController">ABB Controller object to connect to</param>
+        /// <returns>Connection status</returns>
         private int connectController(ref Controller selController)
         {
             selController.Logon(UserInfo.DefaultUser);
@@ -818,6 +987,11 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Function used to disconnect from inputted controller form robot list
+        /// </summary>
+        /// <param name="listController">List item from robot list controller to disconnect from</param>
+        /// <returns>Disonnection status</returns>
         private int disconnectController(ListViewItem listController)
         {
             int result = (int)abbStatus.conn.notAvailable;
@@ -839,6 +1013,11 @@ namespace abbTools
             return result;
         }
 
+        /// <summary>
+        /// Function used to disconnect from inputted controller object
+        /// </summary>
+        /// <param name="selController">ABB Controller object to disconnect from</param>
+        /// <returns>Disonnection status</returns>
         private int disconnectController(ref Controller selController)
         {
             //disconnect from selected controller
@@ -861,11 +1040,14 @@ namespace abbTools
          ***  MAIN WINDOW - email management
          ********************************************************/
 
+        /// <summary>
+        /// Method used to trigger mail send event
+        /// </summary>
+        /// <param name="mailType">Type of mail to send (open, close app, exception triggered)</param>
         private void sendMail(abbStatus.mail mailType)
         {
             //check if sending e-mail is active
-            if (appSettings.getMailStatus(mailType))
-            {
+            if (appSettings.getMailStatus(mailType)) {
 
             }
         }
@@ -874,6 +1056,9 @@ namespace abbTools
          ***  MAIN WINDOW - abbTools apps operations
          ********************************************************/
 
+        /// <summary>
+        /// Method called to execute all apps actions after main window loads
+        /// </summary>
         private void appsLoadProgramActions()
         {
             //remotePC
@@ -884,6 +1069,10 @@ namespace abbTools
             appWindowsIPC.syncLogger(status);
         }
 
+        /// <summary>
+        /// Method called to execute all apps clear data action
+        /// </summary>
+        /// <param name="resyncLogger">Flag informing that logger should be resynchronized after clear</param>
         private void appsClearData(bool resyncLogger)
         {
             appRemotePC.clearAppData();
@@ -897,6 +1086,12 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method called to execute all apps load data action
+        /// </summary>
+        /// <param name="myXML">XML file to load data from</param>
+        /// <param name="myController">ABB Controller parent of loading data</param>
+        /// <param name="cName">ABB Controller parent name of loading data (useful when not visible during load)</param>
         private void appsLoadData(ref XmlReader myXML, Controller myController, string cName = "")
         {
             //check if input XML file has correct starting node
@@ -919,6 +1114,12 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method called to execute all apps save data action
+        /// </summary>
+        /// <param name="myXML">XML file to save data to</param>
+        /// <param name="myController">ABB Controller parent of saving data</param>
+        /// <param name="cName">ABB Controller parent name of saving data (useful when currently not visible in network)</param>
         private void appsSaveData(ref XmlWriter myXML, Controller myController, string cName = "")
         {
             appRemotePC.saveAppData(ref myXML, myController, cName);
@@ -926,6 +1127,31 @@ namespace abbTools
             appWindowsIPC.saveAppData(ref myXML, myController, cName);
         }
 
+        /// <summary>
+        /// Method called to execute all apps sync controller action 
+        /// </summary>
+        /// <param name="syncController">ABB Controller that has to be sync with apps (we connected to it)</param>
+        private void appsControllerSync(Controller syncController)
+        {
+            appRemotePC.syncController(syncController);
+            appBackupManager.syncController(syncController);
+            appWindowsIPC.syncController(syncController);
+        }
+
+        /// <summary>
+        /// Method called to execute all apps desync controller action 
+        /// </summary>
+        private void appsControllerDesync()
+        {
+            appRemotePC.desyncController();
+            appBackupManager.desyncController();
+            appWindowsIPC.desyncController();
+        }
+
+        /// <summary>
+        /// Method called to execute all apps found controller from saved list action 
+        /// </summary>
+        /// <param name="foundController">ABB Controller that has been found in network</param>
         private void appsControllerFound(Controller foundController)
         {
             appRemotePC.controllerFound(foundController);
@@ -933,6 +1159,10 @@ namespace abbTools
             appWindowsIPC.savedControllerFound(foundController);
         }
 
+        /// <summary>
+        /// Method called to execute all apps lost controller from saved list action 
+        /// </summary>
+        /// <param name="lostController">ABB Controller that has been lost from network</param>
         private void appsControllerLost(Controller lostController)
         {
             appRemotePC.controllerLost(lostController);
