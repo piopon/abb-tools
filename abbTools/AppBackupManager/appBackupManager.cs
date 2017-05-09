@@ -17,8 +17,6 @@ namespace abbTools.AppBackupManager
         private BackupManager currData = null;
         private loggerABB abbLogger = null;
         //additional windows & settings
-        int doBackupIndex;
-        int diBackupIndex;
         windowRobotSig signalsWindow;
         windowRobotFiles filesWindow;
         
@@ -52,9 +50,6 @@ namespace abbTools.AppBackupManager
             myCollection = new BackupManagerCollection();
             myCollection.PCBackupStateChanged += updatePCBackupState;
             myCollection.RobotBackupStateChanged += updateRobotBackupState;
-            //init internal data
-            doBackupIndex = -1;
-            diBackupIndex = -1;
             //clear robot data (no robots yet)
             clearData();
             //stop timer
@@ -846,16 +841,18 @@ namespace abbTools.AppBackupManager
         private void textSigDoBackup_Click(object sender, EventArgs e)
         {
             //select current signal and show it in signals window
-            signalsWindow.selectSig(doBackupIndex);
+            signalsWindow.selectSig(currData.robotSignalExe); 
             signalsWindow.ShowDialog();
-            //update signal names and current index
-            doBackupIndex = signalsWindow.selectedIndex;
-            string doBackupSigName = signalsWindow.selectedSignal;
-            string diBackupSigName = textSigBackupProg.Text == "- select signal -" ? "" : textSigBackupProg.Text;
-            //update GUI 
-            textSigDoBackup.Text = doBackupSigName != "" ? doBackupSigName : "- select signal -";
-            //update signals
-            currData.updateRobotSignals(doBackupSigName, diBackupSigName);
+            //check if something was selected
+            if (signalsWindow.changesMade) {
+                //update signal names and current index
+                string doBackupSigName = signalsWindow.selectedSignal;
+                string diBackupSigName = textSigBackupProg.Text == "- select signal -" ? "" : textSigBackupProg.Text;
+                //update GUI 
+                textSigDoBackup.Text = doBackupSigName != "" ? doBackupSigName : "- select signal -";
+                //update signals
+                currData.updateRobotSignals(doBackupSigName, diBackupSigName);
+            }
         }
 
         /// <summary>
@@ -866,16 +863,18 @@ namespace abbTools.AppBackupManager
         private void textSigBackupProg_Click(object sender, EventArgs e)
         {
             //select current signal and show it in signals window
-            signalsWindow.selectSig(diBackupIndex);
+            signalsWindow.selectSig(currData.robotSignalInP);  
             signalsWindow.ShowDialog();
-            //update signal names and current index
-            diBackupIndex = signalsWindow.selectedIndex;
-            string doBackupSigName = textSigDoBackup.Text == "- select signal -" ? "" : textSigDoBackup.Text;
-            string diBackupSigName = signalsWindow.selectedSignal;
-            //update GUI
-            textSigBackupProg.Text = diBackupSigName != "" ? diBackupSigName : "- select signal -";
-            //update signals
-            currData.updateRobotSignals(doBackupSigName, diBackupSigName);
+            //check if something was selected
+            if (signalsWindow.changesMade) {
+                //update signal names and current index
+                string doBackupSigName = textSigDoBackup.Text == "- select signal -" ? "" : textSigDoBackup.Text;
+                string diBackupSigName = signalsWindow.selectedSignal;
+                //update GUI
+                textSigBackupProg.Text = diBackupSigName != "" ? diBackupSigName : "- select signal -";
+                //update signals
+                currData.updateRobotSignals(doBackupSigName, diBackupSigName);
+            }
         }
 
         //=============================================================================================== SRC DIR
@@ -983,6 +982,7 @@ namespace abbTools.AppBackupManager
                 if (curr.Checked) currData.duplicateMethodRobot = curr.TabIndex - 4;
             }
         }
+
         //=========================================================================================================
     }
 }

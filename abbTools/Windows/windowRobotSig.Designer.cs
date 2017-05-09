@@ -34,8 +34,10 @@
             this.labelLoadSignals = new System.Windows.Forms.Label();
             this.listRobotSignals = new System.Windows.Forms.CheckedListBox();
             this.btnUpdateSignals = new System.Windows.Forms.Button();
-            this.btnCloseMe = new System.Windows.Forms.Button();
+            this.btnOK = new System.Windows.Forms.Button();
             this.backThread = new System.ComponentModel.BackgroundWorker();
+            this.btnClear = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.panelContents.SuspendLayout();
             this.panelLoading.SuspendLayout();
             this.SuspendLayout();
@@ -53,10 +55,12 @@
             // panelContents
             // 
             this.panelContents.BackColor = System.Drawing.Color.Gainsboro;
+            this.panelContents.Controls.Add(this.btnCancel);
+            this.panelContents.Controls.Add(this.btnClear);
             this.panelContents.Controls.Add(this.panelLoading);
             this.panelContents.Controls.Add(this.listRobotSignals);
             this.panelContents.Controls.Add(this.btnUpdateSignals);
-            this.panelContents.Controls.Add(this.btnCloseMe);
+            this.panelContents.Controls.Add(this.btnOK);
             this.panelContents.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.panelContents.Location = new System.Drawing.Point(204, 128);
             this.panelContents.Name = "panelContents";
@@ -90,9 +94,9 @@
             this.listRobotSignals.BackColor = System.Drawing.Color.Silver;
             this.listRobotSignals.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.listRobotSignals.FormattingEnabled = true;
-            this.listRobotSignals.Location = new System.Drawing.Point(106, 56);
+            this.listRobotSignals.Location = new System.Drawing.Point(87, 56);
             this.listRobotSignals.Name = "listRobotSignals";
-            this.listRobotSignals.Size = new System.Drawing.Size(239, 238);
+            this.listRobotSignals.Size = new System.Drawing.Size(277, 238);
             this.listRobotSignals.TabIndex = 8;
             this.listRobotSignals.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.listRobotSignals_ItemCheck);
             this.listRobotSignals.KeyDown += new System.Windows.Forms.KeyEventHandler(this.listRobotSignals_KeyDown);
@@ -102,26 +106,26 @@
             this.btnUpdateSignals.BackColor = System.Drawing.Color.DarkGray;
             this.btnUpdateSignals.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnUpdateSignals.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnUpdateSignals.Location = new System.Drawing.Point(106, 15);
+            this.btnUpdateSignals.Location = new System.Drawing.Point(87, 15);
             this.btnUpdateSignals.Name = "btnUpdateSignals";
-            this.btnUpdateSignals.Size = new System.Drawing.Size(239, 27);
+            this.btnUpdateSignals.Size = new System.Drawing.Size(193, 27);
             this.btnUpdateSignals.TabIndex = 1;
             this.btnUpdateSignals.Text = "update signals...";
             this.btnUpdateSignals.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.btnUpdateSignals.UseVisualStyleBackColor = false;
             this.btnUpdateSignals.Click += new System.EventHandler(this.btnUpdateSignals_Click);
             // 
-            // btnCloseMe
+            // btnOK
             // 
-            this.btnCloseMe.BackColor = System.Drawing.Color.DarkOrange;
-            this.btnCloseMe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnCloseMe.Location = new System.Drawing.Point(106, 307);
-            this.btnCloseMe.Name = "btnCloseMe";
-            this.btnCloseMe.Size = new System.Drawing.Size(239, 27);
-            this.btnCloseMe.TabIndex = 0;
-            this.btnCloseMe.Text = "OK";
-            this.btnCloseMe.UseVisualStyleBackColor = false;
-            this.btnCloseMe.Click += new System.EventHandler(this.btnCloseMe_Click);
+            this.btnOK.BackColor = System.Drawing.Color.DarkOrange;
+            this.btnOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnOK.Location = new System.Drawing.Point(87, 307);
+            this.btnOK.Name = "btnOK";
+            this.btnOK.Size = new System.Drawing.Size(133, 27);
+            this.btnOK.TabIndex = 0;
+            this.btnOK.Text = "ok";
+            this.btnOK.UseVisualStyleBackColor = false;
+            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // backThread
             // 
@@ -129,6 +133,32 @@
             this.backThread.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backThread_DoWork);
             this.backThread.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backThread_ProgressChanged);
             this.backThread.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backThread_RunWorkerCompleted);
+            // 
+            // btnClear
+            // 
+            this.btnClear.BackColor = System.Drawing.Color.DarkGray;
+            this.btnClear.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnClear.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.btnClear.Location = new System.Drawing.Point(289, 15);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(75, 27);
+            this.btnClear.TabIndex = 10;
+            this.btnClear.Text = "clear";
+            this.btnClear.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnClear.UseVisualStyleBackColor = false;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.BackColor = System.Drawing.Color.DarkOrange;
+            this.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCancel.Location = new System.Drawing.Point(231, 307);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(133, 27);
+            this.btnCancel.TabIndex = 11;
+            this.btnCancel.Text = "cancel";
+            this.btnCancel.UseVisualStyleBackColor = false;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // windowRobotSig
             // 
@@ -153,10 +183,12 @@
         private System.Windows.Forms.Panel panelTemplate;
         private System.Windows.Forms.Panel panelContents;
         private System.Windows.Forms.Button btnUpdateSignals;
-        private System.Windows.Forms.Button btnCloseMe;
+        private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Panel panelLoading;
         private System.Windows.Forms.Label labelLoadSignals;
         private System.Windows.Forms.CheckedListBox listRobotSignals;
         private System.ComponentModel.BackgroundWorker backThread;
+        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnClear;
     }
 }

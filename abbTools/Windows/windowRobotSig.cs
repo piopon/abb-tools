@@ -7,15 +7,28 @@ namespace abbTools.Windows
 {
     public partial class windowRobotSig : Form
     {
+        /********************************************************
+         ***  WINDOW ROBOT SIGNALS - fields
+         ********************************************************/
+
         private Controller currAbbController;
         private SignalCollection currAbbSignals;
         private Form overrideParent;
+        private string preSelectedSig;
         public string selectedSignal;
-        public int selectedIndex;
+        public bool changesMade;
 
+        /********************************************************
+         ***  WINDOW ROBOT SIGNALS - constructors
+         ********************************************************/
+
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public windowRobotSig()
         {
             InitializeComponent();
+            changesMade = false;
         }
 
         public windowRobotSig(Controller abb)
@@ -24,6 +37,10 @@ namespace abbTools.Windows
             //update abb parent controller object
             currAbbController = abb;
         }
+
+        /********************************************************
+         ***  WINDOW ROBOT SIGNALS - form and list events
+         ********************************************************/
 
         private void panelTemplate_Paint(object sender, PaintEventArgs e)
         {
@@ -44,30 +61,73 @@ namespace abbTools.Windows
             panelContents.Dock = DockStyle.Fill;
             //set focus on list (to use keyboard)
             listRobotSignals.Focus();
+            changesMade = false;
         }
 
-        public void updateSignals(Controller abb)
+        private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            currAbbController = abb;
-            btnUpdateSignals_Click(this, null);
-        }
-
-        public void selectSig(int index)
-        {
-            listRobotSignals.ClearSelected();
-            if (index >= 0 && index < listRobotSignals.Items.Count) {
-                listRobotSignals.SetItemChecked(index, true);
-                listRobotSignals.SelectedIndex = index;
-            } else {
-                //check if list is ready
-                if (listRobotSignals.Items.Count > 0) {
-                    //uncheck all elements
-                    listRobotSignals.SetItemChecked(0, true);
-                    listRobotSignals.SetItemChecked(0, false);
+            //uncheck other elements
+            for (int i = 0; i < listRobotSignals.Items.Count; ++i) {
+                if (i != e.Index) {
+                    listRobotSignals.SetItemChecked(i, false);
                 }
-                selectedIndex = -1;
+            }
+            //update logic condition for enabling buttons
+            if (e.NewValue == CheckState.Checked) {
+                selectedSignal = listRobotSignals.Items[e.Index].ToString();
+            } else {
                 selectedSignal = "";
             }
+        }
+
+        private void listRobotSignals_KeyDown(object sender, KeyEventArgs e)
+        {
+            //watch keys only if list is filled (and loading panel not visible)
+            if (panelLoading.Visible == false)
+            {
+                //watch only for ESC and ENTER buttons (keys and alpha chars working internally)
+                if (e.KeyCode == Keys.Escape) {
+                    //user cancelled
+                    btnCancel_Click(sender, e);
+                } else if (e.KeyCode == Keys.Return) {
+                    //user accepted
+                    btnOK_Click(sender, e);
+                }
+            }
+        }
+
+        /********************************************************
+         ***  WINDOW ROBOT SIGNALS - buttons events
+         ********************************************************/
+
+        private void btnClear_Click(object sender, System.EventArgs e)
+        {
+            listRobotSignals.ClearSelected();
+            if (listRobotSignals.CheckedItems.Count > 0) {
+                for (int i = 0; i < listRobotSignals.Items.Count; i++) {
+                    listRobotSignals.SetItemChecked(i, false);
+                }
+                selectedSignal = "";
+            }
+        }
+
+        private void btnOK_Click(object sender, System.EventArgs e)
+        {
+            //only when list if non empty then some changes could be made
+            if (listRobotSignals.Items.Count > 0) {
+                object checkedItem = listRobotSignals.CheckedItems.Count > 0 ? listRobotSignals.CheckedItems[0] : null;
+                int cIndex = checkedItem != null ? listRobotSignals.Items.IndexOf(checkedItem) : -1;
+                selectedSignal = (cIndex >= 0) ? listRobotSignals.Items[cIndex].ToString() : "";
+                changesMade = selectedSignal != preSelectedSig;
+            }
+            Close();
+        }
+
+        private void btnCancel_Click(object sender, System.EventArgs e)
+        {
+            selectedSignal = preSelectedSig;
+            changesMade = false;
+            Close();
         }
 
         private void btnUpdateSignals_Click(object sender, System.EventArgs e)
@@ -93,6 +153,50 @@ namespace abbTools.Windows
             panelLoading.Visible = true;
         }
 
+        /********************************************************
+         ***  WINDOW ROBOT SIGNALS - functions
+         ********************************************************/
+
+        public void updateSignals(Controller abb)
+        {
+            currAbbController = abb;
+            btnUpdateSignals_Click(this, null);
+        }
+
+        public void selectSig(int index)
+        {
+            if (index >= 0 && index < listRobotSignals.Items.Count) {
+                listRobotSignals.SetItemChecked(index, true);
+                listRobotSignals.SelectedIndex = index;
+            } else {
+                //check if list is ready
+                if (listRobotSignals.Items.Count > 0) {
+                    //uncheck all elements
+                    listRobotSignals.SetItemChecked(0, true);
+                    listRobotSignals.SetItemChecked(0, false);
+                }
+                selectedSignal = "";
+            }
+        }
+
+        public void selectSig(string name)
+        {
+            listRobotSignals.ClearSelected();
+            preSelectedSig = name;
+            if (name != null && name != "") {
+                Signal curr = currAbbController.IOSystem.GetSignal(name);
+                if (listRobotSignals != null) selectSig(listRobotSignals.Items.IndexOf(curr));
+            } else {
+                //uncheck all elements
+                listRobotSignals.SetItemChecked(0, true);
+                listRobotSignals.SetItemChecked(0, false);
+            }
+        }
+
+        /********************************************************
+         ***  WINDOW ROBOT SIGNALS - background thread
+         ********************************************************/
+
         private void backThread_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             //get all signals and report to main thread when finished
@@ -117,6 +221,8 @@ namespace abbTools.Windows
         {
             //check if in mean time disconnection occured
             if (currAbbController != null) {
+                //if there is inputed name then select it
+                if (preSelectedSig != null) selectSig(preSelectedSig);
                 //hide progress bar
                 listRobotSignals.BackColor = Color.White;
                 panelLoading.Visible = false;
@@ -125,52 +231,6 @@ namespace abbTools.Windows
                 currAbbSignals.Clear();
                 currAbbSignals = null;
                 listRobotSignals.Items.Clear();
-            }
-        }
-
-        private void btnCloseMe_Click(object sender, System.EventArgs e)
-        {
-            Close();
-        }
-
-        private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
-            //uncheck other elements
-            for (int i = 0; i < listRobotSignals.Items.Count; ++i) {
-                if (i != e.Index) {
-                    listRobotSignals.SetItemChecked(i, false);
-                }
-            }
-            //update logic condition for enabling buttons
-            if (e.NewValue == CheckState.Checked) {
-                selectedIndex = e.Index;
-                selectedSignal = listRobotSignals.Items[e.Index].ToString();
-            } else {
-                selectedIndex = -1;
-                selectedSignal = "";
-            }
-        }
-
-        private void listRobotSignals_KeyDown(object sender, KeyEventArgs e)
-        {
-            //watch keys only if list is filled (and loading panel not visible)
-            if (panelLoading.Visible == false) {
-                //watch only for ESC and ENTER buttons (keys and alpha chars working internally)
-                if (e.KeyCode == Keys.Escape) {
-                    //user cancelled - result = no selected item
-                    selectedIndex = -1;
-                    selectedSignal = "";
-                    //close window
-                    Close();
-                } else if (e.KeyCode == Keys.Return) {
-                    //user cancelled - result = current selected item
-                    if (listRobotSignals.SelectedIndex >= 0) {
-                        selectedIndex = listRobotSignals.SelectedIndex;
-                        selectedSignal = listRobotSignals.Items[selectedIndex].ToString();
-                    }
-                    //close window
-                    Close();
-                }
             }
         }
     }
