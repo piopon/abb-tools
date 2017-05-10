@@ -54,6 +54,8 @@ namespace abbTools
             //register applications and update dashboard
             appsRegister();
             appsUpdateGUI();
+            //connect application events
+            appBackupManager.UpdateBackupTimeInXML += updateBackupTimeInFile;
         }
 
         /********************************************************
@@ -142,7 +144,7 @@ namespace abbTools
             appsLoadProgramActions();
             //load saved robots to list view
             listViewRobots.Items.Clear();
-            loadMyRobots(appSettings.currProject);
+            if(appSettings.loadLastProject) loadMyRobots(appSettings.currProject);
             //scan for abb controllers in network
             abbScanner = new NetworkScanner();
             abbScanner.Scan();
@@ -182,6 +184,8 @@ namespace abbTools
             abbWatcher = new NetworkWatcher(abbScanner.Controllers, true);
             abbWatcher.Found += abbWatcherFoundEvent;
             abbWatcher.Lost += abbWatcherLostEvent;
+            //at end manage save project buttons
+            manageSaveButtons();
         }
 
         /// <summary>
@@ -281,6 +285,23 @@ namespace abbTools
         }
 
         /// <summary>
+        /// Event triggered on NEW menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
+        private void newToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            //clear application data
+            appsClearData(true);
+            //clear saved group robots
+            cleanSavedGroup();
+            //clear project
+            appSettings.currProject = "";
+            //update enable state of saved buttons
+            manageSaveButtons();
+        }
+
+        /// <summary>
         /// Event triggered on OPEN menu button 
         /// </summary>
         /// <param name="sender">Menu button that triggered current action</param>
@@ -292,6 +313,8 @@ namespace abbTools
             openDialog.ShowDialog();
             //save elements to selected file
             loadMyRobots(openDialog.FileName);
+            //manage save buttons
+            manageSaveButtons();
         }
 
         /// <summary>
@@ -301,11 +324,34 @@ namespace abbTools
         /// <param name="e">Event arguments</param>
         private void saveToolStripMenuItem1_Click(object sender, EventArgs e)
         {
+            if (appSettings.currProject == "") {
+                //show save dialog
+                saveDialog.InitialDirectory = Application.StartupPath;
+                saveDialog.ShowDialog();
+                //save elements to selected file
+                saveMyRobots(saveDialog.FileName);
+            } else {
+                //save elements to curr project file
+                saveMyRobots(appSettings.currProject);
+            }
+            //manage save buttons
+            manageSaveButtons();
+        }
+
+        /// <summary>
+        /// Event triggered on SAVE AS menu button 
+        /// </summary>
+        /// <param name="sender">Menu button that triggered current action</param>
+        /// <param name="e">Event arguments</param>
+        private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             //show save dialog
             saveDialog.InitialDirectory = Application.StartupPath;
             saveDialog.ShowDialog();
             //save elements to selected file
             saveMyRobots(saveDialog.FileName);
+            //manage save buttons
+            manageSaveButtons();
         }
 
         /// <summary>
@@ -396,6 +442,21 @@ namespace abbTools
             sendMail(abbStatus.mail.closeApp);
             //terminate app
             Close();
+        }
+
+        /// <summary>
+        /// Method used to manage save and save as... buttons
+        /// </summary>
+        private void manageSaveButtons()
+        {
+            //save is only enabled if there is curr project opened
+            if(appSettings.currProject != "") {
+                saveToolStripMenuItem1.Enabled = true;
+                saveAsToolStripMenuItem.Enabled = true;
+            } else {
+                saveToolStripMenuItem1.Enabled = false;
+                saveAsToolStripMenuItem.Enabled = true;
+            }
         }
 
         /********************************************************
@@ -736,6 +797,33 @@ namespace abbTools
             if (disconnStatus == (int)abbStatus.conn.disconnOK) appsControllerDesync();
         }
 
+        /// <summary>
+        /// Method used to clean 
+        /// </summary>
+        private void cleanSavedGroup()
+        {
+            //disconnect from current controller
+            disconnectController(ref abbConn);
+            //move/delete robots from saved group
+            foreach (ListViewItem item in this.listViewRobots.Items) {
+                if (item.Group.Header == "saved") {
+                    int currState = item.StateImageIndex;
+                    if (currState == (int)abbStatus.found.netSaveConn || currState == (int)abbStatus.found.netSaveAvail) {
+                        //visible robots move to network groups
+                        item.Group = listViewRobots.Groups["robotsGroupNet"];
+                        updateIcon(item, abbStatus.conn.available);
+                    } else if (currState == (int)abbStatus.found.simSaveConn || currState == (int)abbStatus.found.simSaveAvail) {
+                        //visible robots move to virtual groups
+                        item.Group = listViewRobots.Groups["robotsGroupSim"];
+                        updateIcon(item, abbStatus.conn.available);
+                    } else {
+                        //delete non-visible robots
+                        listViewRobots.Items.Remove(item);
+                    }
+                }
+            }
+        }
+
         /********************************************************
          ***  MAIN WINDOW - abb robots management
          ********************************************************/
@@ -790,26 +878,8 @@ namespace abbTools
             //check if path is correct
             if (filePath != "" && File.Exists(filePath)) {
                 try {
-                    //disconnect from current controller
-                    disconnectController(ref abbConn);
-                    //move/delete robots from saved group
-                    foreach (ListViewItem item in this.listViewRobots.Items) {
-                        if (item.Group.Header == "saved") {
-                            int currState = item.StateImageIndex;
-                            if (currState == (int)abbStatus.found.netSaveConn || currState == (int)abbStatus.found.netSaveAvail) {
-                                //visible robots move to network groups
-                                item.Group = listViewRobots.Groups["robotsGroupNet"];
-                                updateIcon(item, abbStatus.conn.available);
-                            } else if (currState == (int)abbStatus.found.simSaveConn || currState == (int)abbStatus.found.simSaveAvail) {
-                                //visible robots move to virtual groups
-                                item.Group = listViewRobots.Groups["robotsGroupSim"];
-                                updateIcon(item, abbStatus.conn.available);
-                            } else {
-                                //delete non-visible robots
-                                listViewRobots.Items.Remove(item);
-                            }
-                        }
-                    }
+                    //clean robots from saved group
+                    cleanSavedGroup();
                     //clear application data
                     appsClearData(true);
                     //create instance of xml to read

@@ -16,6 +16,11 @@ namespace abbTools
         /// GET or SET current project path
         /// </summary>
         public string currProject { get; set; }
+
+        /// <summary>
+        /// GET info about loading last project
+        /// </summary>
+        public bool loadLastProject { get; private set; }
         
         //path to settings XML file
         private string settingsPath = "";
@@ -34,7 +39,9 @@ namespace abbTools
         public windowSettings()
         {
             InitializeComponent();
-            //initialize settings path
+            //path data
+            currProject = "";
+            loadLastProject = false;
             settingsPath = Application.ExecutablePath + "\\settings.xml";
         }
 

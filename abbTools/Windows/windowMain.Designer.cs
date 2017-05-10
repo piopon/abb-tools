@@ -64,20 +64,17 @@
             this.statusTextBox = new System.Windows.Forms.RichTextBox();
             this.pictureLogType = new System.Windows.Forms.PictureBox();
             this.panelApp = new System.Windows.Forms.Panel();
+            this.appContainer = new System.Windows.Forms.SplitContainer();
+            this.btnRobotListCollapse = new System.Windows.Forms.Button();
+            this.listViewRobots = new System.Windows.Forms.ListView();
+            this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.robotListQMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.connectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToSavedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imagesStatus = new System.Windows.Forms.ImageList(this.components);
-            this.saveDialog = new System.Windows.Forms.SaveFileDialog();
-            this.openDialog = new System.Windows.Forms.OpenFileDialog();
-            this.imagesLogType = new System.Windows.Forms.ImageList(this.components);
-            this.appContainer = new System.Windows.Forms.SplitContainer();
-            this.btnRobotListCollapse = new System.Windows.Forms.Button();
-            this.listViewRobots = new System.Windows.Forms.ListView();
-            this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabActions = new System.Windows.Forms.TabControl();
             this.actionDashboard = new System.Windows.Forms.TabPage();
             this.actionRemotePC = new System.Windows.Forms.TabPage();
@@ -86,6 +83,9 @@
             this.appBackupManager = new abbTools.AppBackupManager.appBackupManager();
             this.actionWindowsIPC = new System.Windows.Forms.TabPage();
             this.appWindowsIPC = new abbTools.AppWindowsIPC.appWindowsIPC();
+            this.saveDialog = new System.Windows.Forms.SaveFileDialog();
+            this.openDialog = new System.Windows.Forms.OpenFileDialog();
+            this.imagesLogType = new System.Windows.Forms.ImageList(this.components);
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
@@ -94,11 +94,11 @@
             this.panelLogger.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).BeginInit();
             this.panelApp.SuspendLayout();
-            this.robotListQMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.appContainer)).BeginInit();
             this.appContainer.Panel1.SuspendLayout();
             this.appContainer.Panel2.SuspendLayout();
             this.appContainer.SuspendLayout();
+            this.robotListQMenu.SuspendLayout();
             this.tabActions.SuspendLayout();
             this.actionRemotePC.SuspendLayout();
             this.actionBackupManager.SuspendLayout();
@@ -185,6 +185,7 @@
             this.newToolStripMenuItem1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
             this.newToolStripMenuItem1.Size = new System.Drawing.Size(280, 28);
             this.newToolStripMenuItem1.Text = "&New";
+            this.newToolStripMenuItem1.Click += new System.EventHandler(this.newToolStripMenuItem1_Click);
             // 
             // openToolStripMenuItem1
             // 
@@ -215,6 +216,7 @@
             | System.Windows.Forms.Keys.S)));
             this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(280, 28);
             this.saveAsToolStripMenuItem.Text = "Save &as...";
+            this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.saveAsToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
@@ -396,79 +398,6 @@
             this.panelApp.Size = new System.Drawing.Size(1010, 614);
             this.panelApp.TabIndex = 4;
             // 
-            // robotListQMenu
-            // 
-            this.robotListQMenu.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.robotListQMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.robotListQMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.connectToolStripMenuItem,
-            this.disconnectToolStripMenuItem,
-            this.addToSavedToolStripMenuItem,
-            this.removeToolStripMenuItem});
-            this.robotListQMenu.Name = "contextMenuStrip1";
-            this.robotListQMenu.Size = new System.Drawing.Size(158, 108);
-            this.robotListQMenu.Opening += new System.ComponentModel.CancelEventHandler(this.robotListQMenu_Opening);
-            // 
-            // connectToolStripMenuItem
-            // 
-            this.connectToolStripMenuItem.Name = "connectToolStripMenuItem";
-            this.connectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.connectToolStripMenuItem.Text = "connect";
-            this.connectToolStripMenuItem.Click += new System.EventHandler(this.connectToolStripMenuItem_Click);
-            // 
-            // disconnectToolStripMenuItem
-            // 
-            this.disconnectToolStripMenuItem.Name = "disconnectToolStripMenuItem";
-            this.disconnectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.disconnectToolStripMenuItem.Text = "disconnect";
-            this.disconnectToolStripMenuItem.Click += new System.EventHandler(this.disconnectToolStripMenuItem_Click);
-            // 
-            // addToSavedToolStripMenuItem
-            // 
-            this.addToSavedToolStripMenuItem.Name = "addToSavedToolStripMenuItem";
-            this.addToSavedToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.addToSavedToolStripMenuItem.Text = "add to saved";
-            this.addToSavedToolStripMenuItem.Click += new System.EventHandler(this.addToSavedToolStripMenuItem_Click);
-            // 
-            // removeToolStripMenuItem
-            // 
-            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.removeToolStripMenuItem.Text = "remove";
-            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
-            // 
-            // imagesStatus
-            // 
-            this.imagesStatus.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesStatus.ImageStream")));
-            this.imagesStatus.TransparentColor = System.Drawing.Color.Transparent;
-            this.imagesStatus.Images.SetKeyName(0, "status_network.png");
-            this.imagesStatus.Images.SetKeyName(1, "status_networkAvail.png");
-            this.imagesStatus.Images.SetKeyName(2, "status_networkConn.png");
-            this.imagesStatus.Images.SetKeyName(3, "status_networkDisconn.png");
-            this.imagesStatus.Images.SetKeyName(4, "status_virtual.png");
-            this.imagesStatus.Images.SetKeyName(5, "status_virtualAvail.png");
-            this.imagesStatus.Images.SetKeyName(6, "status_virtualConn.png");
-            this.imagesStatus.Images.SetKeyName(7, "status_virtualDisconn.png");
-            // 
-            // saveDialog
-            // 
-            this.saveDialog.DefaultExt = "*.xml";
-            this.saveDialog.Filter = "XML file|*.xml|All files|*.*";
-            // 
-            // openDialog
-            // 
-            this.openDialog.DefaultExt = "*.xml";
-            this.openDialog.FileName = "openDialog";
-            this.openDialog.Filter = "XML file|*.xml|All files|*.*";
-            // 
-            // imagesLogType
-            // 
-            this.imagesLogType.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesLogType.ImageStream")));
-            this.imagesLogType.TransparentColor = System.Drawing.Color.Transparent;
-            this.imagesLogType.Images.SetKeyName(0, "log_info.png");
-            this.imagesLogType.Images.SetKeyName(1, "log_warning.png");
-            this.imagesLogType.Images.SetKeyName(2, "log_error.png");
-            // 
             // appContainer
             // 
             this.appContainer.BackColor = System.Drawing.Color.Transparent;
@@ -566,6 +495,60 @@
             this.robotGroupColIP.Text = "ip address";
             this.robotGroupColIP.Width = 110;
             // 
+            // robotListQMenu
+            // 
+            this.robotListQMenu.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.robotListQMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.robotListQMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.connectToolStripMenuItem,
+            this.disconnectToolStripMenuItem,
+            this.addToSavedToolStripMenuItem,
+            this.removeToolStripMenuItem});
+            this.robotListQMenu.Name = "contextMenuStrip1";
+            this.robotListQMenu.Size = new System.Drawing.Size(158, 108);
+            this.robotListQMenu.Opening += new System.ComponentModel.CancelEventHandler(this.robotListQMenu_Opening);
+            // 
+            // connectToolStripMenuItem
+            // 
+            this.connectToolStripMenuItem.Name = "connectToolStripMenuItem";
+            this.connectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.connectToolStripMenuItem.Text = "connect";
+            this.connectToolStripMenuItem.Click += new System.EventHandler(this.connectToolStripMenuItem_Click);
+            // 
+            // disconnectToolStripMenuItem
+            // 
+            this.disconnectToolStripMenuItem.Name = "disconnectToolStripMenuItem";
+            this.disconnectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.disconnectToolStripMenuItem.Text = "disconnect";
+            this.disconnectToolStripMenuItem.Click += new System.EventHandler(this.disconnectToolStripMenuItem_Click);
+            // 
+            // addToSavedToolStripMenuItem
+            // 
+            this.addToSavedToolStripMenuItem.Name = "addToSavedToolStripMenuItem";
+            this.addToSavedToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.addToSavedToolStripMenuItem.Text = "add to saved";
+            this.addToSavedToolStripMenuItem.Click += new System.EventHandler(this.addToSavedToolStripMenuItem_Click);
+            // 
+            // removeToolStripMenuItem
+            // 
+            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.removeToolStripMenuItem.Text = "remove";
+            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
+            // 
+            // imagesStatus
+            // 
+            this.imagesStatus.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesStatus.ImageStream")));
+            this.imagesStatus.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesStatus.Images.SetKeyName(0, "status_network.png");
+            this.imagesStatus.Images.SetKeyName(1, "status_networkAvail.png");
+            this.imagesStatus.Images.SetKeyName(2, "status_networkConn.png");
+            this.imagesStatus.Images.SetKeyName(3, "status_networkDisconn.png");
+            this.imagesStatus.Images.SetKeyName(4, "status_virtual.png");
+            this.imagesStatus.Images.SetKeyName(5, "status_virtualAvail.png");
+            this.imagesStatus.Images.SetKeyName(6, "status_virtualConn.png");
+            this.imagesStatus.Images.SetKeyName(7, "status_virtualDisconn.png");
+            // 
             // tabActions
             // 
             this.tabActions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -580,7 +563,7 @@
             this.tabActions.Margin = new System.Windows.Forms.Padding(100);
             this.tabActions.Name = "tabActions";
             this.tabActions.SelectedIndex = 0;
-            this.tabActions.Size = new System.Drawing.Size(715, 588);
+            this.tabActions.Size = new System.Drawing.Size(721, 588);
             this.tabActions.TabIndex = 0;
             this.tabActions.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabActions_Selecting);
             // 
@@ -591,7 +574,7 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(707, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(713, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
@@ -646,7 +629,6 @@
             this.appBackupManager.Name = "appBackupManager";
             this.appBackupManager.Size = new System.Drawing.Size(707, 557);
             this.appBackupManager.TabIndex = 0;
-            this.appBackupManager.UpdateBackupTimeInXML += updateBackupTimeInFile;
             // 
             // actionWindowsIPC
             // 
@@ -671,6 +653,25 @@
             this.appWindowsIPC.Name = "appWindowsIPC";
             this.appWindowsIPC.Size = new System.Drawing.Size(714, 557);
             this.appWindowsIPC.TabIndex = 0;
+            // 
+            // saveDialog
+            // 
+            this.saveDialog.DefaultExt = "*.xml";
+            this.saveDialog.Filter = "XML file|*.xml|All files|*.*";
+            // 
+            // openDialog
+            // 
+            this.openDialog.DefaultExt = "*.xml";
+            this.openDialog.FileName = "openDialog";
+            this.openDialog.Filter = "XML file|*.xml|All files|*.*";
+            // 
+            // imagesLogType
+            // 
+            this.imagesLogType.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesLogType.ImageStream")));
+            this.imagesLogType.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesLogType.Images.SetKeyName(0, "log_info.png");
+            this.imagesLogType.Images.SetKeyName(1, "log_warning.png");
+            this.imagesLogType.Images.SetKeyName(2, "log_error.png");
             // 
             // windowMain
             // 
@@ -701,11 +702,11 @@
             this.panelLogger.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).EndInit();
             this.panelApp.ResumeLayout(false);
-            this.robotListQMenu.ResumeLayout(false);
             this.appContainer.Panel1.ResumeLayout(false);
             this.appContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.appContainer)).EndInit();
             this.appContainer.ResumeLayout(false);
+            this.robotListQMenu.ResumeLayout(false);
             this.tabActions.ResumeLayout(false);
             this.actionRemotePC.ResumeLayout(false);
             this.actionBackupManager.ResumeLayout(false);
