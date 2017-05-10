@@ -126,6 +126,7 @@ namespace abbTools.Shared
                 //behaviour
                 appButton.Tag = app;
                 appButton.Click += AppButton_Click;
+                appButton.MouseHover += AppButton_MouseHover;
                 /*********************************************************************** LABEL **********/
                 Label appLabel = new Label();
                 appLabel.Parent = parent;
@@ -159,7 +160,7 @@ namespace abbTools.Shared
         }
 
         /// <summary>
-        /// Generate event method connected to created app buttons onclick method
+        /// Generate event method connected to created app buttons onclick method (switch main tabs)
         /// </summary>
         /// <param name="sender">Button parent that triggered current event</param>
         /// <param name="e">Event arguments</param>
@@ -173,6 +174,23 @@ namespace abbTools.Shared
                 myPar.CausesValidation = false;
                 myPar.SelectedIndex = app.appIndex + 1;
             }
+        }
+
+        /// <summary>
+        /// Method triggered by mouse rests ober created app button (show tooltip)
+        /// </summary>
+        /// <param name="sender">Button parent that triggered current event</param>
+        /// <param name="e">Event arguments</param>
+        private void AppButton_MouseHover(object sender, EventArgs e)
+        {
+            //get sender application detials
+            Button clicked = (Button)sender;
+            IAbbApplication app = (IAbbApplication)clicked.Tag;
+            //create tooltip
+            ToolTip myTip = new ToolTip();
+            myTip.Active = true;
+            myTip.ShowAlways = false;
+            myTip.Show(app.appDescr, clicked, 10, 10, 1000);
         }
 
         /// <summary>

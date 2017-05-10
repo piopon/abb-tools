@@ -610,7 +610,7 @@
             // 
             // appRemotePC
             // 
-            this.appRemotePC.appDescr = null;
+            this.appRemotePC.appDescr = "Control PC remotely from ABB signals";
             this.appRemotePC.appHeight = 0;
             this.appRemotePC.appIcon = null;
             this.appRemotePC.appIndex = 0;
@@ -636,7 +636,7 @@
             // 
             // appBackupManager
             // 
-            this.appBackupManager.appDescr = null;
+            this.appBackupManager.appDescr = "Scheduled backups management";
             this.appBackupManager.appHeight = 0;
             this.appBackupManager.appIcon = null;
             this.appBackupManager.appIndex = 0;
@@ -660,7 +660,7 @@
             // 
             // appWindowsIPC
             // 
-            this.appWindowsIPC.appDescr = null;
+            this.appWindowsIPC.appDescr = "Update ABB signals from external app";
             this.appWindowsIPC.appHeight = 0;
             this.appWindowsIPC.appIcon = null;
             this.appWindowsIPC.appIndex = 0;
