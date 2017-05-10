@@ -19,7 +19,6 @@ namespace abbTools.AppBackupManager
         //additional windows & settings
         windowRobotSig signalsWindow;
         windowRobotFiles filesWindow;
-        
         //event
         public delegate void updateXMLFile();
         public event updateXMLFile UpdateBackupTimeInXML;

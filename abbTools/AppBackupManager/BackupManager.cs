@@ -397,8 +397,7 @@ namespace abbTools.AppBackupManager
         /// <param name="e">Event arguments (new state, etc.)</param>
         private void DiBackup_Changed(object sender, SignalChangedEventArgs e)
         {
-            if (mySigExe.Value == 0 && e.NewSignalState.Value == 0)
-            {
+            if (mySigExe.Value == 0 && e.NewSignalState.Value == 0) {
                 mySigInP.Changed -= DiBackup_Changed;
                 //check if source path is inputted
                 if (backupRobot.sourceDir != null && backupRobot.sourceDir!= "") {

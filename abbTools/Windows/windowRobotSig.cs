@@ -10,13 +10,22 @@ namespace abbTools.Windows
         /********************************************************
          ***  WINDOW ROBOT SIGNALS - fields
          ********************************************************/
+        
+        /// <summary>
+        /// GET or SET selected ABB controller signal name
+        /// </summary>
+        public string selectedSignal { get; set; }
 
+        /// <summary>
+        /// GET info about if user has done some changes
+        /// </summary>
+        public bool changesMade { get; private set; }
+
+        //private fields
         private Controller currAbbController;
         private SignalCollection currAbbSignals;
         private Form overrideParent;
         private string preSelectedSig;
-        public string selectedSignal;
-        public bool changesMade;
 
         /********************************************************
          ***  WINDOW ROBOT SIGNALS - constructors
@@ -31,6 +40,10 @@ namespace abbTools.Windows
             changesMade = false;
         }
 
+        /// <summary>
+        /// Constructor with ABB controller object init
+        /// </summary>
+        /// <param name="abb">New ABB controller parent to read signals from</param>
         public windowRobotSig(Controller abb)
         {
             InitializeComponent();
@@ -42,6 +55,11 @@ namespace abbTools.Windows
          ***  WINDOW ROBOT SIGNALS - form and list events
          ********************************************************/
 
+        /// <summary>
+        /// Method called on template panel draw (used to make semi-transparent background and opaque content!)
+        /// </summary>
+        /// <param name="sender">Panel object that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void panelTemplate_Paint(object sender, PaintEventArgs e)
         {
             //set the panel position
@@ -64,6 +82,11 @@ namespace abbTools.Windows
             changesMade = false;
         }
 
+        /// <summary>
+        /// Method triggered by ListBox item check event (uncheck all elements except last selected!)
+        /// </summary>
+        /// <param name="sender">CheckedListBox object which triggered curr event</param>>
+        /// <param name="e">Event arguments</param>
         private void listRobotSignals_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             //uncheck other elements
@@ -80,6 +103,11 @@ namespace abbTools.Windows
             }
         }
 
+        /// <summary>
+        /// Method triggered by ListBox key down event (keyboard key actions!)
+        /// </summary>
+        /// <param name="sender">CheckedListBox object which triggered curr event</param>
+        /// <param name="e">Event arguments</param>
         private void listRobotSignals_KeyDown(object sender, KeyEventArgs e)
         {
             //watch keys only if list is filled (and loading panel not visible)
@@ -100,6 +128,11 @@ namespace abbTools.Windows
          ***  WINDOW ROBOT SIGNALS - buttons events
          ********************************************************/
 
+        /// <summary>
+        /// Method called on button CLEAR click event (clear selection and ucheck signal)
+        /// </summary>
+        /// <param name="sender">Button object that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void btnClear_Click(object sender, System.EventArgs e)
         {
             listRobotSignals.ClearSelected();
@@ -111,6 +144,11 @@ namespace abbTools.Windows
             }
         }
 
+        /// <summary>
+        /// Method called on button OK click event (accept new changes)
+        /// </summary>
+        /// <param name="sender">Button object that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void btnOK_Click(object sender, System.EventArgs e)
         {
             //only when list if non empty then some changes could be made
@@ -123,6 +161,11 @@ namespace abbTools.Windows
             Close();
         }
 
+        /// <summary>
+        /// Method called on button CANCEL click event (decline all changes)
+        /// </summary>
+        /// <param name="sender">Button object that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void btnCancel_Click(object sender, System.EventArgs e)
         {
             selectedSignal = preSelectedSig;
@@ -130,6 +173,11 @@ namespace abbTools.Windows
             Close();
         }
 
+        /// <summary>
+        /// Method called on button UPDATE click event (refresh robot signals)
+        /// </summary>
+        /// <param name="sender">Button object that triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void btnUpdateSignals_Click(object sender, System.EventArgs e)
         {
             if (currAbbController != null) {
@@ -157,12 +205,20 @@ namespace abbTools.Windows
          ***  WINDOW ROBOT SIGNALS - functions
          ********************************************************/
 
+        /// <summary>
+        /// Mrthod called to update selected ABB controller signals
+        /// </summary>
+        /// <param name="abb">ABB controller which signals we want to get</param>
         public void updateSignals(Controller abb)
         {
             currAbbController = abb;
             btnUpdateSignals_Click(this, null);
         }
 
+        /// <summary>
+        /// Method used to select and check robot signal represented by list index
+        /// </summary>
+        /// <param name="index">List index of signal to select and check</param>
         public void selectSig(int index)
         {
             if (index >= 0 && index < listRobotSignals.Items.Count) {
@@ -179,6 +235,10 @@ namespace abbTools.Windows
             }
         }
 
+        /// <summary>
+        /// Method used to select and check robot signal represented by its name
+        /// </summary>
+        /// <param name="name">Name of signal to select and check in list</param>
         public void selectSig(string name)
         {
             listRobotSignals.ClearSelected();
@@ -197,6 +257,11 @@ namespace abbTools.Windows
          ***  WINDOW ROBOT SIGNALS - background thread
          ********************************************************/
 
+        /// <summary>
+        /// Method triggerd on backgound thread work start 
+        /// </summary>
+        /// <param name="sender">Thread which triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             //get all signals and report to main thread when finished
@@ -209,6 +274,11 @@ namespace abbTools.Windows
             }
         }
 
+        /// <summary>
+        /// Method triggerd on backgound thread work progress changed
+        /// </summary>
+        /// <param name="sender">Thread which triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
         {
             //update list if controller is connected
@@ -217,6 +287,11 @@ namespace abbTools.Windows
             }
         }
 
+        /// <summary>
+        /// Method triggerd on backgound thread work end
+        /// </summary>
+        /// <param name="sender">Thread which triggered current event</param>
+        /// <param name="e">Event arguments</param>
         private void backThread_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             //check if in mean time disconnection occured
