@@ -142,7 +142,7 @@ namespace abbTools
             appsLoadProgramActions();
             //load saved robots to list view
             listViewRobots.Items.Clear();
-            loadMyRobots(appSettings.getProjPath());
+            loadMyRobots(appSettings.currProject);
             //scan for abb controllers in network
             abbScanner = new NetworkScanner();
             abbScanner.Scan();
@@ -773,6 +773,8 @@ namespace abbTools
                     xmlFile.WriteEndElement();
                     xmlFile.Close();
                     status.writeLog(logType.info, "File saved (only robots from saved group)!");
+                    //update curr proj path
+                    appSettings.currProject = filePath;
                 } catch (XmlException) {
                     status.writeLog(logType.error, "Error while saving to XML...");
                 }
@@ -843,6 +845,8 @@ namespace abbTools
                     }
                     //close up file
                     xmlRead.Close();
+                    //update curr proj path
+                    appSettings.currProject = filePath;
                 } catch (XmlException) {
                     status.writeLog(logType.error, "Loaded file isn't XML or it's damaged...");
                 }
@@ -1168,6 +1172,22 @@ namespace abbTools
             appRemotePC.controllerLost(lostController);
             appBackupManager.savedControllerLost(lostController);
             appWindowsIPC.savedControllerLost(lostController);
+        }
+
+        /********************************************************
+         ***  MAIN WINDOW - apps events
+         ********************************************************/
+
+        /// <summary>
+        /// Method triggered on update of last backup time to save it to file
+        /// </summary>
+        private void updateBackupTimeInFile()
+        {
+            //only if project is loaded we can update XML file with new backup times
+            if (appSettings.currProject != null && appSettings.currProject != "") {
+                //save XML file to update last backup times
+                saveMyRobots(appSettings.currProject);
+            }
         }
     }
 }

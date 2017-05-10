@@ -157,7 +157,11 @@ namespace abbTools.AppBackupManager
         private void updateRobotBackupState(int newState)
         {
             labelBackupStatus.ImageIndex = newState;
-            if (newState == 2) labelLastTimeROB.Text = currData.robotLastBackupTime.ToString();
+            if (currData != null && newState == 2) {
+                labelLastTimeROB.Text = currData.robotLastBackupTime.ToString();
+                //call event to update xml file (new last backup time)
+                updateBackupTime();
+            }
         }
 
         /// <summary>
@@ -166,7 +170,11 @@ namespace abbTools.AppBackupManager
         /// <param name="newState">New state on doing backup when PC is master</param>
         private void updatePCBackupState(int newState)
         {
-            if (currData != null && newState == 1) labelLastTimePC.Text = currData.pcLastBackupTime.ToString();
+            if (currData != null && newState == 1) {
+                labelLastTimePC.Text = currData.pcLastBackupTime.ToString();
+                //call event to update xml file (new last backup time)
+                updateBackupTime();
+            }
         }
 
         /// <summary>
@@ -463,8 +471,6 @@ namespace abbTools.AppBackupManager
                             //there is no backup done yet - no reference to count from... create it
                             item.createBackup(BackupSettings.source.interval);
                         }
-                        //call event to update xml file (new last backup time)
-                        updateBackupTime();
                     }
                     //-------------------------
                     //--- create backup from exact time
@@ -485,8 +491,6 @@ namespace abbTools.AppBackupManager
                             item.robotGetBackup();
                             item.robotWatchBackup = false;
                         }
-                        //call event to update xml file (new last backup time)
-                        updateBackupTime();
                     }
                     //-------------------------
                 }  

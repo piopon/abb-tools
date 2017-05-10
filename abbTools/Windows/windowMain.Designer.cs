@@ -646,6 +646,7 @@
             this.appBackupManager.Name = "appBackupManager";
             this.appBackupManager.Size = new System.Drawing.Size(707, 557);
             this.appBackupManager.TabIndex = 0;
+            this.appBackupManager.UpdateBackupTimeInXML += updateBackupTimeInFile;
             // 
             // actionWindowsIPC
             // 

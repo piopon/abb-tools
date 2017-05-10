@@ -589,6 +589,11 @@ namespace abbTools.AppBackupManager
                 logger?.writeLog(logType.error, "abbTools - can't create backup! No outputh path defined...");
                 return;
             }
+            //check if backup output dir exists
+            if (!Directory.Exists(outputDir)) {
+                Directory.CreateDirectory(outputDir);
+                logger?.writeLog(logType.warning, $"controller <b>{controller.SystemName}</b> [PC MASTER]: created output dir ({DateTime.Now.ToShortTimeString()})!");
+            }
             //create full backup path
             string backupPath = createBackupPath(outputDir, controller.SystemName, backupPC.getSuffix(backupSrc), backupPC.duplicateMethod);
             //check if backup isnt currently in progress
@@ -618,7 +623,7 @@ namespace abbTools.AppBackupManager
                 //at end check if we werent connected - if yes then disconnect
                 if (!wasConnected) controller.Logoff();
             } catch (Exception e) {
-                logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [PC MASTER]: backup exception {e.Message}!");
+                logger?.writeLog(logType.error, $"controller <b>{controller.SystemName}</b> [PC MASTER]: backup exception = {e.Message}");
             }
         }
 
