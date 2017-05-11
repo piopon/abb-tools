@@ -47,7 +47,7 @@ namespace abbTools
             //to catch unhandled exceptions on background threads
             Application.ThreadException += abbToolsThreadException;
             //load application settings
-            appSettings = new windowSettings();
+            appSettings = new windowSettings(Height,Width);
             appSettings.loadData();
             //try to send welcome mail
             sendMail(abbStatus.mail.openApp);

@@ -563,7 +563,7 @@
             this.tabActions.Margin = new System.Windows.Forms.Padding(100);
             this.tabActions.Name = "tabActions";
             this.tabActions.SelectedIndex = 0;
-            this.tabActions.Size = new System.Drawing.Size(721, 588);
+            this.tabActions.Size = new System.Drawing.Size(715, 588);
             this.tabActions.TabIndex = 0;
             this.tabActions.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabActions_Selecting);
             // 
@@ -574,7 +574,7 @@
             this.actionDashboard.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.actionDashboard.Location = new System.Drawing.Point(4, 27);
             this.actionDashboard.Name = "actionDashboard";
-            this.actionDashboard.Size = new System.Drawing.Size(713, 557);
+            this.actionDashboard.Size = new System.Drawing.Size(707, 557);
             this.actionDashboard.TabIndex = 2;
             this.actionDashboard.Text = "dashboard";
             // 
@@ -587,7 +587,7 @@
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
             this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(713, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(716, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
             // 
@@ -613,7 +613,7 @@
             this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
             this.actionBackupManager.Name = "actionBackupManager";
             this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
-            this.actionBackupManager.Size = new System.Drawing.Size(713, 557);
+            this.actionBackupManager.Size = new System.Drawing.Size(716, 557);
             this.actionBackupManager.TabIndex = 1;
             this.actionBackupManager.Text = "backupManager";
             // 
@@ -637,7 +637,7 @@
             this.actionWindowsIPC.Controls.Add(this.appWindowsIPC);
             this.actionWindowsIPC.Location = new System.Drawing.Point(4, 27);
             this.actionWindowsIPC.Name = "actionWindowsIPC";
-            this.actionWindowsIPC.Size = new System.Drawing.Size(713, 557);
+            this.actionWindowsIPC.Size = new System.Drawing.Size(716, 557);
             this.actionWindowsIPC.TabIndex = 3;
             this.actionWindowsIPC.Text = "windowsIPC";
             // 

@@ -172,6 +172,7 @@
             this.Name = "windowRobotSig";
             this.Opacity = 0.75D;
             this.Text = "windowRobotSig";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.windowRobotSig_FormClosed);
             this.panelContents.ResumeLayout(false);
             this.panelLoading.ResumeLayout(false);
             this.ResumeLayout(false);

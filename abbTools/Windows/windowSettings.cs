@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using System.Net.Mail;
 using System.IO;
-
+using System.Drawing;
 
 namespace abbTools
 {
@@ -21,13 +21,19 @@ namespace abbTools
         /// GET info about loading last project
         /// </summary>
         public bool loadLastProject { get; private set; }
-        
+
+        /// <summary>
+        /// GET info about always on top property
+        /// </summary>
+        public bool alwaysOnTop { get; private set; }
+
         //path to settings XML file
         private string settingsPath = "";
         //private email data
         private bool mailActive = false;
         public SmtpClient mailClient = null;
         public MailMessage mailMessage = null;
+        private Form overrideParent;
 
         /********************************************************
          ***  WINDOWS SETTINGS - constructor
@@ -36,9 +42,12 @@ namespace abbTools
         /// <summary>
         /// Default constructor
         /// </summary>
-        public windowSettings()
+        public windowSettings(int clientHeight, int clientWidth)
         {
             InitializeComponent();
+            //semi-transparent background
+            Height = clientHeight;
+            Width = clientWidth;
             //path data
             currProject = "";
             loadLastProject = false;
@@ -167,7 +176,48 @@ namespace abbTools
         /// <param name="e">Event arguments</param>
         private void buttonOK_Click(object sender, EventArgs e)
         {
+            //save application data
+
+            //close this window
             Close();
+        }
+
+        private void buttonApply_Click(object sender, EventArgs e)
+        {
+            //save application data
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            //close this window
+            Close();
+        }
+
+        private void windowSettings_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            overrideParent.Controls.Clear();
+            overrideParent.Close();
+            overrideParent = null;
+        }
+
+        private void windowSettings_Load(object sender, EventArgs e)
+        {
+            //set the panel position
+            panelTemplate.Left = (Width - panelTemplate.Width) / 2;
+            panelTemplate.Top = (Height - panelTemplate.Height) / 2;
+            //we want semi-transparent background and opaque controls - we override it with new form
+            overrideParent = new Form();
+            overrideParent.ShowInTaskbar = false;
+            overrideParent.FormBorderStyle = FormBorderStyle.None;
+            overrideParent.Opacity = 100;
+            overrideParent.Size = panelTemplate.Size;
+            overrideParent.StartPosition = FormStartPosition.Manual;
+            overrideParent.Location = panelTemplate.PointToScreen(new Point(0, 0));
+            overrideParent.Controls.Add(panelBackground);
+            overrideParent.Show(panelTemplate);
+            //new form contains user GUI panel
+            panelBackground.Dock = DockStyle.Fill;
+            overrideParent.ResumeLayout(false);
         }
     }
 }

@@ -124,6 +124,18 @@ namespace abbTools.Windows
             }
         }
 
+        /// <summary>
+        /// Event triggered on robot signals form closed
+        /// </summary>
+        /// <param name="sender">Form parent object that triggered this event</param>
+        /// <param name="e">Event arguments</param>
+        private void windowRobotSig_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            overrideParent.Controls.Clear();
+            overrideParent.Close();
+            overrideParent = null;
+        }
+
         /********************************************************
          ***  WINDOW ROBOT SIGNALS - buttons events
          ********************************************************/

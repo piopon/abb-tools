@@ -178,6 +178,7 @@
             this.Name = "windowRobotFiles";
             this.Opacity = 0.75D;
             this.Text = "windowRobotFiles";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.windowRobotFiles_FormClosed);
             this.Shown += new System.EventHandler(this.windowRobotFiles_Shown);
             this.panelContent.ResumeLayout(false);
             this.panelContent.PerformLayout();

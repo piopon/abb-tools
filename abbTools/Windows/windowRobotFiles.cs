@@ -114,6 +114,18 @@ namespace abbTools.Windows
             treeRobotDirs.SelectedNode = myNode;
         }
 
+        /// <summary>
+        /// Event triggered on robot files form closed
+        /// </summary>
+        /// <param name="sender">Form parent object that triggered this event</param>
+        /// <param name="e">Event arguments</param>
+        private void windowRobotFiles_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            overrideParent.Controls.Clear();
+            overrideParent.Close();
+            overrideParent = null;
+        }
+
         /********************************************************
          ***  WINDOW ROBOT FILES - form methods
          ********************************************************/
