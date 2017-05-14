@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Windows.Forms;
-using System.Net.Mail;
 using System.IO;
 using System.Drawing;
+using System.Xml;
+using abbTools.Shared;
 
 namespace abbTools
 {
@@ -18,6 +19,11 @@ namespace abbTools
         public string currProject { get; set; }
 
         /// <summary>
+        /// GET flag about showing curr project path
+        /// </summary>
+        public bool showCurrProject { get; private set; }
+
+        /// <summary>
         /// GET info about loading last project
         /// </summary>
         public bool loadLastProject { get; private set; }
@@ -27,12 +33,18 @@ namespace abbTools
         /// </summary>
         public bool alwaysOnTop { get; private set; }
 
+        /// <summary>
+        /// GET information about runtime signal
+        /// </summary>
+        public AbbRunSignal runtimeSig { get; private set; }
+
+        /// <summary>
+        /// GET information about mail
+        /// </summary>
+        public AbbMail mailService { get; private set; }
+        
         //path to settings XML file
-        private string settingsPath = "";
-        //private email data
-        private bool mailActive = false;
-        public SmtpClient mailClient = null;
-        public MailMessage mailMessage = null;
+        private string settingsPath = "";      
         private Form overrideParent;
 
         /********************************************************
@@ -45,13 +57,19 @@ namespace abbTools
         public windowSettings(int clientHeight, int clientWidth)
         {
             InitializeComponent();
+            //default settings path
+            settingsPath = Application.StartupPath + "\\settings.xml";
             //semi-transparent background
             Height = clientHeight;
             Width = clientWidth;
+            //create abbTools runtime controller signal object
+            runtimeSig = AbbRunSignal.getInstance();
+            //create mail service object
+            mailService = new AbbMail();
             //path data
             currProject = "";
+            showCurrProject = false;
             loadLastProject = false;
-            settingsPath = Application.ExecutablePath + "\\settings.xml";
         }
 
         /********************************************************
@@ -63,35 +81,58 @@ namespace abbTools
         /// </summary>
         public void loadData()
         {
-            if (File.Exists(settingsPath)) { 
-                //load path data
-                loadPathData();
-                //load mail settings
-                loadEmailData();
+            if (File.Exists(settingsPath)) {
+                //create new xmlFile
+                XmlReader xmlFile = XmlReader.Create(settingsPath);
+                while (xmlFile.Read()) {
+                    //read every node from XML document
+                    if ((xmlFile.NodeType == XmlNodeType.Element) && (xmlFile.Name.StartsWith("settings"))) {
+                        if (xmlFile.HasAttributes) {
+                            //load GENERAL SETTINGS
+                            loadMainWindowSettings(ref xmlFile);
+                            loadRunSignal(ref xmlFile);
+                            //load APPS SETTINGS
+                            loadAppsSettings(ref xmlFile);
+                            //load EMAIL SETTINGS
+                            loadEmailSettings(ref xmlFile);
+                        }
+                    }
+                }
+                //close file
+                xmlFile.Close();
             }
-            //fill all form elements from object-data
-            updateGUI();
         }
 
         /// <summary>
-        /// Method used to load all project paths
+        /// Method used to load all main window settings 
         /// </summary>
-        private void loadPathData()
+        private void loadMainWindowSettings(ref XmlReader xml)
         {
 
         }
 
         /// <summary>
-        /// Method used to load all email settings
+        /// Method used to load abbTools runtime controller signal
         /// </summary>
-        private void loadEmailData()
+        private void loadRunSignal(ref XmlReader xml)
         {
-            //fill client data GUI and update object
-            if (mailClient == null) mailClient = new SmtpClient();
+            runtimeSig?.loadData(ref xml);
+        }
 
-            //fill mail data and update object
-            if (mailMessage == null) mailMessage = new MailMessage();
+        /// <summary>
+        /// Method used to load my applications settings
+        /// </summary>
+        private void loadAppsSettings(ref XmlReader xml)
+        {
 
+        }
+
+        /// <summary>
+        /// Method used to load email settings and data
+        /// </summary>
+        private void loadEmailSettings(ref XmlReader xml)
+        {
+            mailService?.loadData(ref xml);   
         }
 
         /********************************************************
@@ -103,32 +144,57 @@ namespace abbTools
         /// </summary>
         public void saveData()
         {
-            //update objects
-            saveEmailObjs();
-            //save paths
-            savePathObjs();
+            //create new xmlFile
+            XmlWriter xmlFile = XmlWriter.Create(settingsPath, new XmlWriterSettings { Indent = true });
+            xmlFile.WriteStartElement("settings");
+            //save GENERAL SETTINGS
+            saveMainWindowSettings(ref xmlFile);
+            saveRunSignal(ref xmlFile);
+            //save APPS SETTINGS
+            saveAppsSettings(ref xmlFile);
+            //save EMAIL SETTINGS
+            saveEmailSettings(ref xmlFile);
+            //close up file
+            xmlFile.WriteEndElement();
+            xmlFile.Close();
         }
         
         /// <summary>
-        /// Method used to save all applications paths
+        /// Method used to save all main window settings 
         /// </summary>
-        private void savePathObjs()
+        private void saveMainWindowSettings(ref XmlWriter xml)
         {
-            //save all paths to file
+
+        }
+
+        /// <summary>
+        /// Method used to save abbTools runtime controller signal
+        /// </summary>
+        private void saveRunSignal(ref XmlWriter xml)
+        {
+            runtimeSig?.saveData(ref xml);
+        }
+        
+        /// <summary>
+        /// Method used to save my applications settings
+        /// </summary>
+        private void saveAppsSettings(ref XmlWriter xml)
+        {
+
         }
 
         /// <summary>
         /// Method used to save email settings and data
         /// </summary>
-        private void saveEmailObjs()
+        private void saveEmailSettings(ref XmlWriter xml)
         {
-
+            mailService?.saveData(ref xml);
         }
 
         /********************************************************
          ***  WINDOWS SETTINGS - data management
          ********************************************************/
-
+        
         /// <summary>
         /// Main method used to update window GUI
         /// </summary>
@@ -146,25 +212,6 @@ namespace abbTools
 
         }
 
-        /// <summary>
-        /// Muthod used to update email settings status 
-        /// </summary>
-        /// <param name="myMail">Mail type to update</param>
-        /// <returns>TRUE if mail is active and ready to go, FALSE otherwise</returns>
-        public bool getMailStatus(abbStatus.mail myMail)
-        {
-            if (mailActive) {
-                if (myMail == abbStatus.mail.openApp) {
-                    mailMessage.Subject = "abbTools::openApp";
-                } else if (myMail == abbStatus.mail.closeApp) {
-                    mailMessage.Subject = "abbTools::closeApp";
-                } else if (myMail == abbStatus.mail.exception) {
-                    mailMessage.Subject = "abbTools::exception";
-                }
-            }
-            return mailActive;
-        }
-
         /********************************************************
          ***  WINDOWS SETTINGS - internal events
          ********************************************************/
@@ -177,22 +224,40 @@ namespace abbTools
         private void buttonOK_Click(object sender, EventArgs e)
         {
             //save application data
-
+            saveData();
             //close this window
+            DialogResult = DialogResult.OK;
             Close();
         }
 
+        /// <summary>
+        /// Method triggered on click of button APPLY
+        /// </summary>
+        /// <param name="sender">Parent button which triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void buttonApply_Click(object sender, EventArgs e)
         {
             //save application data
+            saveData();
         }
 
+        /// <summary>
+        /// Method triggered on click of button CANCEL
+        /// </summary>
+        /// <param name="sender">Parent button which triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void buttonCancel_Click(object sender, EventArgs e)
         {
             //close this window
+            DialogResult = DialogResult.Cancel;
             Close();
         }
 
+        /// <summary>
+        /// Method triggered on close of windows settings window
+        /// </summary>
+        /// <param name="sender">windowSettings object that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void windowSettings_FormClosed(object sender, FormClosedEventArgs e)
         {
             overrideParent.Controls.Clear();
@@ -200,6 +265,11 @@ namespace abbTools
             overrideParent = null;
         }
 
+        /// <summary>
+        /// Method triggered on load of windows settings window
+        /// </summary>
+        /// <param name="sender">windowSettings object that triggered this event</param>
+        /// <param name="e">Event arguments</param>
         private void windowSettings_Load(object sender, EventArgs e)
         {
             //set the panel position
@@ -218,6 +288,24 @@ namespace abbTools
             //new form contains user GUI panel
             panelBackground.Dock = DockStyle.Fill;
             overrideParent.ResumeLayout(false);
+            //load my data
+            loadData();
+            //update window GUI
+            updateGUI();
+        }
+
+        /********************************************************
+         ***  WINDOWS SETTINGS - settings changed
+         ********************************************************/
+
+        /// <summary>
+        /// Method triggered on change of CheckBox "show project path" check status 
+        /// </summary>
+        /// <param name="sender">CheckBox that triggered current event</param>
+        /// <param name="e">Event arguments</param>
+        private void checkShowProjPath_CheckedChanged(object sender, EventArgs e)
+        {
+            showCurrProject = checkShowProjPath.Checked;
         }
     }
 }

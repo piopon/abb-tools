@@ -7,7 +7,7 @@ namespace abbTools.Shared
     public class AbbRunSignal
     {
         /********************************************************
-         ***  ABB RUN SIGNAL - class properties
+         ***  ABB RUN SIGNAL - properties + fields
          ********************************************************/
 
         /// <summary>
@@ -125,24 +125,41 @@ namespace abbTools.Shared
         /// Method used to save ABB run signal object components to XML file
         /// </summary>
         /// <param name="xml">XML file to save data to</param>
-        public void saveData(XmlWriter xml)
+        public void saveData(ref XmlWriter xml)
         {
-
+            //save all properties (signal activation, name, default run value)
+            xml.WriteStartElement("runSignal");
+            xml.WriteAttributeString("active", active.ToString());
+            xml.WriteAttributeString("name", name);
+            xml.WriteAttributeString("val", runtimeState.ToString());
+            xml.WriteEndElement();
         }
 
         /// <summary>
         /// Method used to load ABB run signal object components from XML file
         /// </summary>
         /// <param name="xml">XML file to load data from</param>
-        public void loadData(XmlReader xml)
+        public void loadData(ref XmlReader xml)
         {
-
+            //get robot master main data
+            while (xml.Read()) {
+                bool start = xml.NodeType == XmlNodeType.Element,
+                     runSig = xml.Name.StartsWith("runSignal");
+                //if we are starting to read client data then get it
+                if (start && runSig) {
+                    active = bool.Parse(xml.GetAttribute("active"));
+                    name = xml.GetAttribute("name");
+                    runtimeState = int.Parse(xml.GetAttribute("val"));
+                    //break from WHILE loop
+                    break;
+                }
+            }
         }
 
         /// <summary>
-        /// 
+        /// Overrided method converting ABB run signal to string
         /// </summary>
-        /// <returns></returns>
+        /// <returns>String converted from ABB run signal</returns>
         public override string ToString()
         {
             return $"{name} [runtime: {runtimeState}";

@@ -13,23 +13,33 @@ namespace abbTools
     public partial class windowMain : Form
     {
         /********************************************************
-         ***  MAIN WINDOW - class fields
+         ***  MAIN WINDOW - properties + fields
          ********************************************************/
+        
+        /// <summary>
+        /// GET window settings data
+        /// </summary>
+        public windowSettings appSettings { get; private set; }
 
-        //application settings
-        private windowSettings appSettings = null;
-        //global variables
-        public bool isDragged = false;
-        private int mouseX, mouseY;
-        //abb network scanner
-        private NetworkScanner abbScanner = null;
-        private NetworkWatcher abbWatcher = null;
-        //object representing connected controller
-        private Controller abbConn = null;
-        //status writer
-        private loggerABB status = null;
+        /// <summary>
+        /// GET object representing currently connected controller
+        /// </summary>
+        //public Controller abbConnected { get; private set; }
+
+        /// <summary>
+        /// GET current logger object
+        /// </summary>
+        public loggerABB status { get; private set; }
+
         //applications management object
         private AppsManager myApps;
+        //abb network scanner
+        private Controller abbConnected = null;
+        private NetworkScanner abbScanner = null;
+        private NetworkWatcher abbWatcher = null;
+        //global variables
+        private bool isDragged = false;
+        private int mouseX, mouseY;
 
         /********************************************************
          ***  MAIN WINDOW - constructor
@@ -41,11 +51,8 @@ namespace abbTools
         public windowMain()
         {
             InitializeComponent();
-            //to catch unhandled exceptions triggered by in the app domain
-            AppDomain abbDomain = AppDomain.CurrentDomain;
-            abbDomain.UnhandledException += abbToolsUnhandledException;
-            //to catch unhandled exceptions on background threads
-            Application.ThreadException += abbToolsThreadException;
+            //connect events when unhandled exceptions triggers
+            connectUnhandledExceptions();
             //load application settings
             appSettings = new windowSettings(Height,Width);
             appSettings.loadData();
@@ -55,12 +62,34 @@ namespace abbTools
             appsRegister();
             appsUpdateGUI();
             //connect application events
-            appBackupManager.UpdateBackupTimeInXML += updateBackupTimeInFile;
+            appsConnectEvents();
         }
 
         /********************************************************
          ***  MAIN WINDOW - uhandled errors
          ********************************************************/
+
+        /// <summary>
+        /// Method used to subscribe to unhandled exceptions events (for both: AppDomain and Application)
+        /// </summary>
+        private void connectUnhandledExceptions()
+        {
+            //to catch unhandled exceptions triggered by in the app domain
+            AppDomain.CurrentDomain.UnhandledException += abbToolsUnhandledException;
+            //to catch unhandled exceptions on background threads
+            Application.ThreadException += abbToolsThreadException;
+        }
+
+        /// <summary>
+        /// Method used to unsubscribe from unhandled exceptions events (for both: AppDomain and Application)
+        /// </summary>
+        private void disconnectUnhandledExceptions()
+        {
+            //to catch unhandled exceptions triggered by in the app domain
+            AppDomain.CurrentDomain.UnhandledException -= abbToolsUnhandledException;
+            //to catch unhandled exceptions on background threads
+            Application.ThreadException -= abbToolsThreadException;
+        }
 
         /// <summary>
         /// Event connected to catch unhandled exceptions triggered by app domain
@@ -198,10 +227,10 @@ namespace abbTools
             abbWatcher.Found -= abbWatcherFoundEvent;
             abbWatcher.Lost -= abbWatcherLostEvent;
             //disconnect from controller (if connected)
-            if (abbConn != null) {
-                abbConn.Logoff();
-                abbConn.Dispose();
-                abbConn = null;
+            if (abbConnected != null) {
+                abbConnected.Logoff();
+                abbConnected.Dispose();
+                abbConnected = null;
             }
         }
 
@@ -367,8 +396,12 @@ namespace abbTools
             appSettings.StartPosition = FormStartPosition.Manual;
             appSettings.Top = Top + (Height - appSettings.Height) / 2;
             appSettings.Left = Left + (Width - appSettings.Width) / 2;
-            //show form
-            appSettings.ShowDialog();
+            //show form (owner useful for reading run signal property)
+            if (appSettings.ShowDialog(this) != DialogResult.Cancel) {
+                //when form close then apply data
+                appSettingsApply();
+            }
+        
         }
 
         /// <summary>
@@ -459,6 +492,14 @@ namespace abbTools
             }
         }
 
+        /// <summary>
+        /// Method used to apply settings to main window and all applications
+        /// </summary>
+        private void appSettingsApply()
+        {
+            labelCurrProjectPath.Visible = appSettings.showCurrProject;
+        }
+
         /********************************************************
          ***  MAIN WINDOW - network visible robots list
          ********************************************************/
@@ -506,8 +547,8 @@ namespace abbTools
                 }
             } else {
                 //lost controller - check if it was connected
-                if (abbConn != null && eventController.Name == abbConn.SystemName) {
-                    if (disconnectController(ref abbConn) == (int)abbStatus.conn.disconnOK) {
+                if (abbConnected != null && eventController.Name == abbConnected.SystemName) {
+                    if (disconnectController(ref abbConnected) == (int)abbStatus.conn.disconnOK) {
                         //clear controller address in my programs
                         appRemotePC.desyncController();
                         //log that current controller was disconnected because its lost
@@ -550,14 +591,14 @@ namespace abbTools
         {
             if (listViewRobots.SelectedItems.Count > 0) {
                 /***** CONNECT/DISCONNECT FROM CONTROLLER *****/
-                if (abbConn == null) {
+                if (abbConnected == null) {
                     //no controller connected - disconect menu not visible
                     connectToolStripMenuItem.Visible = true;
                     disconnectToolStripMenuItem.Visible = false;
                 } else {
                     //controller which is connected only has disconnect menu
                     string itemName = listViewRobots.FocusedItem.Text;
-                    if (itemName == abbConn.SystemName) {
+                    if (itemName == abbConnected.SystemName) {
                         connectToolStripMenuItem.Visible = false;
                         disconnectToolStripMenuItem.Visible = true;
                     } else {
@@ -634,7 +675,7 @@ namespace abbTools
             string controllerName = toSaveItem.Text;
             //update GUI (move to saved group and change icon to connected!)
             toSaveItem.Group = listViewRobots.Groups[2];
-            if (abbConn != null && abbConn.SystemName == toSaveItem.Text) {
+            if (abbConnected != null && abbConnected.SystemName == toSaveItem.Text) {
                 updateIcon(toSaveItem, abbStatus.conn.connOK);
             } else {
                 updateIcon(toSaveItem, abbStatus.conn.available);
@@ -770,7 +811,7 @@ namespace abbTools
             //connect to selected controller
             int connStatus = connectController(listViewRobots.FocusedItem);
             //send controller address to my apps
-            if (connStatus == (int)abbStatus.conn.connOK) appsControllerSync(abbConn);
+            if (connStatus == (int)abbStatus.conn.connOK) appsControllerSync(abbConnected);
         }
 
         /// <summary>
@@ -803,7 +844,7 @@ namespace abbTools
         private void cleanSavedGroup()
         {
             //disconnect from current controller
-            disconnectController(ref abbConn);
+            disconnectController(ref abbConnected);
             //move/delete robots from saved group
             foreach (ListViewItem item in this.listViewRobots.Items) {
                 if (item.Group.Header == "saved") {
@@ -1005,22 +1046,22 @@ namespace abbTools
                 if (controller.Availability == Availability.Available) {
                     try {
                         //first disconnect from previous controller (if connected)
-                        disconnectController(ref abbConn);
+                        disconnectController(ref abbConnected);
                         //show status conn status and process messages 
                         status.writeLog(logType.info, "controller <bu>" + cName + "</bu> connecting...");
                         Application.DoEvents();
                         //create controller and log in
-                        abbConn = ControllerFactory.CreateFrom(controller);
-                        result = connectController(ref abbConn);
+                        abbConnected = ControllerFactory.CreateFrom(controller);
+                        result = connectController(ref abbConnected);
                         if (result == (int)abbStatus.conn.connOK) {
                             //update status
                             status.writeLog(logType.info, "controller <bu>" + cName + "</bu> connected!");
                         }
                     } catch (ABB.Robotics.GenericControllerException e) {
-                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>" +
+                        status.writeLog(logType.error, "controller <bu>" + abbConnected.SystemName + "</bu>" +
                                         e.Message+".. wait a while and try again.");
                     } catch (Exception e) {
-                        status.writeLog(logType.error, "controller <bu>" + abbConn.SystemName + "</bu>" +
+                        status.writeLog(logType.error, "controller <bu>" + abbConnected.SystemName + "</bu>" +
                                         e.Message + ".. wait a while and try again.");
                     }
                 } else {
@@ -1062,6 +1103,27 @@ namespace abbTools
         }
 
         /// <summary>
+        /// Function used to connect to main controller object
+        /// </summary>
+        /// <returns>Connection status</returns>
+        private int connectController()
+        {
+            abbConnected.Logon(UserInfo.DefaultUser);
+            if (abbConnected.Connected) {
+                //update icon on list (first find which element)
+                int element = findController(abbConnected.SystemName, abbConnected.IsVirtual);
+                updateIcon(listViewRobots.Items[element], abbStatus.conn.connOK);
+                //update conn label
+                labelConnControllerName.Text = "connected to: " + abbConnected.SystemName;
+                //output
+                return (int)abbStatus.conn.connOK;
+            } else {
+                //output
+                return (int)abbStatus.conn.disconnOK;
+            }
+        }
+
+        /// <summary>
         /// Function used to disconnect from inputted controller form robot list
         /// </summary>
         /// <param name="listController">List item from robot list controller to disconnect from</param>
@@ -1073,9 +1135,9 @@ namespace abbTools
 
             if (listController != null && listController.Tag != null) {
                 ControllerInfo controller = (ControllerInfo)listController.Tag;
-                if (abbConn.SystemName == listController.Text && controller.Availability == Availability.Available) {
+                if (abbConnected.SystemName == listController.Text && controller.Availability == Availability.Available) {
                     //disconnect from selected controller
-                    result = disconnectController(ref abbConn);
+                    result = disconnectController(ref abbConnected);
                     //show disconn status and process messages 
                     status.writeLog(logType.info, "controller <bu>" + cName + "</bu> disconnected!");
                 } else {
@@ -1110,6 +1172,28 @@ namespace abbTools
             return (int)abbStatus.conn.disconnOK;
         }
 
+        /// <summary>
+        /// Function used to disconnect from main controller object
+        /// </summary>
+        /// <returns>Disonnection status</returns>
+        private int disconnectController()
+        {
+            //disconnect from selected controller
+            if (abbConnected != null) {
+                //update icon on list (first find which element)
+                int element = findController(abbConnected.SystemName, abbConnected.IsVirtual);
+                updateIcon(listViewRobots.Items[element], abbStatus.conn.disconnOK);
+                //log off from controller
+                abbConnected.Logoff();
+                abbConnected.Dispose();
+                abbConnected = null;
+            }
+            //update conn label
+            labelConnControllerName.Text = "connected to: ---";
+            //return disconnect status
+            return (int)abbStatus.conn.disconnOK;
+        }
+
         /********************************************************
          ***  MAIN WINDOW - email management
          ********************************************************/
@@ -1121,7 +1205,7 @@ namespace abbTools
         private void sendMail(abbStatus.mail mailType)
         {
             //check if sending e-mail is active
-            if (appSettings.getMailStatus(mailType)) {
+            if (appSettings.mailService.getMailStatus(mailType)) {
 
             }
         }
@@ -1158,6 +1242,15 @@ namespace abbTools
                 appBackupManager.syncLogger(status);
                 appWindowsIPC.syncLogger(status);
             }
+        }
+
+        /// <summary>
+        /// Method used to connect all my application events
+        /// </summary>
+        private void appsConnectEvents()
+        {
+            //app: backupManager
+            appBackupManager.UpdateBackupTimeInXML += updateBackupTimeInFile;
         }
 
         /// <summary>

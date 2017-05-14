@@ -61,7 +61,7 @@
             this.radioMinNotifyIcon = new System.Windows.Forms.RadioButton();
             this.checkAlwaysOnTop = new System.Windows.Forms.CheckBox();
             this.tabSettingsMail = new System.Windows.Forms.TabPage();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.imageTabs = new System.Windows.Forms.ImageList(this.components);
             this.panelTemplate = new System.Windows.Forms.Panel();
             this.checkFillMsg = new System.Windows.Forms.CheckBox();
             this.checkRememberAppDir = new System.Windows.Forms.CheckBox();
@@ -179,7 +179,7 @@
             this.tabSettings.Controls.Add(this.tabSettingsMail);
             this.tabSettings.Controls.Add(this.tabSettingsUser);
             this.tabSettings.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.tabSettings.ImageList = this.imageList1;
+            this.tabSettings.ImageList = this.imageTabs;
             this.tabSettings.ItemSize = new System.Drawing.Size(150, 50);
             this.tabSettings.Location = new System.Drawing.Point(17, 56);
             this.tabSettings.Multiline = true;
@@ -304,6 +304,7 @@
             this.checkShowProjPath.TabIndex = 7;
             this.checkShowProjPath.Text = "show project path";
             this.checkShowProjPath.UseVisualStyleBackColor = true;
+            this.checkShowProjPath.CheckedChanged += new System.EventHandler(this.checkShowProjPath_CheckedChanged);
             // 
             // groupSignalRun
             // 
@@ -442,12 +443,13 @@
             this.tabSettingsMail.TabIndex = 0;
             this.tabSettingsMail.ToolTipText = "mail settings";
             // 
-            // imageList1
+            // imageTabs
             // 
-            this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
-            this.imageList1.Images.SetKeyName(0, "settings_mail.png");
-            this.imageList1.Images.SetKeyName(1, "settings_app.png");
+            this.imageTabs.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageTabs.ImageStream")));
+            this.imageTabs.TransparentColor = System.Drawing.Color.Transparent;
+            this.imageTabs.Images.SetKeyName(0, "settings_mail.png");
+            this.imageTabs.Images.SetKeyName(1, "settings_app.png");
+            this.imageTabs.Images.SetKeyName(2, "settings_users.png");
             // 
             // panelTemplate
             // 
@@ -497,6 +499,7 @@
             // 
             this.tabSettingsUser.BackColor = System.Drawing.Color.White;
             this.tabSettingsUser.ForeColor = System.Drawing.Color.Black;
+            this.tabSettingsUser.ImageIndex = 2;
             this.tabSettingsUser.Location = new System.Drawing.Point(4, 54);
             this.tabSettingsUser.Name = "tabSettingsUser";
             this.tabSettingsUser.Padding = new System.Windows.Forms.Padding(3);
@@ -549,7 +552,7 @@
         private System.Windows.Forms.TabControl tabSettings;
         private System.Windows.Forms.TabPage tabSettingsMail;
         private System.Windows.Forms.TabPage tabSettingsGeneral;
-        private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.ImageList imageTabs;
         private System.Windows.Forms.Panel panelHeader;
         private System.Windows.Forms.Label labelWindowTitle;
         private System.Windows.Forms.CheckBox checkLoadLastProject;

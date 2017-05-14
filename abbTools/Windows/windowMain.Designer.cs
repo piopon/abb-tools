@@ -64,28 +64,29 @@
             this.statusTextBox = new System.Windows.Forms.RichTextBox();
             this.pictureLogType = new System.Windows.Forms.PictureBox();
             this.panelApp = new System.Windows.Forms.Panel();
-            this.appContainer = new System.Windows.Forms.SplitContainer();
-            this.btnRobotListCollapse = new System.Windows.Forms.Button();
-            this.listViewRobots = new System.Windows.Forms.ListView();
-            this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.robotListQMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.connectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.disconnectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToSavedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imagesStatus = new System.Windows.Forms.ImageList(this.components);
-            this.tabActions = new System.Windows.Forms.TabControl();
-            this.actionDashboard = new System.Windows.Forms.TabPage();
-            this.actionRemotePC = new System.Windows.Forms.TabPage();
-            this.appRemotePC = new abbTools.appRemoteABB();
-            this.actionBackupManager = new System.Windows.Forms.TabPage();
-            this.appBackupManager = new abbTools.AppBackupManager.appBackupManager();
-            this.actionWindowsIPC = new System.Windows.Forms.TabPage();
-            this.appWindowsIPC = new abbTools.AppWindowsIPC.appWindowsIPC();
             this.saveDialog = new System.Windows.Forms.SaveFileDialog();
             this.openDialog = new System.Windows.Forms.OpenFileDialog();
             this.imagesLogType = new System.Windows.Forms.ImageList(this.components);
+            this.labelCurrProjectPath = new System.Windows.Forms.Label();
+            this.appContainer = new System.Windows.Forms.SplitContainer();
+            this.btnRobotListCollapse = new System.Windows.Forms.Button();
+            this.listViewRobots = new System.Windows.Forms.ListView();
+            this.robotGroupColName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.robotGroupColIP = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.tabActions = new System.Windows.Forms.TabControl();
+            this.actionDashboard = new System.Windows.Forms.TabPage();
+            this.actionRemotePC = new System.Windows.Forms.TabPage();
+            this.actionBackupManager = new System.Windows.Forms.TabPage();
+            this.actionWindowsIPC = new System.Windows.Forms.TabPage();
+            this.appRemotePC = new abbTools.appRemoteABB();
+            this.appBackupManager = new abbTools.AppBackupManager.appBackupManager();
+            this.appWindowsIPC = new abbTools.AppWindowsIPC.appWindowsIPC();
             this.notifyIconQMenu.SuspendLayout();
             this.menuBar.SuspendLayout();
             this.panelMainMenu.SuspendLayout();
@@ -94,11 +95,11 @@
             this.panelLogger.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).BeginInit();
             this.panelApp.SuspendLayout();
+            this.robotListQMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.appContainer)).BeginInit();
             this.appContainer.Panel1.SuspendLayout();
             this.appContainer.Panel2.SuspendLayout();
             this.appContainer.SuspendLayout();
-            this.robotListQMenu.SuspendLayout();
             this.tabActions.SuspendLayout();
             this.actionRemotePC.SuspendLayout();
             this.actionBackupManager.SuspendLayout();
@@ -281,6 +282,7 @@
             // panelMainMenu
             // 
             this.panelMainMenu.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelMainMenu.Controls.Add(this.labelCurrProjectPath);
             this.panelMainMenu.Controls.Add(this.labelAppTitle);
             this.panelMainMenu.Controls.Add(this.menuBar);
             this.panelMainMenu.Dock = System.Windows.Forms.DockStyle.Top;
@@ -301,7 +303,7 @@
             this.labelAppTitle.Enabled = false;
             this.labelAppTitle.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.labelAppTitle.ForeColor = System.Drawing.Color.Black;
-            this.labelAppTitle.Location = new System.Drawing.Point(466, 22);
+            this.labelAppTitle.Location = new System.Drawing.Point(473, 23);
             this.labelAppTitle.Name = "labelAppTitle";
             this.labelAppTitle.Size = new System.Drawing.Size(62, 17);
             this.labelAppTitle.TabIndex = 1;
@@ -397,6 +399,92 @@
             this.panelApp.Name = "panelApp";
             this.panelApp.Size = new System.Drawing.Size(1010, 614);
             this.panelApp.TabIndex = 4;
+            // 
+            // robotListQMenu
+            // 
+            this.robotListQMenu.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.robotListQMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.robotListQMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.connectToolStripMenuItem,
+            this.disconnectToolStripMenuItem,
+            this.addToSavedToolStripMenuItem,
+            this.removeToolStripMenuItem});
+            this.robotListQMenu.Name = "contextMenuStrip1";
+            this.robotListQMenu.Size = new System.Drawing.Size(158, 108);
+            this.robotListQMenu.Opening += new System.ComponentModel.CancelEventHandler(this.robotListQMenu_Opening);
+            // 
+            // connectToolStripMenuItem
+            // 
+            this.connectToolStripMenuItem.Name = "connectToolStripMenuItem";
+            this.connectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.connectToolStripMenuItem.Text = "connect";
+            this.connectToolStripMenuItem.Click += new System.EventHandler(this.connectToolStripMenuItem_Click);
+            // 
+            // disconnectToolStripMenuItem
+            // 
+            this.disconnectToolStripMenuItem.Name = "disconnectToolStripMenuItem";
+            this.disconnectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.disconnectToolStripMenuItem.Text = "disconnect";
+            this.disconnectToolStripMenuItem.Click += new System.EventHandler(this.disconnectToolStripMenuItem_Click);
+            // 
+            // addToSavedToolStripMenuItem
+            // 
+            this.addToSavedToolStripMenuItem.Name = "addToSavedToolStripMenuItem";
+            this.addToSavedToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.addToSavedToolStripMenuItem.Text = "add to saved";
+            this.addToSavedToolStripMenuItem.Click += new System.EventHandler(this.addToSavedToolStripMenuItem_Click);
+            // 
+            // removeToolStripMenuItem
+            // 
+            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
+            this.removeToolStripMenuItem.Text = "remove";
+            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
+            // 
+            // imagesStatus
+            // 
+            this.imagesStatus.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesStatus.ImageStream")));
+            this.imagesStatus.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesStatus.Images.SetKeyName(0, "status_network.png");
+            this.imagesStatus.Images.SetKeyName(1, "status_networkAvail.png");
+            this.imagesStatus.Images.SetKeyName(2, "status_networkConn.png");
+            this.imagesStatus.Images.SetKeyName(3, "status_networkDisconn.png");
+            this.imagesStatus.Images.SetKeyName(4, "status_virtual.png");
+            this.imagesStatus.Images.SetKeyName(5, "status_virtualAvail.png");
+            this.imagesStatus.Images.SetKeyName(6, "status_virtualConn.png");
+            this.imagesStatus.Images.SetKeyName(7, "status_virtualDisconn.png");
+            // 
+            // saveDialog
+            // 
+            this.saveDialog.DefaultExt = "*.xml";
+            this.saveDialog.Filter = "XML file|*.xml|All files|*.*";
+            // 
+            // openDialog
+            // 
+            this.openDialog.DefaultExt = "*.xml";
+            this.openDialog.FileName = "openDialog";
+            this.openDialog.Filter = "XML file|*.xml|All files|*.*";
+            // 
+            // imagesLogType
+            // 
+            this.imagesLogType.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesLogType.ImageStream")));
+            this.imagesLogType.TransparentColor = System.Drawing.Color.Transparent;
+            this.imagesLogType.Images.SetKeyName(0, "log_info.png");
+            this.imagesLogType.Images.SetKeyName(1, "log_warning.png");
+            this.imagesLogType.Images.SetKeyName(2, "log_error.png");
+            // 
+            // labelCurrProjectPath
+            // 
+            this.labelCurrProjectPath.BackColor = System.Drawing.Color.DarkOrange;
+            this.labelCurrProjectPath.Enabled = false;
+            this.labelCurrProjectPath.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelCurrProjectPath.Location = new System.Drawing.Point(201, -1);
+            this.labelCurrProjectPath.Name = "labelCurrProjectPath";
+            this.labelCurrProjectPath.Size = new System.Drawing.Size(607, 16);
+            this.labelCurrProjectPath.TabIndex = 2;
+            this.labelCurrProjectPath.Text = "current project: no loaded project";
+            this.labelCurrProjectPath.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelCurrProjectPath.Visible = false;
             // 
             // appContainer
             // 
@@ -495,60 +583,6 @@
             this.robotGroupColIP.Text = "ip address";
             this.robotGroupColIP.Width = 110;
             // 
-            // robotListQMenu
-            // 
-            this.robotListQMenu.Font = new System.Drawing.Font("GOST Common", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.robotListQMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.robotListQMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.connectToolStripMenuItem,
-            this.disconnectToolStripMenuItem,
-            this.addToSavedToolStripMenuItem,
-            this.removeToolStripMenuItem});
-            this.robotListQMenu.Name = "contextMenuStrip1";
-            this.robotListQMenu.Size = new System.Drawing.Size(158, 108);
-            this.robotListQMenu.Opening += new System.ComponentModel.CancelEventHandler(this.robotListQMenu_Opening);
-            // 
-            // connectToolStripMenuItem
-            // 
-            this.connectToolStripMenuItem.Name = "connectToolStripMenuItem";
-            this.connectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.connectToolStripMenuItem.Text = "connect";
-            this.connectToolStripMenuItem.Click += new System.EventHandler(this.connectToolStripMenuItem_Click);
-            // 
-            // disconnectToolStripMenuItem
-            // 
-            this.disconnectToolStripMenuItem.Name = "disconnectToolStripMenuItem";
-            this.disconnectToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.disconnectToolStripMenuItem.Text = "disconnect";
-            this.disconnectToolStripMenuItem.Click += new System.EventHandler(this.disconnectToolStripMenuItem_Click);
-            // 
-            // addToSavedToolStripMenuItem
-            // 
-            this.addToSavedToolStripMenuItem.Name = "addToSavedToolStripMenuItem";
-            this.addToSavedToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.addToSavedToolStripMenuItem.Text = "add to saved";
-            this.addToSavedToolStripMenuItem.Click += new System.EventHandler(this.addToSavedToolStripMenuItem_Click);
-            // 
-            // removeToolStripMenuItem
-            // 
-            this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(157, 26);
-            this.removeToolStripMenuItem.Text = "remove";
-            this.removeToolStripMenuItem.Click += new System.EventHandler(this.removeToolStripMenuItem_Click);
-            // 
-            // imagesStatus
-            // 
-            this.imagesStatus.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesStatus.ImageStream")));
-            this.imagesStatus.TransparentColor = System.Drawing.Color.Transparent;
-            this.imagesStatus.Images.SetKeyName(0, "status_network.png");
-            this.imagesStatus.Images.SetKeyName(1, "status_networkAvail.png");
-            this.imagesStatus.Images.SetKeyName(2, "status_networkConn.png");
-            this.imagesStatus.Images.SetKeyName(3, "status_networkDisconn.png");
-            this.imagesStatus.Images.SetKeyName(4, "status_virtual.png");
-            this.imagesStatus.Images.SetKeyName(5, "status_virtualAvail.png");
-            this.imagesStatus.Images.SetKeyName(6, "status_virtualConn.png");
-            this.imagesStatus.Images.SetKeyName(7, "status_virtualDisconn.png");
-            // 
             // tabActions
             // 
             this.tabActions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -587,9 +621,32 @@
             this.actionRemotePC.Location = new System.Drawing.Point(4, 27);
             this.actionRemotePC.Margin = new System.Windows.Forms.Padding(0);
             this.actionRemotePC.Name = "actionRemotePC";
-            this.actionRemotePC.Size = new System.Drawing.Size(716, 557);
+            this.actionRemotePC.Size = new System.Drawing.Size(713, 557);
             this.actionRemotePC.TabIndex = 0;
             this.actionRemotePC.Text = "remotePC";
+            // 
+            // actionBackupManager
+            // 
+            this.actionBackupManager.BackColor = System.Drawing.Color.White;
+            this.actionBackupManager.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
+            this.actionBackupManager.Controls.Add(this.appBackupManager);
+            this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
+            this.actionBackupManager.Name = "actionBackupManager";
+            this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
+            this.actionBackupManager.Size = new System.Drawing.Size(713, 557);
+            this.actionBackupManager.TabIndex = 1;
+            this.actionBackupManager.Text = "backupManager";
+            // 
+            // actionWindowsIPC
+            // 
+            this.actionWindowsIPC.BackColor = System.Drawing.Color.White;
+            this.actionWindowsIPC.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
+            this.actionWindowsIPC.Controls.Add(this.appWindowsIPC);
+            this.actionWindowsIPC.Location = new System.Drawing.Point(4, 27);
+            this.actionWindowsIPC.Name = "actionWindowsIPC";
+            this.actionWindowsIPC.Size = new System.Drawing.Size(713, 557);
+            this.actionWindowsIPC.TabIndex = 3;
+            this.actionWindowsIPC.Text = "windowsIPC";
             // 
             // appRemotePC
             // 
@@ -605,18 +662,6 @@
             this.appRemotePC.Size = new System.Drawing.Size(714, 557);
             this.appRemotePC.TabIndex = 0;
             // 
-            // actionBackupManager
-            // 
-            this.actionBackupManager.BackColor = System.Drawing.Color.White;
-            this.actionBackupManager.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
-            this.actionBackupManager.Controls.Add(this.appBackupManager);
-            this.actionBackupManager.Location = new System.Drawing.Point(4, 27);
-            this.actionBackupManager.Name = "actionBackupManager";
-            this.actionBackupManager.Padding = new System.Windows.Forms.Padding(3);
-            this.actionBackupManager.Size = new System.Drawing.Size(716, 557);
-            this.actionBackupManager.TabIndex = 1;
-            this.actionBackupManager.Text = "backupManager";
-            // 
             // appBackupManager
             // 
             this.appBackupManager.appDescr = "Scheduled backups management";
@@ -630,17 +675,6 @@
             this.appBackupManager.Size = new System.Drawing.Size(707, 557);
             this.appBackupManager.TabIndex = 0;
             // 
-            // actionWindowsIPC
-            // 
-            this.actionWindowsIPC.BackColor = System.Drawing.Color.White;
-            this.actionWindowsIPC.BackgroundImage = global::abbTools.Properties.Resources.sidebar;
-            this.actionWindowsIPC.Controls.Add(this.appWindowsIPC);
-            this.actionWindowsIPC.Location = new System.Drawing.Point(4, 27);
-            this.actionWindowsIPC.Name = "actionWindowsIPC";
-            this.actionWindowsIPC.Size = new System.Drawing.Size(716, 557);
-            this.actionWindowsIPC.TabIndex = 3;
-            this.actionWindowsIPC.Text = "windowsIPC";
-            // 
             // appWindowsIPC
             // 
             this.appWindowsIPC.appDescr = "Update ABB signals from external app";
@@ -653,25 +687,6 @@
             this.appWindowsIPC.Name = "appWindowsIPC";
             this.appWindowsIPC.Size = new System.Drawing.Size(714, 557);
             this.appWindowsIPC.TabIndex = 0;
-            // 
-            // saveDialog
-            // 
-            this.saveDialog.DefaultExt = "*.xml";
-            this.saveDialog.Filter = "XML file|*.xml|All files|*.*";
-            // 
-            // openDialog
-            // 
-            this.openDialog.DefaultExt = "*.xml";
-            this.openDialog.FileName = "openDialog";
-            this.openDialog.Filter = "XML file|*.xml|All files|*.*";
-            // 
-            // imagesLogType
-            // 
-            this.imagesLogType.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imagesLogType.ImageStream")));
-            this.imagesLogType.TransparentColor = System.Drawing.Color.Transparent;
-            this.imagesLogType.Images.SetKeyName(0, "log_info.png");
-            this.imagesLogType.Images.SetKeyName(1, "log_warning.png");
-            this.imagesLogType.Images.SetKeyName(2, "log_error.png");
             // 
             // windowMain
             // 
@@ -702,11 +717,11 @@
             this.panelLogger.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureLogType)).EndInit();
             this.panelApp.ResumeLayout(false);
+            this.robotListQMenu.ResumeLayout(false);
             this.appContainer.Panel1.ResumeLayout(false);
             this.appContainer.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.appContainer)).EndInit();
             this.appContainer.ResumeLayout(false);
-            this.robotListQMenu.ResumeLayout(false);
             this.tabActions.ResumeLayout(false);
             this.actionRemotePC.ResumeLayout(false);
             this.actionBackupManager.ResumeLayout(false);
@@ -764,6 +779,7 @@
         private System.Windows.Forms.TabPage actionWindowsIPC;
         private AppWindowsIPC.appWindowsIPC appWindowsIPC;
         private AppBackupManager.appBackupManager appBackupManager;
+        private System.Windows.Forms.Label labelCurrProjectPath;
     }
 }
 
