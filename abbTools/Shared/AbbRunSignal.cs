@@ -4,7 +4,7 @@ using System.Xml;
 
 namespace abbTools.Shared
 {
-    class AbbRunSignal
+    public class AbbRunSignal
     {
         /********************************************************
          ***  ABB RUN SIGNAL - class properties
@@ -25,28 +25,31 @@ namespace abbTools.Shared
         /// </summary>
         public int runtimeState { get; private set; }
 
+        //private reference to itself (singleton pattern)
+        private static AbbRunSignal runSignal = null;
+
         /********************************************************
          ***  ABB RUN SIGNAL - constructor
          ********************************************************/
 
         /// <summary>
-        /// Default constructor
+        /// Default constructor (private = singleton pattern)
         /// </summary>
-        public AbbRunSignal()
+        private AbbRunSignal()
         {
             name = "";
             runtimeState = 1;
         }
 
         /// <summary>
-        /// Constructor with filling fields data
+        /// Method used to get instance of ABB run signal (singleton pattern)
         /// </summary>
-        /// <param name="sigName"></param>
-        /// <param name="runtimeVal"></param>
-        public AbbRunSignal(string sigName, int runtimeVal)
+        /// <returns>AbbRunSignal instance</returns>
+        public static AbbRunSignal getInstance()
         {
-            name = sigName;
-            runtimeState = runtimeVal;
+            //check if there is no instance created yet (singleton)
+            if (runSignal == null) runSignal = new AbbRunSignal();
+            return runSignal;
         }
 
         /********************************************************
