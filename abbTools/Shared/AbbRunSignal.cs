@@ -11,14 +11,19 @@ namespace abbTools.Shared
          ********************************************************/
 
         /// <summary>
-        /// 
+        /// GET or SET active flag of ABB run signal
         /// </summary>
-        public string name { get; set; }
+        public bool active { get; private set; }
 
         /// <summary>
-        /// 
+        /// GET name of ABB run signal
         /// </summary>
-        public int runtimeState { get; set; }
+        public string name { get; private set; }
+
+        /// <summary>
+        /// GET default runtime state (0 or 1) of ABB run signal
+        /// </summary>
+        public int runtimeState { get; private set; }
 
         /********************************************************
          ***  ABB RUN SIGNAL - constructor
@@ -34,7 +39,7 @@ namespace abbTools.Shared
         }
 
         /// <summary>
-        /// 
+        /// Constructor with filling fields data
         /// </summary>
         /// <param name="sigName"></param>
         /// <param name="runtimeVal"></param>
@@ -49,30 +54,63 @@ namespace abbTools.Shared
          ********************************************************/
 
         /// <summary>
-        /// 
+        /// Method used to update object fields
         /// </summary>
-        /// <param name="cController"></param>
+        /// <param name="sigName">New signal name</param>
+        /// <param name="runtimeVal">New runtime default value</param>
+        public void update(string sigName, int runtimeVal)
+        {
+            name = sigName;
+            runtimeState = runtimeVal;
+        }
+
+        /// <summary>
+        /// Function used to activate ABB run signal
+        /// </summary>
+        /// <returns>TRUE if activation succeded, FALSE otherwise</returns>
+        public bool activate()
+        {
+            active = (name != "") ? true : false;
+            return active;
+        }
+
+        /// <summary>
+        /// Method used to deactivate ABB run signal
+        /// </summary>
+        public void deactivate()
+        {
+            active = false;
+        }
+
+        /// <summary>
+        /// Method used to set ABB run signal to default state
+        /// </summary>
+        /// <param name="cController">ABB controler object to switch run signal to default state</param>
         public void runtimeOn(Controller cController)
         {
-            //check if current controller has defined runtime signal
-            Signal mySig = cController.IOSystem.GetSignal(name);
-            if (mySig != null) {
-                mySig.Value = runtimeState > 0 ? 1 : 0;
-                mySig.Dispose();
+            if (active && cController != null) {
+                //check if current controller has defined runtime signal
+                Signal mySig = cController.IOSystem.GetSignal(name);
+                if (mySig != null) {
+                    mySig.Value = runtimeState > 0 ? 1 : 0;
+                    mySig.Dispose();
+                }
             }
         }
 
         /// <summary>
-        /// 
+        /// Method used to reset ABB run signal from default state
         /// </summary>
-        /// <param name="cController"></param>
+        /// <param name="cController">ABB controler object to reset run signal to default state</param>
         public void runtimeOff(Controller cController)
         {
-            //check if current controller has defined runtime signal
-            Signal mySig = cController.IOSystem.GetSignal(name);
-            if (mySig != null) {
-                mySig.Value = runtimeState > 0 ? 1 : 0;
-                mySig.Dispose();
+            if (active && cController != null) {
+                //check if current controller has defined runtime signal
+                Signal mySig = cController.IOSystem.GetSignal(name);
+                if (mySig != null) {
+                    mySig.Value = runtimeState > 0 ? 1 : 0;
+                    mySig.Dispose();
+                }
             }
         }
 
@@ -81,18 +119,18 @@ namespace abbTools.Shared
          ********************************************************/
 
         /// <summary>
-        /// 
+        /// Method used to save ABB run signal object components to XML file
         /// </summary>
-        /// <param name="xml"></param>
+        /// <param name="xml">XML file to save data to</param>
         public void saveData(XmlWriter xml)
         {
 
         }
 
         /// <summary>
-        /// 
+        /// Method used to load ABB run signal object components from XML file
         /// </summary>
-        /// <param name="xml"></param>
+        /// <param name="xml">XML file to load data from</param>
         public void loadData(XmlReader xml)
         {
 
