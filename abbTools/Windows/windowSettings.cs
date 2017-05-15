@@ -46,6 +46,9 @@ namespace abbTools
         //path to settings XML file
         private string settingsPath = "";      
         private Form overrideParent;
+        //events handling
+        public delegate void mailSent(System.ComponentModel.AsyncCompletedEventArgs e);
+        public event mailSent EmailSent;
 
         /********************************************************
          ***  WINDOWS SETTINGS - constructor
@@ -66,6 +69,7 @@ namespace abbTools
             runtimeSig = AbbRunSignal.getInstance();
             //create mail service object
             mailService = AbbMail.getInstance();
+            mailService.AbbMailSent += emailSentDone;
             //path data
             currProject = "";
             showCurrProject = false;
@@ -84,22 +88,27 @@ namespace abbTools
             if (File.Exists(settingsPath)) {
                 //create new xmlFile
                 XmlReader xmlFile = XmlReader.Create(settingsPath);
-                while (xmlFile.Read()) {
-                    //read every node from XML document
-                    if ((xmlFile.NodeType == XmlNodeType.Element) && (xmlFile.Name.StartsWith("settings"))) {
-                        if (xmlFile.HasAttributes) {
-                            //load GENERAL SETTINGS
-                            loadMainWindowSettings(ref xmlFile);
-                            loadRunSignal(ref xmlFile);
-                            //load APPS SETTINGS
-                            loadAppsSettings(ref xmlFile);
-                            //load EMAIL SETTINGS
-                            loadEmailSettings(ref xmlFile);
+                try {
+                    while (xmlFile.Read()) {
+                        //read every node from XML document
+                        if ((xmlFile.NodeType == XmlNodeType.Element) && (xmlFile.Name.StartsWith("settings"))) {
+                            if (xmlFile.HasAttributes) {
+                                //load GENERAL SETTINGS
+                                loadMainWindowSettings(ref xmlFile);
+                                loadRunSignal(ref xmlFile);
+                                //load APPS SETTINGS
+                                loadAppsSettings(ref xmlFile);
+                                //load EMAIL SETTINGS
+                                loadEmailSettings(ref xmlFile);
+                            }
                         }
                     }
+                } catch {
+                    //log file corrupt to logger
+                } finally {
+                    //close file
+                    xmlFile.Close();
                 }
-                //close file
-                xmlFile.Close();
             }
         }
 
@@ -306,6 +315,20 @@ namespace abbTools
         private void checkShowProjPath_CheckedChanged(object sender, EventArgs e)
         {
             showCurrProject = checkShowProjPath.Checked;
+        }
+
+        /********************************************************
+         ***  WINDOWS SETTINGS - events
+         ********************************************************/
+
+        /// <summary>
+        /// Method triggered on email sent done event
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        private void emailSentDone(System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            // SIMPLIFIED { if (EmailSent != null) EmailSent(e); }
+            EmailSent?.Invoke(e);
         }
     }
 }

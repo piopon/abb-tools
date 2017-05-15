@@ -88,6 +88,12 @@
             this.labelPort = new System.Windows.Forms.Label();
             this.labelSMTP = new System.Windows.Forms.Label();
             this.checkMailActive = new System.Windows.Forms.CheckBox();
+            this.panelEmailGeneral = new System.Windows.Forms.Panel();
+            this.labelEmailGeneral = new System.Windows.Forms.Label();
+            this.checkEmailOpen = new System.Windows.Forms.CheckBox();
+            this.checkEmailClose = new System.Windows.Forms.CheckBox();
+            this.checkEmailException = new System.Windows.Forms.CheckBox();
+            this.checkEmailStatus = new System.Windows.Forms.CheckBox();
             this.panelFooterButtons.SuspendLayout();
             this.panelBackground.SuspendLayout();
             this.panelHeader.SuspendLayout();
@@ -102,6 +108,7 @@
             this.groupMinimizeMethod.SuspendLayout();
             this.tabSettingsMail.SuspendLayout();
             this.groupMailSettings.SuspendLayout();
+            this.panelEmailGeneral.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelFooterButtons
@@ -492,15 +499,7 @@
             // tabSettingsMail
             // 
             this.tabSettingsMail.BackColor = System.Drawing.Color.White;
-            this.tabSettingsMail.Controls.Add(this.labelMessage);
-            this.tabSettingsMail.Controls.Add(this.labelSubject);
-            this.tabSettingsMail.Controls.Add(this.labelCC);
-            this.tabSettingsMail.Controls.Add(this.labelTo);
-            this.tabSettingsMail.Controls.Add(this.groupMailSettings);
-            this.tabSettingsMail.Controls.Add(this.textMessage);
-            this.tabSettingsMail.Controls.Add(this.textSubject);
-            this.tabSettingsMail.Controls.Add(this.textCC);
-            this.tabSettingsMail.Controls.Add(this.textTo);
+            this.tabSettingsMail.Controls.Add(this.panelEmailGeneral);
             this.tabSettingsMail.ForeColor = System.Drawing.Color.Black;
             this.tabSettingsMail.ImageIndex = 0;
             this.tabSettingsMail.Location = new System.Drawing.Point(4, 54);
@@ -539,38 +538,38 @@
             // 
             // textTo
             // 
-            this.textTo.Location = new System.Drawing.Point(123, 17);
+            this.textTo.Location = new System.Drawing.Point(218, 30);
             this.textTo.Name = "textTo";
-            this.textTo.Size = new System.Drawing.Size(363, 23);
+            this.textTo.Size = new System.Drawing.Size(277, 23);
             this.textTo.TabIndex = 0;
             // 
             // textCC
             // 
-            this.textCC.Location = new System.Drawing.Point(123, 46);
+            this.textCC.Location = new System.Drawing.Point(218, 59);
             this.textCC.Name = "textCC";
-            this.textCC.Size = new System.Drawing.Size(363, 23);
+            this.textCC.Size = new System.Drawing.Size(277, 23);
             this.textCC.TabIndex = 0;
             // 
             // textSubject
             // 
-            this.textSubject.Location = new System.Drawing.Point(123, 75);
+            this.textSubject.Location = new System.Drawing.Point(218, 88);
             this.textSubject.Name = "textSubject";
-            this.textSubject.Size = new System.Drawing.Size(363, 23);
+            this.textSubject.Size = new System.Drawing.Size(277, 23);
             this.textSubject.TabIndex = 0;
             // 
             // textMessage
             // 
-            this.textMessage.Location = new System.Drawing.Point(123, 104);
+            this.textMessage.Location = new System.Drawing.Point(218, 117);
             this.textMessage.Multiline = true;
             this.textMessage.Name = "textMessage";
-            this.textMessage.Size = new System.Drawing.Size(363, 112);
+            this.textMessage.Size = new System.Drawing.Size(277, 80);
             this.textMessage.TabIndex = 1;
             // 
             // textUser
             // 
             this.textUser.Location = new System.Drawing.Point(65, 30);
             this.textUser.Name = "textUser";
-            this.textUser.Size = new System.Drawing.Size(214, 23);
+            this.textUser.Size = new System.Drawing.Size(165, 23);
             this.textUser.TabIndex = 0;
             // 
             // textPass
@@ -578,7 +577,7 @@
             this.textPass.Location = new System.Drawing.Point(65, 61);
             this.textPass.Name = "textPass";
             this.textPass.PasswordChar = '*';
-            this.textPass.Size = new System.Drawing.Size(214, 23);
+            this.textPass.Size = new System.Drawing.Size(165, 23);
             this.textPass.TabIndex = 0;
             this.textPass.UseSystemPasswordChar = true;
             // 
@@ -586,14 +585,14 @@
             // 
             this.textPort.Location = new System.Drawing.Point(66, 94);
             this.textPort.Name = "textPort";
-            this.textPort.Size = new System.Drawing.Size(65, 23);
+            this.textPort.Size = new System.Drawing.Size(50, 23);
             this.textPort.TabIndex = 0;
             // 
             // textSMTP
             // 
-            this.textSMTP.Location = new System.Drawing.Point(183, 94);
+            this.textSMTP.Location = new System.Drawing.Point(166, 94);
             this.textSMTP.Name = "textSMTP";
-            this.textSMTP.Size = new System.Drawing.Size(167, 23);
+            this.textSMTP.Size = new System.Drawing.Size(111, 23);
             this.textSMTP.TabIndex = 0;
             this.textSMTP.Text = "smtp.gmail.com";
             // 
@@ -610,9 +609,9 @@
             this.groupMailSettings.Controls.Add(this.textPass);
             this.groupMailSettings.Controls.Add(this.textPort);
             this.groupMailSettings.Controls.Add(this.textSMTP);
-            this.groupMailSettings.Location = new System.Drawing.Point(58, 229);
+            this.groupMailSettings.Location = new System.Drawing.Point(153, 213);
             this.groupMailSettings.Name = "groupMailSettings";
-            this.groupMailSettings.Size = new System.Drawing.Size(428, 133);
+            this.groupMailSettings.Size = new System.Drawing.Size(342, 133);
             this.groupMailSettings.TabIndex = 2;
             this.groupMailSettings.TabStop = false;
             this.groupMailSettings.Text = "settings";
@@ -620,7 +619,7 @@
             // checkSSL
             // 
             this.checkSSL.AutoSize = true;
-            this.checkSSL.Location = new System.Drawing.Point(366, 96);
+            this.checkSSL.Location = new System.Drawing.Point(283, 96);
             this.checkSSL.Name = "checkSSL";
             this.checkSSL.Size = new System.Drawing.Size(48, 21);
             this.checkSSL.TabIndex = 1;
@@ -633,9 +632,9 @@
             this.buttonTestSend.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.buttonTestSend.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.buttonTestSend.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonTestSend.Location = new System.Drawing.Point(305, 30);
+            this.buttonTestSend.Location = new System.Drawing.Point(251, 30);
             this.buttonTestSend.Name = "buttonTestSend";
-            this.buttonTestSend.Size = new System.Drawing.Size(109, 54);
+            this.buttonTestSend.Size = new System.Drawing.Size(80, 54);
             this.buttonTestSend.TabIndex = 2;
             this.buttonTestSend.Text = "TEST SEND";
             this.buttonTestSend.UseVisualStyleBackColor = false;
@@ -643,7 +642,7 @@
             // labelTo
             // 
             this.labelTo.AutoSize = true;
-            this.labelTo.Location = new System.Drawing.Point(55, 20);
+            this.labelTo.Location = new System.Drawing.Point(150, 33);
             this.labelTo.Name = "labelTo";
             this.labelTo.Size = new System.Drawing.Size(24, 17);
             this.labelTo.TabIndex = 3;
@@ -652,7 +651,7 @@
             // labelCC
             // 
             this.labelCC.AutoSize = true;
-            this.labelCC.Location = new System.Drawing.Point(55, 49);
+            this.labelCC.Location = new System.Drawing.Point(150, 62);
             this.labelCC.Name = "labelCC";
             this.labelCC.Size = new System.Drawing.Size(23, 17);
             this.labelCC.TabIndex = 3;
@@ -661,7 +660,7 @@
             // labelSubject
             // 
             this.labelSubject.AutoSize = true;
-            this.labelSubject.Location = new System.Drawing.Point(55, 78);
+            this.labelSubject.Location = new System.Drawing.Point(150, 91);
             this.labelSubject.Name = "labelSubject";
             this.labelSubject.Size = new System.Drawing.Size(54, 17);
             this.labelSubject.TabIndex = 3;
@@ -670,7 +669,7 @@
             // labelMessage
             // 
             this.labelMessage.AutoSize = true;
-            this.labelMessage.Location = new System.Drawing.Point(55, 107);
+            this.labelMessage.Location = new System.Drawing.Point(150, 120);
             this.labelMessage.Name = "labelMessage";
             this.labelMessage.Size = new System.Drawing.Size(62, 17);
             this.labelMessage.TabIndex = 3;
@@ -706,7 +705,7 @@
             // labelSMTP
             // 
             this.labelSMTP.AutoSize = true;
-            this.labelSMTP.Location = new System.Drawing.Point(140, 97);
+            this.labelSMTP.Location = new System.Drawing.Point(123, 97);
             this.labelSMTP.Name = "labelSMTP";
             this.labelSMTP.Size = new System.Drawing.Size(40, 17);
             this.labelSMTP.TabIndex = 3;
@@ -715,12 +714,86 @@
             // checkMailActive
             // 
             this.checkMailActive.AutoSize = true;
-            this.checkMailActive.Location = new System.Drawing.Point(348, 0);
+            this.checkMailActive.Location = new System.Drawing.Point(265, 0);
             this.checkMailActive.Name = "checkMailActive";
             this.checkMailActive.Size = new System.Drawing.Size(66, 21);
             this.checkMailActive.TabIndex = 1;
             this.checkMailActive.Text = "active";
             this.checkMailActive.UseVisualStyleBackColor = true;
+            // 
+            // panelEmailGeneral
+            // 
+            this.panelEmailGeneral.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panelEmailGeneral.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelEmailGeneral.Controls.Add(this.checkEmailStatus);
+            this.panelEmailGeneral.Controls.Add(this.checkEmailException);
+            this.panelEmailGeneral.Controls.Add(this.checkEmailClose);
+            this.panelEmailGeneral.Controls.Add(this.checkEmailOpen);
+            this.panelEmailGeneral.Controls.Add(this.labelEmailGeneral);
+            this.panelEmailGeneral.Controls.Add(this.labelMessage);
+            this.panelEmailGeneral.Controls.Add(this.groupMailSettings);
+            this.panelEmailGeneral.Controls.Add(this.labelSubject);
+            this.panelEmailGeneral.Controls.Add(this.textTo);
+            this.panelEmailGeneral.Controls.Add(this.labelCC);
+            this.panelEmailGeneral.Controls.Add(this.textCC);
+            this.panelEmailGeneral.Controls.Add(this.labelTo);
+            this.panelEmailGeneral.Controls.Add(this.textSubject);
+            this.panelEmailGeneral.Controls.Add(this.textMessage);
+            this.panelEmailGeneral.Location = new System.Drawing.Point(16, 15);
+            this.panelEmailGeneral.Name = "panelEmailGeneral";
+            this.panelEmailGeneral.Padding = new System.Windows.Forms.Padding(5);
+            this.panelEmailGeneral.Size = new System.Drawing.Size(513, 360);
+            this.panelEmailGeneral.TabIndex = 8;
+            // 
+            // labelEmailGeneral
+            // 
+            this.labelEmailGeneral.Dock = System.Windows.Forms.DockStyle.Top;
+            this.labelEmailGeneral.Font = new System.Drawing.Font("GOST Common", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelEmailGeneral.Location = new System.Drawing.Point(5, 5);
+            this.labelEmailGeneral.Name = "labelEmailGeneral";
+            this.labelEmailGeneral.Size = new System.Drawing.Size(501, 22);
+            this.labelEmailGeneral.TabIndex = 5;
+            this.labelEmailGeneral.Text = "E-MAIL";
+            // 
+            // checkEmailOpen
+            // 
+            this.checkEmailOpen.AutoSize = true;
+            this.checkEmailOpen.Location = new System.Drawing.Point(8, 69);
+            this.checkEmailOpen.Name = "checkEmailOpen";
+            this.checkEmailOpen.Size = new System.Drawing.Size(105, 21);
+            this.checkEmailOpen.TabIndex = 6;
+            this.checkEmailOpen.Text = "send at open";
+            this.checkEmailOpen.UseVisualStyleBackColor = true;
+            // 
+            // checkEmailClose
+            // 
+            this.checkEmailClose.AutoSize = true;
+            this.checkEmailClose.Location = new System.Drawing.Point(7, 138);
+            this.checkEmailClose.Name = "checkEmailClose";
+            this.checkEmailClose.Size = new System.Drawing.Size(108, 21);
+            this.checkEmailClose.TabIndex = 6;
+            this.checkEmailClose.Text = "send at close";
+            this.checkEmailClose.UseVisualStyleBackColor = true;
+            // 
+            // checkEmailException
+            // 
+            this.checkEmailException.AutoSize = true;
+            this.checkEmailException.Location = new System.Drawing.Point(7, 207);
+            this.checkEmailException.Name = "checkEmailException";
+            this.checkEmailException.Size = new System.Drawing.Size(134, 21);
+            this.checkEmailException.TabIndex = 6;
+            this.checkEmailException.Text = "send at exception";
+            this.checkEmailException.UseVisualStyleBackColor = true;
+            // 
+            // checkEmailStatus
+            // 
+            this.checkEmailStatus.AutoSize = true;
+            this.checkEmailStatus.Location = new System.Drawing.Point(7, 276);
+            this.checkEmailStatus.Name = "checkEmailStatus";
+            this.checkEmailStatus.Size = new System.Drawing.Size(117, 21);
+            this.checkEmailStatus.TabIndex = 6;
+            this.checkEmailStatus.Text = "send at status";
+            this.checkEmailStatus.UseVisualStyleBackColor = true;
             // 
             // windowSettings
             // 
@@ -755,9 +828,10 @@
             this.groupMinimizeMethod.ResumeLayout(false);
             this.groupMinimizeMethod.PerformLayout();
             this.tabSettingsMail.ResumeLayout(false);
-            this.tabSettingsMail.PerformLayout();
             this.groupMailSettings.ResumeLayout(false);
             this.groupMailSettings.PerformLayout();
+            this.panelEmailGeneral.ResumeLayout(false);
+            this.panelEmailGeneral.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -822,5 +896,11 @@
         private System.Windows.Forms.TextBox textCC;
         private System.Windows.Forms.TextBox textTo;
         private System.Windows.Forms.CheckBox checkMailActive;
+        private System.Windows.Forms.Panel panelEmailGeneral;
+        private System.Windows.Forms.Label labelEmailGeneral;
+        private System.Windows.Forms.CheckBox checkEmailStatus;
+        private System.Windows.Forms.CheckBox checkEmailException;
+        private System.Windows.Forms.CheckBox checkEmailClose;
+        private System.Windows.Forms.CheckBox checkEmailOpen;
     }
 }

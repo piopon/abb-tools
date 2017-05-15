@@ -55,9 +55,10 @@ namespace abbTools
             connectUnhandledExceptions();
             //load application settings
             appSettings = new windowSettings(Height,Width);
+            appSettings.EmailSent += emailSentStatus;
             appSettings.loadData();
             //try to send welcome mail
-            sendMail(abbStatus.mail.openApp);
+            sendMail(abbStatus.mail.openApp, "HELLO!");
             //register applications and update dashboard
             appsRegister();
             appsUpdateGUI();
@@ -99,7 +100,7 @@ namespace abbTools
         private void abbToolsThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
         {
             //send e-mail that app is closed
-            sendMail(abbStatus.mail.exception);
+            sendMail(abbStatus.mail.exception, "Application.ThreadException"+e.Exception.Message);
             Close();
         }
 
@@ -111,7 +112,7 @@ namespace abbTools
         private void abbToolsUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             //send e-mail that app is closed
-            sendMail(abbStatus.mail.exception);
+            sendMail(abbStatus.mail.exception, "AppDomain.UnhandledException" + e.ExceptionObject.ToString());
             Close();
         }
 
@@ -267,6 +268,15 @@ namespace abbTools
             notifyIcon.Visible = (this.WindowState == FormWindowState.Minimized);
             //show tip and hide app from taskbar if window is minimized
             if (notifyIcon.Visible) this.Hide();
+        }
+
+        /// <summary>
+        /// Method triggered on mail sent done event
+        /// </summary>
+        /// <param name="e">Event argument</param>
+        private void emailSentStatus(AsyncCompletedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /********************************************************
@@ -472,7 +482,7 @@ namespace abbTools
             //save settings
             appSettings.saveData();
             //send e-mail that app is closed
-            sendMail(abbStatus.mail.closeApp);
+            sendMail(abbStatus.mail.closeApp, "EXIT TEST");
             //terminate app
             Close();
         }
@@ -1202,16 +1212,22 @@ namespace abbTools
         /// Method used to trigger mail send event
         /// </summary>
         /// <param name="mailType">Type of mail to send (open, close app, exception triggered)</param>
-        private void sendMail(abbStatus.mail mailType)
+        /// <param name="myMessage">Message to sent via email</param>
+        private void sendMail(abbStatus.mail mailType, string myMessage)
         {
-            string topic = "", msg = "";
-            
+            string topic = "";
             //build topic element
-
-            //build message
-
+            if (mailType == abbStatus.mail.openApp) {
+                topic = "abbTools::openApp";
+            } else if (mailType == abbStatus.mail.closeApp) {
+                topic = "abbTools::closeApp";
+            } else if (mailType == abbStatus.mail.exception) {
+                topic = "abbTools::exception";
+            } else if (mailType == abbStatus.mail.info) {
+                topic = "abbTools::statusUpdate";
+            }
             //send email
-            appSettings.mailService.send(topic, msg);
+            appSettings.mailService.send(topic, myMessage);
         }
 
         /********************************************************
