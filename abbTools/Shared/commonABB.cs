@@ -25,6 +25,7 @@
     {
         exception = -1,
         closeApp = 0,
-        openApp = 1
+        openApp = 1,
+        info = 2
     };
 }

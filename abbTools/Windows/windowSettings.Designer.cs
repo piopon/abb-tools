@@ -41,7 +41,11 @@
             this.tabSettingsGeneral = new System.Windows.Forms.TabPage();
             this.panel1 = new System.Windows.Forms.Panel();
             this.groupWindowsIPC = new System.Windows.Forms.GroupBox();
+            this.textDefaultServerName = new System.Windows.Forms.TextBox();
+            this.labelDefaultServerName = new System.Windows.Forms.Label();
+            this.checkFillMsg = new System.Windows.Forms.CheckBox();
             this.groupRemotePC = new System.Windows.Forms.GroupBox();
+            this.checkRememberAppDir = new System.Windows.Forms.CheckBox();
             this.groupBackupManager = new System.Windows.Forms.GroupBox();
             this.checkUpdBackupTime = new System.Windows.Forms.CheckBox();
             this.checkCreateOutputDir = new System.Windows.Forms.CheckBox();
@@ -61,13 +65,29 @@
             this.radioMinNotifyIcon = new System.Windows.Forms.RadioButton();
             this.checkAlwaysOnTop = new System.Windows.Forms.CheckBox();
             this.tabSettingsMail = new System.Windows.Forms.TabPage();
+            this.tabSettingsUser = new System.Windows.Forms.TabPage();
             this.imageTabs = new System.Windows.Forms.ImageList(this.components);
             this.panelTemplate = new System.Windows.Forms.Panel();
-            this.checkFillMsg = new System.Windows.Forms.CheckBox();
-            this.checkRememberAppDir = new System.Windows.Forms.CheckBox();
-            this.labelDefaultServerName = new System.Windows.Forms.Label();
-            this.textDefaultServerName = new System.Windows.Forms.TextBox();
-            this.tabSettingsUser = new System.Windows.Forms.TabPage();
+            this.textTo = new System.Windows.Forms.TextBox();
+            this.textCC = new System.Windows.Forms.TextBox();
+            this.textSubject = new System.Windows.Forms.TextBox();
+            this.textMessage = new System.Windows.Forms.TextBox();
+            this.textUser = new System.Windows.Forms.TextBox();
+            this.textPass = new System.Windows.Forms.TextBox();
+            this.textPort = new System.Windows.Forms.TextBox();
+            this.textSMTP = new System.Windows.Forms.TextBox();
+            this.groupMailSettings = new System.Windows.Forms.GroupBox();
+            this.checkSSL = new System.Windows.Forms.CheckBox();
+            this.buttonTestSend = new System.Windows.Forms.Button();
+            this.labelTo = new System.Windows.Forms.Label();
+            this.labelCC = new System.Windows.Forms.Label();
+            this.labelSubject = new System.Windows.Forms.Label();
+            this.labelMessage = new System.Windows.Forms.Label();
+            this.labelUser = new System.Windows.Forms.Label();
+            this.labelPass = new System.Windows.Forms.Label();
+            this.labelPort = new System.Windows.Forms.Label();
+            this.labelSMTP = new System.Windows.Forms.Label();
+            this.checkMailActive = new System.Windows.Forms.CheckBox();
             this.panelFooterButtons.SuspendLayout();
             this.panelBackground.SuspendLayout();
             this.panelHeader.SuspendLayout();
@@ -80,6 +100,8 @@
             this.panelSettingsGeneral.SuspendLayout();
             this.groupSignalRun.SuspendLayout();
             this.groupMinimizeMethod.SuspendLayout();
+            this.tabSettingsMail.SuspendLayout();
+            this.groupMailSettings.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelFooterButtons
@@ -188,7 +210,7 @@
             this.tabSettings.ShowToolTips = true;
             this.tabSettings.Size = new System.Drawing.Size(551, 447);
             this.tabSettings.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-            this.tabSettings.TabIndex = 1;
+            this.tabSettings.TabIndex = 0;
             // 
             // tabSettingsGeneral
             // 
@@ -228,6 +250,32 @@
             this.groupWindowsIPC.TabStop = false;
             this.groupWindowsIPC.Text = "windowsIPC";
             // 
+            // textDefaultServerName
+            // 
+            this.textDefaultServerName.Location = new System.Drawing.Point(15, 72);
+            this.textDefaultServerName.Name = "textDefaultServerName";
+            this.textDefaultServerName.Size = new System.Drawing.Size(142, 23);
+            this.textDefaultServerName.TabIndex = 1;
+            // 
+            // labelDefaultServerName
+            // 
+            this.labelDefaultServerName.AutoSize = true;
+            this.labelDefaultServerName.Location = new System.Drawing.Point(12, 56);
+            this.labelDefaultServerName.Name = "labelDefaultServerName";
+            this.labelDefaultServerName.Size = new System.Drawing.Size(128, 17);
+            this.labelDefaultServerName.TabIndex = 5;
+            this.labelDefaultServerName.Text = "default server name";
+            // 
+            // checkFillMsg
+            // 
+            this.checkFillMsg.AutoSize = true;
+            this.checkFillMsg.Location = new System.Drawing.Point(15, 26);
+            this.checkFillMsg.Name = "checkFillMsg";
+            this.checkFillMsg.Size = new System.Drawing.Size(108, 21);
+            this.checkFillMsg.TabIndex = 0;
+            this.checkFillMsg.Text = "fill messages";
+            this.checkFillMsg.UseVisualStyleBackColor = true;
+            // 
             // groupRemotePC
             // 
             this.groupRemotePC.Controls.Add(this.checkRememberAppDir);
@@ -237,6 +285,16 @@
             this.groupRemotePC.TabIndex = 7;
             this.groupRemotePC.TabStop = false;
             this.groupRemotePC.Text = "remotePC";
+            // 
+            // checkRememberAppDir
+            // 
+            this.checkRememberAppDir.AutoSize = true;
+            this.checkRememberAppDir.Location = new System.Drawing.Point(15, 27);
+            this.checkRememberAppDir.Name = "checkRememberAppDir";
+            this.checkRememberAppDir.Size = new System.Drawing.Size(139, 21);
+            this.checkRememberAppDir.TabIndex = 0;
+            this.checkRememberAppDir.Text = "remember last app";
+            this.checkRememberAppDir.UseVisualStyleBackColor = true;
             // 
             // groupBackupManager
             // 
@@ -255,7 +313,7 @@
             this.checkUpdBackupTime.Location = new System.Drawing.Point(15, 53);
             this.checkUpdBackupTime.Name = "checkUpdBackupTime";
             this.checkUpdBackupTime.Size = new System.Drawing.Size(129, 21);
-            this.checkUpdBackupTime.TabIndex = 2;
+            this.checkUpdBackupTime.TabIndex = 1;
             this.checkUpdBackupTime.Text = "auto update time";
             this.checkUpdBackupTime.UseVisualStyleBackColor = true;
             // 
@@ -265,7 +323,7 @@
             this.checkCreateOutputDir.Location = new System.Drawing.Point(15, 26);
             this.checkCreateOutputDir.Name = "checkCreateOutputDir";
             this.checkCreateOutputDir.Size = new System.Drawing.Size(142, 21);
-            this.checkCreateOutputDir.TabIndex = 1;
+            this.checkCreateOutputDir.TabIndex = 0;
             this.checkCreateOutputDir.Text = "create output path";
             this.checkCreateOutputDir.UseVisualStyleBackColor = true;
             // 
@@ -301,7 +359,7 @@
             this.checkShowProjPath.Location = new System.Drawing.Point(23, 65);
             this.checkShowProjPath.Name = "checkShowProjPath";
             this.checkShowProjPath.Size = new System.Drawing.Size(135, 21);
-            this.checkShowProjPath.TabIndex = 7;
+            this.checkShowProjPath.TabIndex = 1;
             this.checkShowProjPath.Text = "show project path";
             this.checkShowProjPath.UseVisualStyleBackColor = true;
             this.checkShowProjPath.CheckedChanged += new System.EventHandler(this.checkShowProjPath_CheckedChanged);
@@ -326,7 +384,7 @@
             this.radioSigSet0.Location = new System.Drawing.Point(15, 100);
             this.radioSigSet0.Name = "radioSigSet0";
             this.radioSigSet0.Size = new System.Drawing.Size(152, 21);
-            this.radioSigSet0.TabIndex = 4;
+            this.radioSigSet0.TabIndex = 3;
             this.radioSigSet0.TabStop = true;
             this.radioSigSet0.Text = "\"0\" when app running";
             this.radioSigSet0.UseVisualStyleBackColor = true;
@@ -434,6 +492,15 @@
             // tabSettingsMail
             // 
             this.tabSettingsMail.BackColor = System.Drawing.Color.White;
+            this.tabSettingsMail.Controls.Add(this.labelMessage);
+            this.tabSettingsMail.Controls.Add(this.labelSubject);
+            this.tabSettingsMail.Controls.Add(this.labelCC);
+            this.tabSettingsMail.Controls.Add(this.labelTo);
+            this.tabSettingsMail.Controls.Add(this.groupMailSettings);
+            this.tabSettingsMail.Controls.Add(this.textMessage);
+            this.tabSettingsMail.Controls.Add(this.textSubject);
+            this.tabSettingsMail.Controls.Add(this.textCC);
+            this.tabSettingsMail.Controls.Add(this.textTo);
             this.tabSettingsMail.ForeColor = System.Drawing.Color.Black;
             this.tabSettingsMail.ImageIndex = 0;
             this.tabSettingsMail.Location = new System.Drawing.Point(4, 54);
@@ -442,6 +509,17 @@
             this.tabSettingsMail.Size = new System.Drawing.Size(543, 389);
             this.tabSettingsMail.TabIndex = 0;
             this.tabSettingsMail.ToolTipText = "mail settings";
+            // 
+            // tabSettingsUser
+            // 
+            this.tabSettingsUser.BackColor = System.Drawing.Color.White;
+            this.tabSettingsUser.ForeColor = System.Drawing.Color.Black;
+            this.tabSettingsUser.ImageIndex = 2;
+            this.tabSettingsUser.Location = new System.Drawing.Point(4, 54);
+            this.tabSettingsUser.Name = "tabSettingsUser";
+            this.tabSettingsUser.Padding = new System.Windows.Forms.Padding(3);
+            this.tabSettingsUser.Size = new System.Drawing.Size(543, 389);
+            this.tabSettingsUser.TabIndex = 2;
             // 
             // imageTabs
             // 
@@ -459,52 +537,190 @@
             this.panelTemplate.Size = new System.Drawing.Size(585, 561);
             this.panelTemplate.TabIndex = 2;
             // 
-            // checkFillMsg
+            // textTo
             // 
-            this.checkFillMsg.AutoSize = true;
-            this.checkFillMsg.Location = new System.Drawing.Point(15, 26);
-            this.checkFillMsg.Name = "checkFillMsg";
-            this.checkFillMsg.Size = new System.Drawing.Size(108, 21);
-            this.checkFillMsg.TabIndex = 4;
-            this.checkFillMsg.Text = "fill messages";
-            this.checkFillMsg.UseVisualStyleBackColor = true;
+            this.textTo.Location = new System.Drawing.Point(123, 17);
+            this.textTo.Name = "textTo";
+            this.textTo.Size = new System.Drawing.Size(363, 23);
+            this.textTo.TabIndex = 0;
             // 
-            // checkRememberAppDir
+            // textCC
             // 
-            this.checkRememberAppDir.AutoSize = true;
-            this.checkRememberAppDir.Location = new System.Drawing.Point(15, 27);
-            this.checkRememberAppDir.Name = "checkRememberAppDir";
-            this.checkRememberAppDir.Size = new System.Drawing.Size(139, 21);
-            this.checkRememberAppDir.TabIndex = 5;
-            this.checkRememberAppDir.Text = "remember last app";
-            this.checkRememberAppDir.UseVisualStyleBackColor = true;
+            this.textCC.Location = new System.Drawing.Point(123, 46);
+            this.textCC.Name = "textCC";
+            this.textCC.Size = new System.Drawing.Size(363, 23);
+            this.textCC.TabIndex = 0;
             // 
-            // labelDefaultServerName
+            // textSubject
             // 
-            this.labelDefaultServerName.AutoSize = true;
-            this.labelDefaultServerName.Location = new System.Drawing.Point(12, 56);
-            this.labelDefaultServerName.Name = "labelDefaultServerName";
-            this.labelDefaultServerName.Size = new System.Drawing.Size(128, 17);
-            this.labelDefaultServerName.TabIndex = 5;
-            this.labelDefaultServerName.Text = "default server name";
+            this.textSubject.Location = new System.Drawing.Point(123, 75);
+            this.textSubject.Name = "textSubject";
+            this.textSubject.Size = new System.Drawing.Size(363, 23);
+            this.textSubject.TabIndex = 0;
             // 
-            // textDefaultServerName
+            // textMessage
             // 
-            this.textDefaultServerName.Location = new System.Drawing.Point(15, 72);
-            this.textDefaultServerName.Name = "textDefaultServerName";
-            this.textDefaultServerName.Size = new System.Drawing.Size(142, 23);
-            this.textDefaultServerName.TabIndex = 6;
+            this.textMessage.Location = new System.Drawing.Point(123, 104);
+            this.textMessage.Multiline = true;
+            this.textMessage.Name = "textMessage";
+            this.textMessage.Size = new System.Drawing.Size(363, 112);
+            this.textMessage.TabIndex = 1;
             // 
-            // tabSettingsUser
+            // textUser
             // 
-            this.tabSettingsUser.BackColor = System.Drawing.Color.White;
-            this.tabSettingsUser.ForeColor = System.Drawing.Color.Black;
-            this.tabSettingsUser.ImageIndex = 2;
-            this.tabSettingsUser.Location = new System.Drawing.Point(4, 54);
-            this.tabSettingsUser.Name = "tabSettingsUser";
-            this.tabSettingsUser.Padding = new System.Windows.Forms.Padding(3);
-            this.tabSettingsUser.Size = new System.Drawing.Size(543, 389);
-            this.tabSettingsUser.TabIndex = 2;
+            this.textUser.Location = new System.Drawing.Point(65, 30);
+            this.textUser.Name = "textUser";
+            this.textUser.Size = new System.Drawing.Size(214, 23);
+            this.textUser.TabIndex = 0;
+            // 
+            // textPass
+            // 
+            this.textPass.Location = new System.Drawing.Point(65, 61);
+            this.textPass.Name = "textPass";
+            this.textPass.PasswordChar = '*';
+            this.textPass.Size = new System.Drawing.Size(214, 23);
+            this.textPass.TabIndex = 0;
+            this.textPass.UseSystemPasswordChar = true;
+            // 
+            // textPort
+            // 
+            this.textPort.Location = new System.Drawing.Point(66, 94);
+            this.textPort.Name = "textPort";
+            this.textPort.Size = new System.Drawing.Size(65, 23);
+            this.textPort.TabIndex = 0;
+            // 
+            // textSMTP
+            // 
+            this.textSMTP.Location = new System.Drawing.Point(183, 94);
+            this.textSMTP.Name = "textSMTP";
+            this.textSMTP.Size = new System.Drawing.Size(167, 23);
+            this.textSMTP.TabIndex = 0;
+            this.textSMTP.Text = "smtp.gmail.com";
+            // 
+            // groupMailSettings
+            // 
+            this.groupMailSettings.Controls.Add(this.labelSMTP);
+            this.groupMailSettings.Controls.Add(this.labelPort);
+            this.groupMailSettings.Controls.Add(this.labelPass);
+            this.groupMailSettings.Controls.Add(this.labelUser);
+            this.groupMailSettings.Controls.Add(this.buttonTestSend);
+            this.groupMailSettings.Controls.Add(this.checkMailActive);
+            this.groupMailSettings.Controls.Add(this.checkSSL);
+            this.groupMailSettings.Controls.Add(this.textUser);
+            this.groupMailSettings.Controls.Add(this.textPass);
+            this.groupMailSettings.Controls.Add(this.textPort);
+            this.groupMailSettings.Controls.Add(this.textSMTP);
+            this.groupMailSettings.Location = new System.Drawing.Point(58, 229);
+            this.groupMailSettings.Name = "groupMailSettings";
+            this.groupMailSettings.Size = new System.Drawing.Size(428, 133);
+            this.groupMailSettings.TabIndex = 2;
+            this.groupMailSettings.TabStop = false;
+            this.groupMailSettings.Text = "settings";
+            // 
+            // checkSSL
+            // 
+            this.checkSSL.AutoSize = true;
+            this.checkSSL.Location = new System.Drawing.Point(366, 96);
+            this.checkSSL.Name = "checkSSL";
+            this.checkSSL.Size = new System.Drawing.Size(48, 21);
+            this.checkSSL.TabIndex = 1;
+            this.checkSSL.Text = "ssl";
+            this.checkSSL.UseVisualStyleBackColor = true;
+            // 
+            // buttonTestSend
+            // 
+            this.buttonTestSend.BackColor = System.Drawing.Color.DarkOrange;
+            this.buttonTestSend.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonTestSend.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonTestSend.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonTestSend.Location = new System.Drawing.Point(305, 30);
+            this.buttonTestSend.Name = "buttonTestSend";
+            this.buttonTestSend.Size = new System.Drawing.Size(109, 54);
+            this.buttonTestSend.TabIndex = 2;
+            this.buttonTestSend.Text = "TEST SEND";
+            this.buttonTestSend.UseVisualStyleBackColor = false;
+            // 
+            // labelTo
+            // 
+            this.labelTo.AutoSize = true;
+            this.labelTo.Location = new System.Drawing.Point(55, 20);
+            this.labelTo.Name = "labelTo";
+            this.labelTo.Size = new System.Drawing.Size(24, 17);
+            this.labelTo.TabIndex = 3;
+            this.labelTo.Text = "to:";
+            // 
+            // labelCC
+            // 
+            this.labelCC.AutoSize = true;
+            this.labelCC.Location = new System.Drawing.Point(55, 49);
+            this.labelCC.Name = "labelCC";
+            this.labelCC.Size = new System.Drawing.Size(23, 17);
+            this.labelCC.TabIndex = 3;
+            this.labelCC.Text = "cc:";
+            // 
+            // labelSubject
+            // 
+            this.labelSubject.AutoSize = true;
+            this.labelSubject.Location = new System.Drawing.Point(55, 78);
+            this.labelSubject.Name = "labelSubject";
+            this.labelSubject.Size = new System.Drawing.Size(54, 17);
+            this.labelSubject.TabIndex = 3;
+            this.labelSubject.Text = "subject:";
+            // 
+            // labelMessage
+            // 
+            this.labelMessage.AutoSize = true;
+            this.labelMessage.Location = new System.Drawing.Point(55, 107);
+            this.labelMessage.Name = "labelMessage";
+            this.labelMessage.Size = new System.Drawing.Size(62, 17);
+            this.labelMessage.TabIndex = 3;
+            this.labelMessage.Text = "message:";
+            // 
+            // labelUser
+            // 
+            this.labelUser.AutoSize = true;
+            this.labelUser.Location = new System.Drawing.Point(20, 33);
+            this.labelUser.Name = "labelUser";
+            this.labelUser.Size = new System.Drawing.Size(38, 17);
+            this.labelUser.TabIndex = 3;
+            this.labelUser.Text = "user:";
+            // 
+            // labelPass
+            // 
+            this.labelPass.AutoSize = true;
+            this.labelPass.Location = new System.Drawing.Point(20, 64);
+            this.labelPass.Name = "labelPass";
+            this.labelPass.Size = new System.Drawing.Size(39, 17);
+            this.labelPass.TabIndex = 3;
+            this.labelPass.Text = "pass:";
+            // 
+            // labelPort
+            // 
+            this.labelPort.AutoSize = true;
+            this.labelPort.Location = new System.Drawing.Point(21, 97);
+            this.labelPort.Name = "labelPort";
+            this.labelPort.Size = new System.Drawing.Size(37, 17);
+            this.labelPort.TabIndex = 3;
+            this.labelPort.Text = "port:";
+            // 
+            // labelSMTP
+            // 
+            this.labelSMTP.AutoSize = true;
+            this.labelSMTP.Location = new System.Drawing.Point(140, 97);
+            this.labelSMTP.Name = "labelSMTP";
+            this.labelSMTP.Size = new System.Drawing.Size(40, 17);
+            this.labelSMTP.TabIndex = 3;
+            this.labelSMTP.Text = "smtp:";
+            // 
+            // checkMailActive
+            // 
+            this.checkMailActive.AutoSize = true;
+            this.checkMailActive.Location = new System.Drawing.Point(348, 0);
+            this.checkMailActive.Name = "checkMailActive";
+            this.checkMailActive.Size = new System.Drawing.Size(66, 21);
+            this.checkMailActive.TabIndex = 1;
+            this.checkMailActive.Text = "active";
+            this.checkMailActive.UseVisualStyleBackColor = true;
             // 
             // windowSettings
             // 
@@ -538,6 +754,10 @@
             this.groupSignalRun.PerformLayout();
             this.groupMinimizeMethod.ResumeLayout(false);
             this.groupMinimizeMethod.PerformLayout();
+            this.tabSettingsMail.ResumeLayout(false);
+            this.tabSettingsMail.PerformLayout();
+            this.groupMailSettings.ResumeLayout(false);
+            this.groupMailSettings.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -582,5 +802,25 @@
         private System.Windows.Forms.Label labelDefaultServerName;
         private System.Windows.Forms.CheckBox checkRememberAppDir;
         private System.Windows.Forms.TabPage tabSettingsUser;
+        private System.Windows.Forms.Label labelMessage;
+        private System.Windows.Forms.Label labelSubject;
+        private System.Windows.Forms.Label labelCC;
+        private System.Windows.Forms.Label labelTo;
+        private System.Windows.Forms.GroupBox groupMailSettings;
+        private System.Windows.Forms.Label labelSMTP;
+        private System.Windows.Forms.Label labelPort;
+        private System.Windows.Forms.Label labelPass;
+        private System.Windows.Forms.Label labelUser;
+        private System.Windows.Forms.Button buttonTestSend;
+        private System.Windows.Forms.CheckBox checkSSL;
+        private System.Windows.Forms.TextBox textUser;
+        private System.Windows.Forms.TextBox textPass;
+        private System.Windows.Forms.TextBox textPort;
+        private System.Windows.Forms.TextBox textSMTP;
+        private System.Windows.Forms.TextBox textMessage;
+        private System.Windows.Forms.TextBox textSubject;
+        private System.Windows.Forms.TextBox textCC;
+        private System.Windows.Forms.TextBox textTo;
+        private System.Windows.Forms.CheckBox checkMailActive;
     }
 }

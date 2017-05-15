@@ -65,7 +65,7 @@ namespace abbTools
             //create abbTools runtime controller signal object
             runtimeSig = AbbRunSignal.getInstance();
             //create mail service object
-            mailService = new AbbMail();
+            mailService = AbbMail.getInstance();
             //path data
             currProject = "";
             showCurrProject = false;

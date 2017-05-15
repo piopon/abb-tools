@@ -1204,10 +1204,14 @@ namespace abbTools
         /// <param name="mailType">Type of mail to send (open, close app, exception triggered)</param>
         private void sendMail(abbStatus.mail mailType)
         {
-            //check if sending e-mail is active
-            if (appSettings.mailService.getMailStatus(mailType)) {
+            string topic = "", msg = "";
+            
+            //build topic element
 
-            }
+            //build message
+
+            //send email
+            appSettings.mailService.send(topic, msg);
         }
 
         /********************************************************
